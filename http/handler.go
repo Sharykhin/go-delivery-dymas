@@ -26,7 +26,7 @@ func handlerCouriersLocation(response http.ResponseWriter, request *http.Request
 	response.Header().Set("Content-Type", "application/json")
 
 	if err != nil {
-		response.WriteHeader(400)
+		response.WriteHeader(nethttp.StatusBadRequest)
 		messageError, errJson := json.Marshal(&ResponseMessage{
 			Status:  "Error",
 			Message: "Incorrect json! Please check your JSON formating.",
