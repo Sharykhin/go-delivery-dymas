@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"net/http"
+	nethttp "net/http"
 )
 
 type Location struct {
