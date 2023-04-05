@@ -17,5 +17,7 @@ func RunServer() {
 	router := CreateRouters()
 	http.Handle(string('/'), router)
 	fmt.Println("Server is listening...")
-	http.ListenAndServe(port, nil)
+	if err := http.ListenAndServe(port, nil); err != nil {
+	    return err
+	}
 }
