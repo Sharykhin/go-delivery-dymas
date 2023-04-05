@@ -1,9 +1,14 @@
 package main
 
 import (
-	courierService "courierService/http"
+	"fmt"
+	"http/http"
 )
 
 func main() {
-	courierService.RunServer()
+	err := http.RunServer()
+
+	if err != nil {
+		fmt.Println(err)
+	}
 }

@@ -1,4 +1,4 @@
-package courierService
+package http
 
 import (
 	"fmt"

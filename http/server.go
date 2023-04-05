@@ -1,12 +1,12 @@
-package courierService
+package http
 
 import (
 	"fmt"
-	"net/http"
+	nethttp "net/http"
 	"os"
 )
 
-func RunServer() {
+func RunServer() error {
 	port := ":8081"
 
 	if os.Getenv("HTTP_PORT") != "" {
@@ -14,10 +14,12 @@ func RunServer() {
 	}
 
 	fmt.Println(port)
-	router := CreateRouters()
-	http.Handle(string('/'), router)
+	router := CreateRouter()
+	nethttp.Handle(string('/'), router)
 	fmt.Println("Server is listening...")
-	if err := http.ListenAndServe(port, nil); err != nil {
-	    return err
+	if err := nethttp.ListenAndServe(port, nil); err != nil {
+		return err
 	}
+
+	return nil
 }

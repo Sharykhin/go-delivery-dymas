@@ -1,13 +1,14 @@
-package courierService
+package http
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	nethttp "net/http"
+	"strings"
 )
 
-type Location struct {
+type LocationPayload struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
 	Longitude float64 `json:"longitude" validate:"required,longitude"`
 }
@@ -19,53 +20,44 @@ type ResponseMessage struct {
 
 var validate *validator.Validate
 
-func handlerCouriersLocation(response http.ResponseWriter, request *http.Request) {
-	var Location Location
-	var errors [2]ResponseMessage
-	err := json.NewDecoder(request.Body).Decode(&Location)
-	response.Header().Set("Content-Type", "application/json")
+func handlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
+	var LocationPayload LocationPayload
+	var errorMessage string
+	err := json.NewDecoder(r.Body).Decode(&LocationPayload)
+	w.Header().Set("Content-Type", "application/json")
 
 	if err != nil {
-		response.WriteHeader(nethttp.StatusBadRequest)
-		messageError, errJson := json.Marshal(&ResponseMessage{
+		w.WriteHeader(nethttp.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: "Incorrect json! Please check your JSON formating.",
 		})
 
-		fmt.Println(messageError)
-		if errJson == nil {
-			fmt.Fprintln(response, string(messageError))
+		if err != nil {
+			fmt.Println(err)
 		}
 
 		return
 	}
 
 	validate = validator.New()
-	err = validate.Struct(&Location)
-	if errStruct != nil {
-		response.WriteHeader(400)
+	err = validate.Struct(&LocationPayload)
+	if err != nil {
+		w.WriteHeader(nethttp.StatusBadRequest)
 
-		if _, ok := errStruct.(*validator.InvalidValidationError); ok {
-			fmt.Println(errStruct)
-			fmt.Printf("Success2")
-			return
-		}
-
-		increment := 0
-		for _, errStruct := range errStruct.(validator.ValidationErrors) {
+		for _, errStruct := range err.(validator.ValidationErrors) {
 			message := fmt.Sprintf("Incorrect Value %s %f", errStruct.StructField(), errStruct.Value())
-			errors[increment] = ResponseMessage{
-				Status:  "Error",
-				Message: message,
-			}
-
-			increment++
+			errorMessage += message + ","
 		}
 
-		if len(errors) > 0 {
-			messageError, errJson := json.Marshal(errors)
-			if errJson == nil {
-				fmt.Fprintln(response, string(messageError))
+		if len(errorMessage) > 0 {
+			errorMessage = strings.Trim(errorMessage, ",")
+			err := json.NewEncoder(w).Encode(&ResponseMessage{
+				Status:  "Error",
+				Message: errorMessage,
+			})
+			if err != nil {
+				fmt.Println(err)
 			}
 
 		}
@@ -73,5 +65,5 @@ func handlerCouriersLocation(response http.ResponseWriter, request *http.Request
 		return
 	}
 
-	response.WriteHeader(204)
+	w.WriteHeader(nethttp.StatusNoContent)
 }
