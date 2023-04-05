@@ -41,7 +41,7 @@ func handlerCouriersLocation(response http.ResponseWriter, request *http.Request
 	}
 
 	validate = validator.New()
-	errStruct := validate.Struct(&Location)
+	err = validate.Struct(&Location)
 	if errStruct != nil {
 		response.WriteHeader(400)
 
