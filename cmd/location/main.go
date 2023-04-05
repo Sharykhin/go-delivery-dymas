@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"http/http"
+	"github.com/Sharykhin/go-delivery-dymas/location/http"
 )
 
 func main() {

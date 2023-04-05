@@ -1,4 +1,4 @@
-module http
+module github.com/Sharykhin/go-delivery-dymas/location
 
 go 1.20
 
