@@ -14,8 +14,8 @@ func RunServer() error {
 	}
 
 	fmt.Println(port)
-	router := CreateRouter()
-	nethttp.Handle(string('/'), router)
+	router := NewRouter()
+	nethttp.Handle(string('/'), router.CreateRouter())
 	fmt.Println("Server is listening...")
 	if err := nethttp.ListenAndServe(port, nil); err != nil {
 		return err
