@@ -18,9 +18,13 @@ type ResponseMessage struct {
 	Message string `json:"message"`
 }
 
+type LocationHandler struct {
+	validate *validator.Validate
+}
+
 var validate *validator.Validate
 
-func handlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
+func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var LocationPayload LocationPayload
 	var errorMessage string
 	err := json.NewDecoder(r.Body).Decode(&LocationPayload)
@@ -39,9 +43,7 @@ func handlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 
 		return
 	}
-
-	validate = validator.New()
-	err = validate.Struct(&LocationPayload)
+	err = h.validate.Struct(&LocationPayload)
 	if err != nil {
 		w.WriteHeader(nethttp.StatusBadRequest)
 
@@ -66,4 +68,10 @@ func handlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	}
 
 	w.WriteHeader(nethttp.StatusNoContent)
+}
+
+func NewLocationHandler() *LocationHandler {
+	return &LocationHandler{
+		validate: validator.New(),
+	}
 }
