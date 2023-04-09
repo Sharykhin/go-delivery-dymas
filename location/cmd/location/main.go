@@ -6,7 +6,9 @@ import (
 )
 
 func main() {
-	err := http.RunServer()
+	if err := http.RunServer(); err != nil {
+	    log.Printf("failed to run http server: %v", err)
+	}
 
 	if err != nil {
 		fmt.Println(err)
