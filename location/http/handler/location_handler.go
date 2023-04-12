@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"log"
 	nethttp "net/http"
 	"strings"
 )
@@ -22,11 +23,36 @@ type LocationHandler struct {
 	validate *validator.Validate
 }
 
-var validate *validator.Validate
+func NewLocationHandler() *LocationHandler {
+	return &LocationHandler{
+		validate: validator.New(),
+	}
+}
+
+func (h *LocationHandler) validatePayload(payload *LocationPayload) (isValid bool, response *ResponseMessage) {
+	err := h.validate.Struct(payload)
+	if err != nil {
+		var errorMessage string
+
+		for _, errStruct := range err.(validator.ValidationErrors) {
+			message := fmt.Sprintf("Incorrect Value %s %f", errStruct.StructField(), errStruct.Value())
+			errorMessage += message + ","
+		}
+
+		errorMessage = strings.Trim(errorMessage, ",")
+
+		return false, &ResponseMessage{
+			Status:  "Error",
+			Message: errorMessage,
+		}
+
+	}
+
+	return true, nil
+}
 
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var LocationPayload LocationPayload
-	var errorMessage string
 	err := json.NewDecoder(r.Body).Decode(&LocationPayload)
 	w.Header().Set("Content-Type", "application/json")
 
@@ -39,39 +65,20 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 
 		if err != nil {
 			fmt.Println(err)
+			log.Printf("failed to encode json response error: %v\n", err)
 		}
 
 		return
 	}
-	err = h.validate.Struct(&LocationPayload)
-	if err != nil {
+
+	if isValid, response := h.validatePayload(&LocationPayload); !isValid {
 		w.WriteHeader(nethttp.StatusBadRequest)
-
-		for _, errStruct := range err.(validator.ValidationErrors) {
-			message := fmt.Sprintf("Incorrect Value %s %f", errStruct.StructField(), errStruct.Value())
-			errorMessage += message + ","
+		err := json.NewEncoder(w).Encode(response)
+		if err != nil {
+			log.Printf("failed to encode json response: %v\n", err)
 		}
-
-		if len(errorMessage) > 0 {
-			errorMessage = strings.Trim(errorMessage, ",")
-			err := json.NewEncoder(w).Encode(&ResponseMessage{
-				Status:  "Error",
-				Message: errorMessage,
-			})
-			if err != nil {
-				fmt.Println(err)
-			}
-
-		}
-
 		return
 	}
 
 	w.WriteHeader(nethttp.StatusNoContent)
-}
-
-func NewLocationHandler() *LocationHandler {
-	return &LocationHandler{
-		validate: validator.New(),
-	}
 }
