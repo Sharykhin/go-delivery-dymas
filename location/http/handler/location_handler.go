@@ -64,7 +64,6 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		})
 
 		if err != nil {
-			fmt.Println(err)
 			log.Printf("failed to encode json response error: %v\n", err)
 		}
 
