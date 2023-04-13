@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  redis:
+    # For development purpose use simple and light alpine version
+    image: redis:6.2-alpine
+    ports:
+      - '6379:6379'
+    command: redis-server --loglevel warning
