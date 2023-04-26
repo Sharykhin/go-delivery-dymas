@@ -44,7 +44,7 @@ const indexGeo = "courier_latest_cord"
 func NewLocationHandler() *LocationHandler {
 	return &LocationHandler{
 		validate:          validator.New(),
-		courierRepository: redis.CreateCouriersRepository(ctx, config, indexGeo),
+		NewLocationHandler(courierRepository CourierRepository)
 	}
 }
 
