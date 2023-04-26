@@ -1,13 +1,21 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/location/redis"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
+	coreredis "github.com/redis/go-redis/v9"
 	"log"
 	nethttp "net/http"
 	"strings"
 )
+
+type CourierRepository interface {
+	SaveLatestCourierGeoPosition(courierID string, latitude, longitude float64) error
+}
 
 type LocationPayload struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
@@ -20,12 +28,23 @@ type ResponseMessage struct {
 }
 
 type LocationHandler struct {
-	validate *validator.Validate
+	validate          *validator.Validate
+	courierRepository CourierRepository
 }
+
+var ctx = context.Background()
+
+var config = &coreredis.Options{
+	Addr: "localhost:6379",
+	DB:   0,
+}
+
+const indexGeo = "courier_latest_cord"
 
 func NewLocationHandler() *LocationHandler {
 	return &LocationHandler{
-		validate: validator.New(),
+		validate:          validator.New(),
+		courierRepository: redis.CreateCouriersRepository(ctx, config, indexGeo),
 	}
 }
 
@@ -78,6 +97,8 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		}
 		return
 	}
-
+	vars := mux.Vars(r)
+	courierId := vars["courier_id"]
+	h.courierRepository.SaveLatestCourierGeoPosition(courierId, LocationPayload.Latitude, LocationPayload.Longitude)
 	w.WriteHeader(nethttp.StatusNoContent)
 }
