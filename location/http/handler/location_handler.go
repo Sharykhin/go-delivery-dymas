@@ -101,6 +101,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	courierId := vars["courier_id"]
 	err = h.courierRepository.SaveLatestCourierGeoPosition(courierId, LocationPayload.Latitude, LocationPayload.Longitude)
 	if err != nil {
+                 log.Printf("failed to store latest courier position: %v", er)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: "Server Error.",
