@@ -99,6 +99,18 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	}
 	vars := mux.Vars(r)
 	courierId := vars["courier_id"]
-	h.courierRepository.SaveLatestCourierGeoPosition(courierId, LocationPayload.Latitude, LocationPayload.Longitude)
+	err = h.courierRepository.SaveLatestCourierGeoPosition(courierId, LocationPayload.Latitude, LocationPayload.Longitude)
+	if err != nil {
+		err := json.NewEncoder(w).Encode(&ResponseMessage{
+			Status:  "Error",
+			Message: "Server Error.",
+		})
+		if err != nil {
+			log.Printf("failed to encode json response: %v\n", err)
+		}
+		w.WriteHeader(nethttp.StatusBadRequest)
+
+		return
+	}
 	w.WriteHeader(nethttp.StatusNoContent)
 }
