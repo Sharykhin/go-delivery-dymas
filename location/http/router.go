@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/http/handler"
+	"github.com/Sharykhin/go-delivery-dymas/location/redis"
 	"github.com/gorilla/mux"
 )
 
@@ -20,7 +21,9 @@ func NewRouter() *Router {
 
 func (r *Router) CreateRouter() *mux.Router {
 	router := mux.NewRouter()
-	locationHandler := http.NewLocationHandler()
+	client := redis.CreateConnect(redis.Config)
+	repo := redis.CreateCouriersRepository(client, redis.IndexGeo)
+	locationHandler := http.NewLocationHandler(repo)
 	r.url = fmt.Sprintf(r.url, r.uuidRegexp)
 	router.HandleFunc(r.url, locationHandler.HandlerCouriersLocation).Methods("POST")
 

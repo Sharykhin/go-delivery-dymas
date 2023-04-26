@@ -1,19 +1,19 @@
 package redis
 
 import (
-	"context"
 	coreredis "github.com/redis/go-redis/v9"
 )
 
-func CreateConnect(ctx context.Context, options *coreredis.Options) (*coreredis.Client, error) {
+var Config = &coreredis.Options{
+	Addr: "localhost:6379",
+	DB:   0,
+}
+
+const IndexGeo = "courier_latest_cord"
+
+func CreateConnect(options *coreredis.Options) *coreredis.Client {
 	// create a new Redis client
 	client := coreredis.NewClient(options)
 
-	// use the PING command to check the connection
-	err := client.Ping(ctx).Err()
-	if err != nil {
-		return client, err
-	}
-
-	return client, nil
+	return client
 }

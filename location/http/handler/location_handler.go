@@ -4,17 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Sharykhin/go-delivery-dymas/location/redis"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
-	coreredis "github.com/redis/go-redis/v9"
 	"log"
 	nethttp "net/http"
 	"strings"
 )
 
 type CourierRepository interface {
-	SaveLatestCourierGeoPosition(courierID string, latitude, longitude float64) error
+	SaveLatestCourierGeoPosition(ctx context.Context, courierID string, latitude, longitude float64) error
 }
 
 type LocationPayload struct {
@@ -32,19 +30,10 @@ type LocationHandler struct {
 	courierRepository CourierRepository
 }
 
-var ctx = context.Background()
-
-var config = &coreredis.Options{
-	Addr: "localhost:6379",
-	DB:   0,
-}
-
-const indexGeo = "courier_latest_cord"
-
-func NewLocationHandler() *LocationHandler {
+func NewLocationHandler(courierRepository CourierRepository) *LocationHandler {
 	return &LocationHandler{
 		validate:          validator.New(),
-		NewLocationHandler(courierRepository CourierRepository)
+		courierRepository: courierRepository,
 	}
 }
 
@@ -99,9 +88,10 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	}
 	vars := mux.Vars(r)
 	courierId := vars["courier_id"]
-	err = h.courierRepository.SaveLatestCourierGeoPosition(courierId, LocationPayload.Latitude, LocationPayload.Longitude)
+	var ctx = context.Background()
+	err = h.courierRepository.SaveLatestCourierGeoPosition(ctx, courierId, LocationPayload.Latitude, LocationPayload.Longitude)
 	if err != nil {
-                 log.Printf("failed to store latest courier position: %v", er)
+		log.Printf("failed to store latest courier position: %v", err)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: "Server Error.",
@@ -109,7 +99,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		if err != nil {
 			log.Printf("failed to encode json response: %v\n", err)
 		}
-		w.WriteHeader(nethttp.StatusBadRequest)
+		w.WriteHeader(nethttp.StatusInternalServerError)
 
 		return
 	}

@@ -11,9 +11,9 @@ type CourierRepository struct {
 	ctx      context.Context
 }
 
-func (repo *CourierLatestGeoPositionRepository) SaveLatestCourierGeoPosition(courierID string, latitude, longitude float64) error {
+func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierID string, latitude, longitude float64) error {
 	// add locations to the database
-	err := repo.client.GeoAdd(repo.ctx, repo.indexGeo,
+	err := repo.client.GeoAdd(ctx, repo.indexGeo,
 		&coreredis.GeoLocation{
 			Name:      courierID,
 			Latitude:  latitude,
@@ -26,15 +26,10 @@ func (repo *CourierLatestGeoPositionRepository) SaveLatestCourierGeoPosition(cou
 	return nil
 }
 
-func CreateCouriersRepository(ctx context.Context, options *coreredis.Options, indexGeo string) *CourierLatestGeoPositionRepository {
-	client, err := CreateConnect(ctx, options)
-	if err != nil {
-		panic(err)
-	}
+func CreateCouriersRepository(client *coreredis.Client, indexGeo string) *CourierRepository {
 
-	return &CourierLatestGeoPositionRepository{
+	return &CourierRepository{
 		indexGeo: indexGeo,
 		client:   client,
-		ctx:      ctx,
 	}
 }
