@@ -5,7 +5,7 @@ import (
 	coreredis "github.com/redis/go-redis/v9"
 )
 
-type CourierLatestGeoPositionRepository struct {
+type CourierRepository struct {
 	indexGeo string
 	client   *coreredis.Client
 	ctx      context.Context
