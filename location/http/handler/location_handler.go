@@ -87,7 +87,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		return
 	}
 	vars := mux.Vars(r)
-	courierId := vars["courier_id"]
+	courierID := vars["courier_id"]
 ctx := r.Context()
 	err = h.courierRepository.SaveLatestCourierGeoPosition(ctx, courierId, LocationPayload.Latitude, LocationPayload.Longitude)
 	if err != nil {
