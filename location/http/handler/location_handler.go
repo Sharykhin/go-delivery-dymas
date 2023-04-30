@@ -88,7 +88,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	}
 	vars := mux.Vars(r)
 	courierId := vars["courier_id"]
-	var ctx = context.Background()
+ctx := r.Context()
 	err = h.courierRepository.SaveLatestCourierGeoPosition(ctx, courierId, LocationPayload.Latitude, LocationPayload.Longitude)
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
