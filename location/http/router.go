@@ -22,7 +22,7 @@ func NewRouter() *Router {
 func (r *Router) CreateRouter() *mux.Router {
 	router := mux.NewRouter()
 	client := redis.CreateConnect(redis.Config)
-	repo := redis.CreateCouriersRepository(client, redis.IndexGeo)
+	repo := redis.CreateCouriersRepository(client)
 	locationHandler := http.NewLocationHandler(repo)
 	r.url = fmt.Sprintf(r.url, r.uuidRegexp)
 	router.HandleFunc(r.url, locationHandler.HandlerCouriersLocation).Methods("POST")

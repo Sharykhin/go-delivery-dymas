@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	coreredis "github.com/redis/go-redis/v9"
 )
 
@@ -10,6 +11,8 @@ type CourierRepository struct {
 	client   *coreredis.Client
 	ctx      context.Context
 }
+
+const courierLatestCordsKey = "courier_latest_cord"
 
 func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierID string, latitude, longitude float64) error {
 	// add locations to the database
@@ -26,10 +29,10 @@ func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context,
 	return nil
 }
 
-func CreateCouriersRepository(client *coreredis.Client, indexGeo string) *CourierRepository {
+func CreateCouriersRepository(client *coreredis.Client) *CourierRepository {
 
 	return &CourierRepository{
-		indexGeo: indexGeo,
+		indexGeo: courierLatestCordsKey,
 		client:   client,
 	}
 }

@@ -9,8 +9,6 @@ var Config = &coreredis.Options{
 	DB:   0,
 }
 
-const IndexGeo = "courier_latest_cord"
-
 func CreateConnect(options *coreredis.Options) *coreredis.Client {
 	// create a new Redis client
 	client := coreredis.NewClient(options)
