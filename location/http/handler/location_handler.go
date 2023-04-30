@@ -1,13 +1,19 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 	"log"
 	nethttp "net/http"
 	"strings"
 )
+
+type CourierRepository interface {
+	SaveLatestCourierGeoPosition(ctx context.Context, courierID string, latitude, longitude float64) error
+}
 
 type LocationPayload struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
@@ -20,12 +26,14 @@ type ResponseMessage struct {
 }
 
 type LocationHandler struct {
-	validate *validator.Validate
+	validate          *validator.Validate
+	courierRepository CourierRepository
 }
 
-func NewLocationHandler() *LocationHandler {
+func NewLocationHandler(courierRepository CourierRepository) *LocationHandler {
 	return &LocationHandler{
-		validate: validator.New(),
+		validate:          validator.New(),
+		courierRepository: courierRepository,
 	}
 }
 
@@ -78,6 +86,22 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		}
 		return
 	}
+	vars := mux.Vars(r)
+	courierID := vars["courier_id"]
+	ctx := r.Context()
+	err = h.courierRepository.SaveLatestCourierGeoPosition(ctx, courierID, LocationPayload.Latitude, LocationPayload.Longitude)
+	if err != nil {
+		log.Printf("failed to store latest courier position: %v", err)
+		err := json.NewEncoder(w).Encode(&ResponseMessage{
+			Status:  "Error",
+			Message: "Server Error.",
+		})
+		if err != nil {
+			log.Printf("failed to encode json response: %v\n", err)
+		}
+		w.WriteHeader(nethttp.StatusInternalServerError)
 
+		return
+	}
 	w.WriteHeader(nethttp.StatusNoContent)
 }
