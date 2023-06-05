@@ -1,19 +1,16 @@
-package http
+package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
+	"github.com/Sharykhin/go-delivery-dymas/location/redis"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"log"
 	nethttp "net/http"
 	"strings"
 )
-
-type CourierRepository interface {
-	SaveLatestCourierGeoPosition(ctx context.Context, courierID string, latitude, longitude float64) error
-}
 
 type LocationPayload struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
@@ -26,14 +23,14 @@ type ResponseMessage struct {
 }
 
 type LocationHandler struct {
-	validate          *validator.Validate
-	courierRepository CourierRepository
+	validate       *validator.Validate
+	courierService domain.CourierServiceInterface
 }
 
-func NewLocationHandler(courierRepository CourierRepository) *LocationHandler {
+func NewLocationHandler(courierService domain.CourierServiceInterface) *LocationHandler {
 	return &LocationHandler{
-		validate:          validator.New(),
-		courierRepository: courierRepository,
+		validate:       validator.New(),
+		courierService: courierService,
 	}
 }
 
@@ -89,7 +86,12 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	vars := mux.Vars(r)
 	courierID := vars["courier_id"]
 	ctx := r.Context()
-	err = h.courierRepository.SaveLatestCourierGeoPosition(ctx, courierID, LocationPayload.Latitude, LocationPayload.Longitude)
+	err = h.courierService.SendData(&redis.CourierRepositoryData{
+		CourierID: courierID,
+		Ctx:       ctx,
+		Latitude:  LocationPayload.Latitude,
+		Longitude: LocationPayload.Longitude,
+	}, "latest_position_courier")
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{

@@ -9,18 +9,28 @@ import (
 type CourierRepository struct {
 	indexGeo string
 	client   *coreredis.Client
-	ctx      context.Context
 }
 
 const courierLatestCordsKey = "courier_latest_cord"
 
-func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierID string, latitude, longitude float64) error {
+type CourierRepositoryInterface interface {
+	SaveLatestCourierGeoPosition(repoData *CourierRepositoryData) error
+}
+
+type CourierRepositoryData struct {
+	Ctx       context.Context
+	CourierID string
+	Latitude  float64
+	Longitude float64
+}
+
+func (repo *CourierRepository) SaveLatestCourierGeoPosition(data *CourierRepositoryData) error {
 	// add locations to the database
-	err := repo.client.GeoAdd(ctx, repo.indexGeo,
+	err := repo.client.GeoAdd(data.Ctx, repo.indexGeo,
 		&coreredis.GeoLocation{
-			Name:      courierID,
-			Latitude:  latitude,
-			Longitude: longitude,
+			Name:      data.CourierID,
+			Latitude:  data.Latitude,
+			Longitude: data.Longitude,
 		}).Err()
 	if err != nil {
 		return fmt.Errorf("failed to add courier geo location into redis: %w", err)
