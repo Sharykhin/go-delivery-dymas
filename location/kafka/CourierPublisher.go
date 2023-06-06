@@ -3,8 +3,6 @@ package kafka
 import (
 	"fmt"
 	"github.com/Shopify/sarama"
-	"os"
-	"time"
 )
 
 type CourierPublisherInterface interface {
@@ -16,11 +14,10 @@ type CourierPublisher struct {
 	publisher sarama.AsyncProducer
 }
 
-func (courierPublisher CourierPublisher) PublisherFactory(config *sarama.Config, address string) {
+func (courierPublisher *CourierPublisher) PublisherFactory(config *sarama.Config, address string) {
 	config.Producer.Partitioner = sarama.NewManualPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	producer, error := sarama.NewAsyncProducer([]string{address}, config)
-
 	if error != nil {
 		panic(error)
 	}
@@ -28,15 +25,13 @@ func (courierPublisher CourierPublisher) PublisherFactory(config *sarama.Config,
 	courierPublisher.publisher = producer
 }
 
-func (courierPublisher CourierPublisher) PublishMessage(message sarama.ProducerMessage) {
-	fmt.Print(message.Value)
-	fmt.Print(message.Topic)
+func (courierPublisher *CourierPublisher) PublishMessage(message sarama.ProducerMessage) {
 	courierPublisher.publisher.Input() <- &message
 }
 
 func NewPublisher(config *sarama.Config, address string) CourierPublisherInterface {
-	publisher := CourierPublisher{}
+	publisher := &CourierPublisher{}
 	publisher.PublisherFactory(config, address)
-
+	fmt.Println(publisher)
 	return publisher
 }

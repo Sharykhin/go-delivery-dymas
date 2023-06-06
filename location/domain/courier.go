@@ -9,7 +9,7 @@ import (
 )
 
 type CourierServiceInterface interface {
-	SendData(data *redis.CourierRepositoryData, topic string) error
+	SendData(data *redis.CourierRepositoryData, topic string, partition int32) error
 }
 type MessageKafka struct {
 	CourierId string    `json:"courier_id"`
@@ -23,7 +23,7 @@ type CourierService struct {
 	repo      redis.CourierRepositoryInterface
 }
 
-func (cs CourierService) SendData(data *redis.CourierRepositoryData, topic string) error {
+func (cs CourierService) SendData(data *redis.CourierRepositoryData, topic string, partition int32) error {
 	cs.repo.SaveLatestCourierGeoPosition(data)
 	message, err := json.Marshal(MessageKafka{
 		CourierId: data.CourierID,
@@ -36,8 +36,9 @@ func (cs CourierService) SendData(data *redis.CourierRepositoryData, topic strin
 		return err
 	}
 	cs.publisher.PublishMessage(sarama.ProducerMessage{
-		Topic: topic,
-		Value: sarama.StringEncoder(message),
+		Topic:     topic,
+		Partition: partition,
+		Value:     sarama.StringEncoder(message),
 	})
 
 	return nil
