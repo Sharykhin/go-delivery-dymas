@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	coreredis "github.com/redis/go-redis/v9"
 )
 
@@ -13,20 +14,15 @@ type CourierRepository struct {
 
 const courierLatestCordsKey = "courier_latest_cord"
 
-type CourierRepositoryInterface interface {
-	SaveLatestCourierGeoPosition(repoData *CourierRepositoryData) error
-}
-
 type CourierRepositoryData struct {
-	Ctx       context.Context
 	CourierID string
 	Latitude  float64
 	Longitude float64
 }
 
-func (repo *CourierRepository) SaveLatestCourierGeoPosition(data *CourierRepositoryData) error {
+func (repo *CourierRepository) SaveLatestCourierGeoPosition(data *domain.CourierRepositoryData, ctx context.Context) error {
 	// add locations to the database
-	err := repo.client.GeoAdd(data.Ctx, repo.indexGeo,
+	err := repo.client.GeoAdd(ctx, repo.indexGeo,
 		&coreredis.GeoLocation{
 			Name:      data.CourierID,
 			Latitude:  data.Latitude,
@@ -39,7 +35,7 @@ func (repo *CourierRepository) SaveLatestCourierGeoPosition(data *CourierReposit
 	return nil
 }
 
-func CreateCouriersRepository(client *coreredis.Client) *CourierRepository {
+func CreateCouriersRepository(client *coreredis.Client) domain.CourierRepositoryInterface {
 
 	return &CourierRepository{
 		indexGeo: courierLatestCordsKey,

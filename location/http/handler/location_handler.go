@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
-	"github.com/Sharykhin/go-delivery-dymas/location/redis"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"log"
@@ -86,12 +85,12 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	vars := mux.Vars(r)
 	courierID := vars["courier_id"]
 	ctx := r.Context()
-	err = h.courierService.SendData(&redis.CourierRepositoryData{
+	err = h.courierService.SendData(&domain.CourierRepositoryData{
 		CourierID: courierID,
-		Ctx:       ctx,
 		Latitude:  LocationPayload.Latitude,
 		Longitude: LocationPayload.Longitude,
 	},
+		ctx,
 		"latest_position_courier",
 		0,
 	)

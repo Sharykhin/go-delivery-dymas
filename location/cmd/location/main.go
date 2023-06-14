@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	"github.com/Sharykhin/go-delivery-dymas/location/http"
 	"github.com/Sharykhin/go-delivery-dymas/location/http/handler"
@@ -13,17 +12,23 @@ import (
 )
 
 func main() {
-	address := env.GetKafkaConfig()
-	var addr string
-	addr, db := env.GetRedisConfig()
-	portServer := env.GetServerEnv()
-	publisher := kafka.NewPublisher(sarama.NewConfig(), address)
-	client := redis.CreateConnect(addr, db)
+	config, err := env.GetConfig()
+	if err != nil {
+		log.Printf("failed to parse variable env: %v\n", err)
+		return
+	}
+
+	publisher, err := kafka.NewPublisher(sarama.NewConfig(), config.Address)
+	if err != nil {
+		log.Printf("failed to create publisher: %v\n", err)
+		return
+	}
+	client := redis.CreateConnect(config.Addr, config.Db)
 	repo := redis.CreateCouriersRepository(client)
-	courierService := domain.NewCourierService(publisher, repo)
+	courierService := kafka.NewCourierService(publisher, repo)
 	locationHandler := handler.NewLocationHandler(courierService)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())
-	if err := http.RunServer(router, portServer); err != nil {
+	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
 		log.Printf("failed to run http server: %v", err)
 	}
 }
