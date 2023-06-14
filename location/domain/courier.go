@@ -6,7 +6,7 @@ import (
 )
 
 type CourierServiceInterface interface {
-	SendData(data *CourierRepositoryData, ctx context.Context, topic string, partition int32) error
+	SendData(data *CourierRepositoryData, ctx context.Context) error
 }
 type MessageKafka struct {
 	CourierId string    `json:"courier_id"`

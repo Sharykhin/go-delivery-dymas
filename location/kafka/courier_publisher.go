@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+const topic = "latest_position_courier"
+const partition = 0
+
 type CourierPublisher struct {
 	publisher sarama.AsyncProducer
 }
@@ -18,7 +21,7 @@ type CourierService struct {
 	repo      domain.CourierRepositoryInterface
 }
 
-func (cs CourierService) SendData(data *domain.CourierRepositoryData, ctx context.Context, topic string, partition int32) error {
+func (cs CourierService) SendData(data *domain.CourierRepositoryData, ctx context.Context) error {
 	cs.repo.SaveLatestCourierGeoPosition(data, ctx)
 	message, err := json.Marshal(domain.MessageKafka{
 		CourierId: data.CourierID,

@@ -91,8 +91,6 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		Longitude: LocationPayload.Longitude,
 	},
 		ctx,
-		"latest_position_courier",
-		0,
 	)
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
