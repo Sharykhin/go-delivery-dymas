@@ -8,24 +8,24 @@ import (
 	"time"
 )
 
-type CourierServiceInterface interface {
-	SendData(ctx context.Context, data *CourierLocationEvent) error
+type PublishLastCourierLocationInterface interface {
+	SendData(ctx context.Context, data *CourierLocation) error
 }
-type CourierLocationEvent struct {
+type CourierLocation struct {
 	CourierID string    `json:"courier_id"`
 	Latitude  float64   `json:"latitude"`
 	Longitude float64   `json:"longitude"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type CourierService struct {
+type PublishLastCourierLocation struct {
 	publisher kafka.CourierPublisher
 	repo      CourierRepositoryInterface
 }
 
-func (cs CourierService) SendData(ctx context.Context, data *CourierLocationEvent) error {
+func (cs PublishLastCourierLocation) SendData(ctx context.Context, data *CourierLocation) error {
 	cs.repo.SaveLatestCourierGeoPosition(ctx, data)
-	message, err := json.Marshal(CourierLocationEvent{
+	message, err := json.Marshal(CourierLocation{
 		CourierID: data.CourierID,
 		Latitude:  data.Latitude,
 		Longitude: data.Longitude,
@@ -47,13 +47,13 @@ func (cs CourierService) SendData(ctx context.Context, data *CourierLocationEven
 func NewCourierService(
 	publisher kafka.CourierPublisher,
 	repo CourierRepositoryInterface,
-) CourierServiceInterface {
-	return CourierService{
+) PublishLastCourierLocationInterface {
+	return PublishLastCourierLocation{
 		publisher: publisher,
 		repo:      repo,
 	}
 }
 
 type CourierRepositoryInterface interface {
-	SaveLatestCourierGeoPosition(ctx context.Context, data *CourierLocationEvent) error
+	SaveLatestCourierGeoPosition(ctx context.Context, data *CourierLocation) error
 }

@@ -22,14 +22,14 @@ type ResponseMessage struct {
 }
 
 type LocationHandler struct {
-	validate       *validator.Validate
-	courierService domain.CourierServiceInterface
+	validate                *validator.Validate
+	courierPublisherService domain.PublishLastCourierLocationInterface
 }
 
-func NewLocationHandler(courierService domain.CourierServiceInterface) *LocationHandler {
+func NewLocationHandler(courierPublisherService domain.PublishLastCourierLocationInterface) *LocationHandler {
 	return &LocationHandler{
-		validate:       validator.New(),
-		courierService: courierService,
+		validate:                validator.New(),
+		courierPublisherService: courierPublisherService,
 	}
 }
 
@@ -85,7 +85,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	vars := mux.Vars(r)
 	courierID := vars["courier_id"]
 	ctx := r.Context()
-	err = h.courierService.SendData(ctx, &domain.CourierLocationEvent{
+	err = h.courierPublisherService.SendData(ctx, &domain.CourierLocation{
 		CourierID: courierID,
 		Latitude:  LocationPayload.Latitude,
 		Longitude: LocationPayload.Longitude,
