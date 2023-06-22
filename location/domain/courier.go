@@ -23,7 +23,7 @@ type PublishLastCourierLocation struct {
 	repo      CourierRepositoryInterface
 }
 
-func (cs PublishLastCourierLocation) SendData(ctx context.Context, data *CourierLocation) error {
+func (cs *PublishLastCourierLocation) SaveLatestCourierLocation(ctx context.Context, data *CourierLocation) error {
 	cs.repo.SaveLatestCourierGeoPosition(ctx, data)
 	message, err := json.Marshal(CourierLocation{
 		CourierID: data.CourierID,
