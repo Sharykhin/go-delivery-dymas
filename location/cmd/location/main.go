@@ -23,10 +23,10 @@ func main() {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
-	client := redis.CreateConnect(config.Addr, config.Db)
-	repo := redis.CreateCouriersRepository(client)
-	courierService := kafka.NewCourierService(publisher, repo)
-	locationHandler := handler.NewLocationHandler(courierService)
+	redisClient := redis.CreateConnect(config.Addr, config.Db)
+	repo := redis.CreateCouriersRepository(redisClient)
+	courierService := kafka.NewCourierService(publisher)
+	locationHandler := handler.NewLocationHandler(courierService, repo)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
 		log.Printf("failed to run http server: %v", err)

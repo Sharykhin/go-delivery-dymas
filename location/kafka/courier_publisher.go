@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
@@ -18,13 +17,11 @@ type CourierPublisher struct {
 
 type CourierService struct {
 	publisher CourierPublisher
-	repo      domain.CourierRepositoryInterface
 }
 
-func (cs CourierService) SendData(data *domain.CourierRepositoryData, ctx context.Context) error {
-	cs.repo.SaveLatestCourierGeoPosition(data, ctx)
-	message, err := json.Marshal(domain.MessageKafka{
-		CourierId: data.CourierID,
+func (cs CourierService) SendData(data *domain.CourierLocationEvent) error {
+	message, err := json.Marshal(domain.CourierLocationEvent{
+		CourierID: data.CourierID,
 		Latitude:  data.Latitude,
 		Longitude: data.Longitude,
 		CreatedAt: time.Now(),
@@ -44,11 +41,9 @@ func (cs CourierService) SendData(data *domain.CourierRepositoryData, ctx contex
 
 func NewCourierService(
 	publisher CourierPublisher,
-	repo domain.CourierRepositoryInterface,
 ) domain.CourierServiceInterface {
 	return CourierService{
 		publisher: publisher,
-		repo:      repo,
 	}
 }
 func (courierPublisher *CourierPublisher) PublisherFactory(config *sarama.Config, address string) error {

@@ -20,7 +20,7 @@ type CourierRepositoryData struct {
 	Longitude float64
 }
 
-func (repo *CourierRepository) SaveLatestCourierGeoPosition(data *domain.CourierRepositoryData, ctx context.Context) error {
+func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, data *domain.CourierLocationEvent) error {
 	// add locations to the database
 	err := repo.client.GeoAdd(ctx, repo.indexGeo,
 		&coreredis.GeoLocation{
