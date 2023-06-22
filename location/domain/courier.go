@@ -35,7 +35,7 @@ func (cs *PublishLastCourierLocation) SaveLatestCourierLocation(ctx context.Cont
 	if err != nil {
 		return err
 	}
-	cs.publisher.PublishMessage(sarama.ProducerMessage{
+	cs.publisher.PublishCourierLocation(ctx,  courierLocation)
 		Topic:     cs.publisher.Topic,
 		Partition: cs.publisher.Partition,
 		Value:     sarama.StringEncoder(message),
