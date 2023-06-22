@@ -27,7 +27,7 @@ func main() {
 	redisClient := redis.CreateConnect(config.Addr, config.Db)
 	repo := redis.CreateCouriersRepository(redisClient)
 	courierService := domain.NewCourierService(publisher, repo)
-	locationHandler := handler.NewLocationHandler(courierService, repo)
+	locationHandler := handler.NewLocationHandler(courierService)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
 		log.Printf("failed to run http server: %v", err)
