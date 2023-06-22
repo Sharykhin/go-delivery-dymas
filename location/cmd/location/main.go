@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	"github.com/Sharykhin/go-delivery-dymas/location/http"
 	"github.com/Sharykhin/go-delivery-dymas/location/http/handler"
@@ -25,7 +26,7 @@ func main() {
 	}
 	redisClient := redis.CreateConnect(config.Addr, config.Db)
 	repo := redis.CreateCouriersRepository(redisClient)
-	courierService := kafka.NewCourierService(publisher)
+	courierService := domain.NewCourierService(publisher, repo)
 	locationHandler := handler.NewLocationHandler(courierService, repo)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
