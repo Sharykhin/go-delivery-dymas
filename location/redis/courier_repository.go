@@ -20,13 +20,13 @@ type CourierRepositoryData struct {
 	Longitude float64
 }
 
-func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, data *domain.CourierLocation) error {
+func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	// add locations to the database
 	err := repo.client.GeoAdd(ctx, repo.indexGeo,
 		&coreredis.GeoLocation{
-			Name:      data.CourierID,
-			Latitude:  data.Latitude,
-			Longitude: data.Longitude,
+			Name:      courierLocation.CourierID,
+			Latitude:  courierLocation.Latitude,
+			Longitude: courierLocation.Longitude,
 		}).Err()
 	if err != nil {
 		return fmt.Errorf("failed to add courier geo location into redis: %w", err)

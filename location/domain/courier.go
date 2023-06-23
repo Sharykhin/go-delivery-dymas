@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-type PublishLastCourierLocationInterface interface {
-	SendData(ctx context.Context, data *CourierLocation) error
+type CourierPublisherServiceInterface interface {
+	PublishLastCourierLocation(ctx context.Context, courierLocation *CourierLocation) error
 }
 type CourierLocation struct {
 	CourierID string    `json:"courier_id"`
@@ -18,24 +18,22 @@ type CourierLocation struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type PublishLastCourierLocation struct {
+type CourierPublisherService struct {
 	publisher kafka.CourierPublisher
 	repo      CourierRepositoryInterface
 }
 
-func (cs *PublishLastCourierLocation) SaveLatestCourierLocation(ctx context.Context, data *CourierLocation) error {
-	cs.repo.SaveLatestCourierGeoPosition(ctx, data)
-	message, err := json.Marshal(CourierLocation{
-		CourierID: data.CourierID,
-		Latitude:  data.Latitude,
-		Longitude: data.Longitude,
-		CreatedAt: time.Now(),
-	})
+func (cs *CourierPublisherService) PublishLastCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
+	err := cs.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
+	if err != nil {
+		return err
+	}
+	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
 		return err
 	}
-	cs.publisher.PublishCourierLocation(ctx,  courierLocation)
+	cs.publisher.PublishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
 		Topic:     cs.publisher.Topic,
 		Partition: cs.publisher.Partition,
 		Value:     sarama.StringEncoder(message),
@@ -47,13 +45,22 @@ func (cs *PublishLastCourierLocation) SaveLatestCourierLocation(ctx context.Cont
 func NewCourierService(
 	publisher kafka.CourierPublisher,
 	repo CourierRepositoryInterface,
-) PublishLastCourierLocationInterface {
-	return PublishLastCourierLocation{
+) CourierPublisherServiceInterface {
+	return &CourierPublisherService{
 		publisher: publisher,
 		repo:      repo,
 	}
 }
 
 type CourierRepositoryInterface interface {
-	SaveLatestCourierGeoPosition(ctx context.Context, data *CourierLocation) error
+	SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *CourierLocation) error
+}
+
+func CourierLocationFactory(id string, latitude, longitude float64) *CourierLocation {
+	return &CourierLocation{
+		CourierID: id,
+		Latitude:  latitude,
+		Longitude: longitude,
+		CreatedAt: time.Now(),
+	}
 }

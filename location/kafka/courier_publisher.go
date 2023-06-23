@@ -28,7 +28,7 @@ func (courierPublisher *CourierPublisher) PublisherFactory(config *sarama.Config
 	return nil
 }
 
-func (courierPublisher *CourierPublisher) PublishMessage(message sarama.ProducerMessage) {
+func (courierPublisher *CourierPublisher) PublishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
 	courierPublisher.publisher.Input() <- &message
 }
 
