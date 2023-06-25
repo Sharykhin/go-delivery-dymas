@@ -1,7 +1,10 @@
 package kafka
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Shopify/sarama"
 )
 
@@ -30,6 +33,40 @@ func (courierPublisher *CourierPublisher) PublisherFactory(config *sarama.Config
 
 func (courierPublisher *CourierPublisher) PublishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
 	courierPublisher.publisher.Input() <- &message
+}
+
+type CourierPublisherService struct {
+	publisher CourierPublisher
+	repo      domain.CourierRepositoryInterface
+}
+
+func (cs *CourierPublisherService) PublishLastCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
+	err := cs.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
+	if err != nil {
+		return err
+	}
+	message, err := json.Marshal(courierLocation)
+
+	if err != nil {
+		return err
+	}
+	cs.publisher.PublishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
+		Topic:     cs.publisher.Topic,
+		Partition: cs.publisher.Partition,
+		Value:     sarama.StringEncoder(message),
+	})
+
+	return nil
+}
+
+func NewCourierService(
+	publisher CourierPublisher,
+	repo domain.CourierRepositoryInterface,
+) domain.CourierPublisherServiceInterface {
+	return &CourierPublisherService{
+		publisher: publisher,
+		repo:      repo,
+	}
 }
 
 func NewPublisher(config *sarama.Config, address string) (CourierPublisher, error) {
