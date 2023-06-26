@@ -24,6 +24,7 @@ type ResponseMessage struct {
 type LocationHandler struct {
 	validate                *validator.Validate
 	courierPublisherService domain.CourierPublisherServiceInterface
+	courierRepository       domain.CourierRepositoryInterface
 }
 
 func NewLocationHandler(courierPublisherService domain.CourierPublisherServiceInterface) *LocationHandler {
@@ -55,6 +56,28 @@ func (h *LocationHandler) validatePayload(payload *LocationPayload) (isValid boo
 	return true, nil
 }
 
+func (h *LocationHandler) PublishLatestCourierGeoPositionMessage(r *nethttp.Request, LocationPayload LocationPayload) error {
+	vars := mux.Vars(r)
+	courierID := vars["courier_id"]
+	ctx := r.Context()
+	courierLocation := domain.CourierLocationFactory(
+		courierID,
+		LocationPayload.Latitude,
+		LocationPayload.Longitude,
+	)
+	err := h.courierRepository.SaveLatestCourierGeoPosition(ctx, courierLocation)
+	if err != nil {
+		return err
+	}
+	err = h.courierPublisherService.PublishLastCourierLocation(ctx, courierLocation)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var LocationPayload LocationPayload
 	err := json.NewDecoder(r.Body).Decode(&LocationPayload)
@@ -82,14 +105,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		}
 		return
 	}
-	vars := mux.Vars(r)
-	courierID := vars["courier_id"]
-	ctx := r.Context()
-	err = h.courierPublisherService.PublishLastCourierLocation(ctx, domain.CourierLocationFactory(
-		courierID,
-		LocationPayload.Latitude,
-		LocationPayload.Longitude,
-	))
+
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{

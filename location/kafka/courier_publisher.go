@@ -37,14 +37,9 @@ func (courierPublisher *CourierPublisher) PublishLatestCourierGeoPositionMessage
 
 type CourierPublisherService struct {
 	publisher CourierPublisher
-	repo      domain.CourierRepositoryInterface
 }
 
 func (cs *CourierPublisherService) PublishLastCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
-	err := cs.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
-	if err != nil {
-		return err
-	}
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
@@ -61,11 +56,9 @@ func (cs *CourierPublisherService) PublishLastCourierLocation(ctx context.Contex
 
 func NewCourierService(
 	publisher CourierPublisher,
-	repo domain.CourierRepositoryInterface,
 ) domain.CourierPublisherServiceInterface {
 	return &CourierPublisherService{
 		publisher: publisher,
-		repo:      repo,
 	}
 }
 
