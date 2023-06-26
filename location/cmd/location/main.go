@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	"github.com/Sharykhin/go-delivery-dymas/location/http"
 	"github.com/Sharykhin/go-delivery-dymas/location/http/handler"
@@ -18,15 +19,16 @@ func main() {
 		return
 	}
 
-	publisher, err := kafka.NewPublisher(sarama.NewConfig(), config.Address)
+	publisher, err := kafka.PublisherCourierLocationFactory(sarama.NewConfig(), config.Address)
+	fmt.Println(publisher)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 	redisClient := redis.CreateConnect(config.Addr, config.Db)
 	repo := redis.CreateCouriersRepository(redisClient)
-	courierService := kafka.NewCourierService(publisher, repo)
-	locationHandler := handler.NewLocationHandler(courierService)
+	courierService := kafka.NewCourierService(publisher)
+	locationHandler := handler.NewLocationHandler(courierService, repo)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
 		log.Printf("failed to run http server: %v", err)

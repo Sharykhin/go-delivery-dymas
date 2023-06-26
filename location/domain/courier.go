@@ -6,7 +6,7 @@ import (
 )
 
 type CourierPublisherServiceInterface interface {
-	PublishLastCourierLocation(ctx context.Context, courierLocation *CourierLocation) error
+	PublishLatestCourierLocation(courierLocation *CourierLocation) error
 }
 type CourierLocation struct {
 	CourierID string    `json:"courier_id"`

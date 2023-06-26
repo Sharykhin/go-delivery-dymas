@@ -1,34 +1,34 @@
 package kafka
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Shopify/sarama"
 )
 
-const Topic = "latest_position_courier"
-const Partition = 0
+const topic = "latest_position_courier"
+const partition = 0
 
 type CourierPublisher struct {
 	publisher sarama.AsyncProducer
-	Topic     string
-	Partition int32
+	topic     string
+	partition int32
 }
 
-func (courierPublisher *CourierPublisher) PublisherFactory(config *sarama.Config, address string) error {
+func PublisherCourierLocationFactory(config *sarama.Config, address string) (CourierPublisher, error) {
+	courierPublisher := CourierPublisher{}
 	config.Producer.Partitioner = sarama.NewManualPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	producer, err := sarama.NewAsyncProducer([]string{address}, config)
 	if err != nil {
-		return fmt.Errorf("failed to publish Sarama message: %w", err)
+		err = fmt.Errorf("failed to publish Sarama message: %w", err)
 	}
 
 	courierPublisher.publisher = producer
-	courierPublisher.Topic = Topic
-	courierPublisher.Partition = Partition
-	return nil
+	courierPublisher.topic = topic
+	courierPublisher.partition = partition
+	return courierPublisher, err
 }
 
 func (courierPublisher *CourierPublisher) PublishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
@@ -39,15 +39,16 @@ type CourierPublisherService struct {
 	publisher CourierPublisher
 }
 
-func (cs *CourierPublisherService) PublishLastCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
+func (cs *CourierPublisherService) PublishLatestCourierLocation(courierLocation *domain.CourierLocation) error {
+	fmt.Println(" cs.publisher.topic")
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
 		return err
 	}
 	cs.publisher.PublishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
-		Topic:     cs.publisher.Topic,
-		Partition: cs.publisher.Partition,
+		Topic:     cs.publisher.topic,
+		Partition: cs.publisher.partition,
 		Value:     sarama.StringEncoder(message),
 	})
 
@@ -60,11 +61,4 @@ func NewCourierService(
 	return &CourierPublisherService{
 		publisher: publisher,
 	}
-}
-
-func NewPublisher(config *sarama.Config, address string) (CourierPublisher, error) {
-	publisher := CourierPublisher{}
-	publisherLink := &publisher
-	err := publisherLink.PublisherFactory(config, address)
-	return publisher, err
 }
