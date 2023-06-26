@@ -14,12 +14,6 @@ type CourierRepository struct {
 
 const courierLatestCordsKey = "courier_latest_cord"
 
-type CourierRepositoryData struct {
-	CourierID string
-	Latitude  float64
-	Longitude float64
-}
-
 func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	// add locations to the database
 	err := repo.client.GeoAdd(ctx, repo.indexGeo,
