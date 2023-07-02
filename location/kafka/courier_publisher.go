@@ -10,14 +10,14 @@ import (
 const topic = "latest_position_courier"
 const partition = 0
 
-type CourierPublisher struct {
+type CourierLocationLatestPublisher struct {
 	publisher sarama.AsyncProducer
 	topic     string
 	partition int32
 }
 
-func PublisherCourierLocationFactory(config *sarama.Config, address string) (CourierPublisher, error) {
-	courierPublisher := CourierPublisher{}
+func PublisherCourierLocationFactory(config *sarama.Config, address string) (domain.CourierLocationPublisherInterface, error) {
+	courierPublisher := CourierLocationLatestPublisher{}
 	config.Producer.Partitioner = sarama.NewManualPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	producer, err := sarama.NewAsyncProducer([]string{address}, config)
@@ -31,34 +31,21 @@ func PublisherCourierLocationFactory(config *sarama.Config, address string) (Cou
 	return courierPublisher, err
 }
 
-func (courierPublisher *CourierPublisher) PublishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
+func (courierPublisher CourierLocationLatestPublisher) publishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
 	courierPublisher.publisher.Input() <- &message
 }
 
-type CourierPublisherService struct {
-	publisher CourierPublisher
-}
-
-func (cs *CourierPublisherService) PublishLatestCourierLocation(courierLocation *domain.CourierLocation) error {
-	fmt.Println(" cs.publisher.topic")
+func (courierPublisher CourierLocationLatestPublisher) PublishLatestCourierLocation(courierLocation *domain.CourierLocation) error {
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
 		return err
 	}
-	cs.publisher.PublishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
-		Topic:     cs.publisher.topic,
-		Partition: cs.publisher.partition,
+	courierPublisher.publishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
+		Topic:     courierPublisher.topic,
+		Partition: courierPublisher.partition,
 		Value:     sarama.StringEncoder(message),
 	})
 
 	return nil
-}
-
-func NewCourierService(
-	publisher CourierPublisher,
-) domain.CourierPublisherServiceInterface {
-	return &CourierPublisherService{
-		publisher: publisher,
-	}
 }

@@ -29,12 +29,10 @@ type LocationHandler struct {
 
 func NewLocationHandler(
 	courierPublisherService domain.CourierPublisherServiceInterface,
-	courierRepository domain.CourierRepositoryInterface,
 ) *LocationHandler {
 	return &LocationHandler{
 		validate:                validator.New(),
 		courierPublisherService: courierPublisherService,
-		courierRepository:       courierRepository,
 	}
 }
 
@@ -69,12 +67,7 @@ func (h *LocationHandler) PublishLatestCourierGeoPositionMessage(r *nethttp.Requ
 		LocationPayload.Latitude,
 		LocationPayload.Longitude,
 	)
-	err := h.courierRepository.SaveLatestCourierGeoPosition(ctx, courierLocation)
-	if err != nil {
-		return err
-	}
-	err = h.courierPublisherService.PublishLatestCourierLocation(courierLocation)
-
+	err := h.courierPublisherService.PublishLatestCourierLocation(ctx, courierLocation)
 	if err != nil {
 		return err
 	}
