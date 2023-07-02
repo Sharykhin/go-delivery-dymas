@@ -7,7 +7,6 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/redis"
-	"github.com/Shopify/sarama"
 	"github.com/gorilla/mux"
 	"log"
 )
@@ -19,7 +18,7 @@ func main() {
 		return
 	}
 
-	publisher, err := kafka.PublisherCourierLocationFactory(sarama.NewConfig(), config.Address)
+	publisher, err := kafka.PublisherCourierLocationFactory(config.Address)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return

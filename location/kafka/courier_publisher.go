@@ -16,8 +16,9 @@ type CourierLocationLatestPublisher struct {
 	partition int32
 }
 
-func PublisherCourierLocationFactory(config *sarama.Config, address string) (domain.CourierLocationPublisherInterface, error) {
+func PublisherCourierLocationFactory(address string) (domain.CourierLocationPublisherInterface, error) {
 	courierPublisher := CourierLocationLatestPublisher{}
+	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	producer, err := sarama.NewAsyncProducer([]string{address}, config)
