@@ -7,7 +7,7 @@ import (
 )
 
 type CourierLocationServiceInterface interface {
-	PublishLatestCourierLocation(
+	SaveLatestCourierLocation(
 		ctx context.Context,
 		courierLocation *CourierLocation,
 	) error
@@ -32,12 +32,12 @@ type CourierLocationServiceService struct {
 	publisher CourierLocationPublisherInterface
 }
 
-func (courierPublisherService CourierLocationServiceService) PublishLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
-	err := courierPublisherService.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
+func (courierLocationService CourierLocationServiceService) SaveLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
+	err := courierLocationService.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
 	if err != nil {
 		return fmt.Errorf("failed to store latest courier location in the repository: %w", err)
 	}
-	err = courierPublisherService.publisher.PublishLatestCourierLocation(ctx, courierLocation)
+	err = courierLocationService.publisher.PublishLatestCourierLocation(ctx, courierLocation)
 
 	return err
 }

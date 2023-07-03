@@ -22,16 +22,16 @@ type ResponseMessage struct {
 }
 
 type LocationHandler struct {
-	validate                *validator.Validate
-	courierPublisherService domain.CourierLocationServiceInterface
+	validate               *validator.Validate
+	courierLocationService domain.CourierLocationServiceInterface
 }
 
 func NewLocationHandler(
-	courierPublisherService domain.CourierLocationServiceInterface,
+	courierLocationService domain.CourierLocationServiceInterface,
 ) *LocationHandler {
 	return &LocationHandler{
-		validate:                validator.New(),
-		courierPublisherService: courierPublisherService,
+		validate:               validator.New(),
+		courierLocationService: courierLocationService,
 	}
 }
 
@@ -66,7 +66,7 @@ func (h *LocationHandler) CourierLocationServiceInterface(r *nethttp.Request, Lo
 		LocationPayload.Latitude,
 		LocationPayload.Longitude,
 	)
-	err := h.courierPublisherService.PublishLatestCourierLocation(ctx, courierLocation)
+	err := h.courierLocationService.SaveLatestCourierLocation(ctx, courierLocation)
 	if err != nil {
 		return err
 	}
