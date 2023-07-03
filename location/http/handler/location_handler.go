@@ -75,8 +75,8 @@ func (h *LocationHandler) saveLatestCourierGeoPosition(r *nethttp.Request, Locat
 }
 
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
-	var LocationPayload LocationPayload
-	err := json.NewDecoder(r.Body).Decode(&LocationPayload)
+	var locationPayload LocationPayload
+	err := json.NewDecoder(r.Body).Decode(&locationPayload)
 	w.Header().Set("Content-Type", "application/json")
 
 	if err != nil {
@@ -93,7 +93,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		return
 	}
 
-	if isValid, response := h.validatePayload(&LocationPayload); !isValid {
+	if isValid, response := h.validatePayload(&locationPayload); !isValid {
 		w.WriteHeader(nethttp.StatusBadRequest)
 		err := json.NewEncoder(w).Encode(response)
 		if err != nil {
@@ -101,7 +101,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		}
 		return
 	}
-	h.saveLatestCourierGeoPosition(r, LocationPayload)
+	err = h.saveLatestCourierGeoPosition(r, locationPayload)
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
