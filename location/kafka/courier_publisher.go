@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
@@ -36,7 +37,7 @@ func (courierPublisher CourierLocationLatestPublisher) publishLatestCourierGeoPo
 	courierPublisher.publisher.Input() <- &message
 }
 
-func (courierPublisher CourierLocationLatestPublisher) PublishLatestCourierLocation(courierLocation *domain.CourierLocation) error {
+func (courierPublisher CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {

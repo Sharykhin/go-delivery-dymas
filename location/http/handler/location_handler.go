@@ -23,12 +23,11 @@ type ResponseMessage struct {
 
 type LocationHandler struct {
 	validate                *validator.Validate
-	courierPublisherService domain.CourierPublisherServiceInterface
-	courierRepository       domain.CourierRepositoryInterface
+	courierPublisherService domain.CourierLocationServiceInterface
 }
 
 func NewLocationHandler(
-	courierPublisherService domain.CourierPublisherServiceInterface,
+	courierPublisherService domain.CourierLocationServiceInterface,
 ) *LocationHandler {
 	return &LocationHandler{
 		validate:                validator.New(),
@@ -58,7 +57,7 @@ func (h *LocationHandler) validatePayload(payload *LocationPayload) (isValid boo
 	return true, nil
 }
 
-func (h *LocationHandler) PublishLatestCourierGeoPositionMessage(r *nethttp.Request, LocationPayload LocationPayload) error {
+func (h *LocationHandler) CourierLocationServiceInterface(r *nethttp.Request, LocationPayload LocationPayload) error {
 	vars := mux.Vars(r)
 	courierID := vars["courier_id"]
 	ctx := r.Context()
@@ -102,7 +101,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		}
 		return
 	}
-	h.PublishLatestCourierGeoPositionMessage(r, LocationPayload)
+	h.CourierLocationServiceInterface(r, LocationPayload)
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{

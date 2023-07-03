@@ -2,10 +2,11 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
-type CourierPublisherServiceInterface interface {
+type CourierLocationServiceInterface interface {
 	PublishLatestCourierLocation(
 		ctx context.Context,
 		courierLocation *CourierLocation,
@@ -23,20 +24,20 @@ type CourierRepositoryInterface interface {
 }
 
 type CourierLocationPublisherInterface interface {
-	PublishLatestCourierLocation(courierLocation *CourierLocation) error
+	PublishLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error
 }
 
-type CourierPublisherService struct {
+type CourierLocationServiceService struct {
 	repo      CourierRepositoryInterface
 	publisher CourierLocationPublisherInterface
 }
 
-func (courierPublisherService CourierPublisherService) PublishLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
+func (courierPublisherService CourierLocationServiceService) PublishLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
 	err := courierPublisherService.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to store latest courier location in the repository: %w", err)
 	}
-	err = courierPublisherService.publisher.PublishLatestCourierLocation(courierLocation)
+	err = courierPublisherService.publisher.PublishLatestCourierLocation(ctx, courierLocation)
 
 	return err
 }
@@ -50,8 +51,8 @@ func CourierLocationFactory(id string, latitude, longitude float64) *CourierLoca
 	}
 }
 
-func CourierPublisherServiceFactory(repo CourierRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) CourierPublisherServiceInterface {
-	return CourierPublisherService{
+func CourierPublisherServiceFactory(repo CourierRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationServiceService {
+	return &CourierLocationServiceService{
 		repo:      repo,
 		publisher: courierLocationPublisher,
 	}
