@@ -39,6 +39,10 @@ func (courierLocationService CourierLocationServiceService) SaveLatestCourierLoc
 	}
 	err = courierLocationService.publisher.PublishLatestCourierLocation(ctx, courierLocation)
 
+	if err != nil {
+		return fmt.Errorf("failed to publish latest courier location: %w", err)
+	}
+
 	return err
 }
 
