@@ -13,11 +13,9 @@ const partition = 0
 
 type CourierLocationLatestPublisher struct {
 	publisher sarama.AsyncProducer
-	topic     string
-	partition int32
 }
 
-func PublisherCourierLocationFactory(address string) (domain.CourierLocationPublisherInterface, error) {
+func PublisherCourierLocationFactory(address string) (*CourierLocationLatestPublisher, error) {
 	courierPublisher := CourierLocationLatestPublisher{}
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner
@@ -28,24 +26,22 @@ func PublisherCourierLocationFactory(address string) (domain.CourierLocationPubl
 	}
 
 	courierPublisher.publisher = producer
-	courierPublisher.topic = topic
-	courierPublisher.partition = partition
-	return courierPublisher, err
+	return &courierPublisher, err
 }
 
-func (courierPublisher CourierLocationLatestPublisher) publishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
+func (courierPublisher *CourierLocationLatestPublisher) publishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
 	courierPublisher.publisher.Input() <- &message
 }
 
-func (courierPublisher CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
+func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal courier location before sending Kafka event")
 	}
 	courierPublisher.publishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
-		Topic:     courierPublisher.topic,
-		Partition: courierPublisher.partition,
+		Topic:     topic,
+		Partition: partition,
 		Value:     sarama.StringEncoder(message),
 	})
 

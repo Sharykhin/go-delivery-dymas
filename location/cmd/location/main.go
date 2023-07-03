@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 	redisClient := redis.CreateConnect(config.Addr, config.Db)
-	repo := redis.CreateCouriersRepository(redisClient)
+	repo := redis.CreateCourierLocationRepository(redisClient)
 	courierService := domain.CourierLocationServiceFactory(repo, publisher)
 	locationHandler := handler.NewLocationHandler(courierService)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())

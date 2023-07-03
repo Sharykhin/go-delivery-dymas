@@ -19,7 +19,7 @@ type CourierLocation struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type CourierRepositoryInterface interface {
+type CourierLocationRepositoryInterface interface {
 	SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *CourierLocation) error
 }
 
@@ -28,7 +28,7 @@ type CourierLocationPublisherInterface interface {
 }
 
 type CourierLocationServiceService struct {
-	repo      CourierRepositoryInterface
+	repo      CourierLocationRepositoryInterface
 	publisher CourierLocationPublisherInterface
 }
 
@@ -55,7 +55,7 @@ func CourierLocationFactory(id string, latitude, longitude float64) *CourierLoca
 	}
 }
 
-func CourierLocationServiceFactory(repo CourierRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationServiceService {
+func CourierLocationServiceFactory(repo CourierLocationRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationServiceService {
 	return &CourierLocationServiceService{
 		repo:      repo,
 		publisher: courierLocationPublisher,
