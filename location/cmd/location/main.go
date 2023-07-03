@@ -25,7 +25,7 @@ func main() {
 	}
 	redisClient := redis.CreateConnect(config.Addr, config.Db)
 	repo := redis.CreateCouriersRepository(redisClient)
-	courierService := domain.CourierPublisherServiceFactory(repo, publisher)
+	courierService := domain.CourierLocationServiceFactory(repo, publisher)
 	locationHandler := handler.NewLocationHandler(courierService)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {

@@ -51,7 +51,7 @@ func CourierLocationFactory(id string, latitude, longitude float64) *CourierLoca
 	}
 }
 
-func CourierPublisherServiceFactory(repo CourierRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationServiceService {
+func CourierLocationServiceFactory(repo CourierRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationServiceService {
 	return &CourierLocationServiceService{
 		repo:      repo,
 		publisher: courierLocationPublisher,
