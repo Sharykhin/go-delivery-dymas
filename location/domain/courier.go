@@ -27,12 +27,12 @@ type CourierLocationPublisherInterface interface {
 	PublishLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error
 }
 
-type CourierLocationServiceService struct {
+type CourierLocationService struct {
 	repo      CourierLocationRepositoryInterface
 	publisher CourierLocationPublisherInterface
 }
 
-func (courierLocationService CourierLocationServiceService) SaveLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
+func (courierLocationService CourierLocationService) SaveLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
 	err := courierLocationService.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
 	if err != nil {
 		return fmt.Errorf("failed to store latest courier location in the repository: %w", err)
@@ -46,7 +46,7 @@ func (courierLocationService CourierLocationServiceService) SaveLatestCourierLoc
 	return err
 }
 
-func CourierLocationFactory(id string, latitude, longitude float64) *CourierLocation {
+func NewCourierLocation(id string, latitude, longitude float64) *CourierLocation {
 	return &CourierLocation{
 		CourierID: id,
 		Latitude:  latitude,
@@ -55,8 +55,8 @@ func CourierLocationFactory(id string, latitude, longitude float64) *CourierLoca
 	}
 }
 
-func CourierLocationServiceFactory(repo CourierLocationRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationServiceService {
-	return &CourierLocationServiceService{
+func NewCourierLocationService(repo CourierLocationRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationService {
+	return &CourierLocationService{
 		repo:      repo,
 		publisher: courierLocationPublisher,
 	}

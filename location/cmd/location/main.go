@@ -18,14 +18,14 @@ func main() {
 		return
 	}
 
-	publisher, err := kafka.PublisherCourierLocationFactory(config.Address)
+	publisher, err := kafka.CreateCourierLocationPublisher(config.Address)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 	redisClient := redis.CreateConnect(config.Addr, config.Db)
 	repo := redis.CreateCourierLocationRepository(redisClient)
-	courierService := domain.CourierLocationServiceFactory(repo, publisher)
+	courierService := domain.NewCourierLocationService(repo, publisher)
 	locationHandler := handler.NewLocationHandler(courierService)
 	router := http.NewRouter().CreateRouter(locationHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
