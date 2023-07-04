@@ -18,7 +18,7 @@ func NewRouter() *Router {
 	}
 }
 
-func (r *Router) CreateRouter(locationHandler *http.LocationHandler, router *mux.Router) *mux.Router {
+func (r *Router) NewRouter(locationHandler *http.LocationHandler, router *mux.Router) *mux.Router {
 	r.url = fmt.Sprintf(r.url, r.uuidRegexp)
 	router.HandleFunc(r.url, locationHandler.HandlerCouriersLocation).Methods("POST")
 

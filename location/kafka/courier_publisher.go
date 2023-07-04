@@ -15,14 +15,14 @@ type CourierLocationLatestPublisher struct {
 	publisher sarama.AsyncProducer
 }
 
-func CreateCourierLocationPublisher(address string) (*CourierLocationLatestPublisher, error) {
+func NewCourierLocationPublisher(address string) (*CourierLocationLatestPublisher, error) {
 	courierPublisher := CourierLocationLatestPublisher{}
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	producer, err := sarama.NewAsyncProducer([]string{address}, config)
 	if err != nil {
-		err = fmt.Errorf("failed to create async producer: %w", err)
+		err = fmt.Errorf("failed to New async producer: %w", err)
 	}
 
 	courierPublisher.publisher = producer
@@ -37,7 +37,7 @@ func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLoca
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
-		return fmt.Errorf("failed to marshal courier location before sending Kafka event")
+		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
 	courierPublisher.publishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
 		Topic:     topic,

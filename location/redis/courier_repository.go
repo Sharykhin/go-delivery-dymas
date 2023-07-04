@@ -29,7 +29,7 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	return nil
 }
 
-func CreateCourierLocationRepository(client *coreredis.Client) *CourierLocationRepository {
+func NewCourierLocationRepository(client *coreredis.Client) *CourierLocationRepository {
 
 	return &CourierLocationRepository{
 		indexGeo: courierLatestCordsKey,

@@ -59,8 +59,8 @@ func (h *LocationHandler) validatePayload(payload *LocationPayload) (isValid boo
 
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var locationPayload LocationPayload
-	err := json.NewDecoder(r.Body).Decode(&locationPayload)
 	w.Header().Set("Content-Type", "application/json")
+	err := json.NewDecoder(r.Body).Decode(&locationPayload)
 
 	if err != nil {
 		w.WriteHeader(nethttp.StatusBadRequest)
