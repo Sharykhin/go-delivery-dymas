@@ -3,24 +3,24 @@ package redis
 import (
 	"context"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	coreredis "github.com/redis/go-redis/v9"
 )
 
-type CourierRepository struct {
+type CourierLocationRepository struct {
 	indexGeo string
 	client   *coreredis.Client
-	ctx      context.Context
 }
 
 const courierLatestCordsKey = "courier_latest_cord"
 
-func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierID string, latitude, longitude float64) error {
+func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	// add locations to the database
 	err := repo.client.GeoAdd(ctx, repo.indexGeo,
 		&coreredis.GeoLocation{
-			Name:      courierID,
-			Latitude:  latitude,
-			Longitude: longitude,
+			Name:      courierLocation.CourierID,
+			Latitude:  courierLocation.Latitude,
+			Longitude: courierLocation.Longitude,
 		}).Err()
 	if err != nil {
 		return fmt.Errorf("failed to add courier geo location into redis: %w", err)
@@ -29,9 +29,9 @@ func (repo *CourierRepository) SaveLatestCourierGeoPosition(ctx context.Context,
 	return nil
 }
 
-func CreateCouriersRepository(client *coreredis.Client) *CourierRepository {
+func NewCourierLocationRepository(client *coreredis.Client) *CourierLocationRepository {
 
-	return &CourierRepository{
+	return &CourierLocationRepository{
 		indexGeo: courierLatestCordsKey,
 		client:   client,
 	}

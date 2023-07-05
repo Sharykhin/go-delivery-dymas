@@ -2,20 +2,13 @@ package http
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	nethttp "net/http"
-	"os"
 )
 
-func RunServer() error {
-	port := ":8081"
-
-	if os.Getenv("HTTP_PORT") != "" {
-		port = os.Getenv("HTTP_PORT")
-	}
-
+func RunServer(router *mux.Router, port string) error {
 	fmt.Println(port)
-	router := NewRouter()
-	nethttp.Handle(string('/'), router.CreateRouter())
+	nethttp.Handle(string('/'), router)
 	fmt.Println("Server is listening...")
 	if err := nethttp.ListenAndServe(port, nil); err != nil {
 		return err

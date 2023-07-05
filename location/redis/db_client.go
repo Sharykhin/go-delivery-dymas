@@ -4,13 +4,13 @@ import (
 	coreredis "github.com/redis/go-redis/v9"
 )
 
-var Config = &coreredis.Options{
-	Addr: "localhost:6379",
-	DB:   0,
-}
+func NewConnect(addr string, db int) *coreredis.Client {
 
-func CreateConnect(options *coreredis.Options) *coreredis.Client {
-	// create a new Redis client
+	var options = &coreredis.Options{
+		Addr: addr,
+		DB:   db,
+	}
+
 	client := coreredis.NewClient(options)
 
 	return client
