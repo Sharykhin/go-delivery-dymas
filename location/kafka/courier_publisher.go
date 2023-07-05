@@ -21,7 +21,7 @@ func NewCourierLocationPublisher(address string) (*CourierLocationLatestPublishe
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	producer, err := sarama.NewAsyncProducer([]string{address}, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to New async producer: %w", err)
+		return nil, fmt.Errorf("failed to create a new sarama async producer: %w", err)
 	}
 
 	courierPublisher.publisher = producer
