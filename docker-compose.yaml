@@ -7,6 +7,26 @@ services:
       - '6379:6379'
     command: redis-server --loglevel warning
 
+  postgres:
+    env_file:
+      - .env
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ~/apps/postgres:/var/lib/postgresql/data
+
+  migrations:
+    image: ghcr.io/kukymbr/goose-docker:3.13.4
+    env_file:
+      - .env
+    environment:
+      - GOOSE_DRIVER=postgres
+      - GOOSE_DBSTRING=host=postgres port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB}
+      - GOOSE_VERBOSE=true
+    volumes:
+      - ./migrations:/migrations
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -38,3 +58,6 @@ services:
       KAFKA_BROKERS: kafka:9092
     depends_on:
       - kafka
+volumes:
+  db:
+    driver: local

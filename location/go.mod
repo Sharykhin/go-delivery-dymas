@@ -3,14 +3,16 @@ module github.com/Sharykhin/go-delivery-dymas/location
 go 1.20
 
 require (
+	github.com/IBM/sarama v1.40.0
+	github.com/Shopify/sarama v1.38.1
+	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-playground/validator/v10 v10.12.0
 	github.com/gorilla/mux v1.8.0
+	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.0.3
 )
 
 require (
-	github.com/Shopify/sarama v1.38.1 // indirect
-	github.com/caarlos0/env/v8 v8.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -32,8 +34,8 @@ require (
 	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/net v0.12.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 )

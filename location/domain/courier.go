@@ -19,6 +19,10 @@ type CourierLocation struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type CourierLocationConsumerInterface interface {
+	consumeCourierLatestCourierGeoPositionMessage()
+}
+
 type CourierLocationRepositoryInterface interface {
 	SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *CourierLocation) error
 }
