@@ -56,13 +56,13 @@ func NewCourierLocationConsumer(courierLocationRepository domain.CourierLocation
 		config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	}
 
-	client, err := sarama.NewConsumerGroup(strings.Split(brokers, ","), cgroup, config)
+	consumerGroup, err := sarama.NewConsumerGroup(strings.Split(brokers, ","), cgroup, config)
 	if err != nil {
 		err = fmt.Errorf("failed to publish latest courier location: %w", err)
 		return nil, err
 	}
 	return &CourierLocationConsumer{
-		consumerLocationGroup:     client,
+		consumerLocationGroup:     consumerGroup,
 		keepRunning:               true,
 		ready:                     make(chan bool),
 		courierLocationRepository: courierLocationRepository,
@@ -131,11 +131,12 @@ func (courierLocationConsumer *CourierLocationConsumer) Cleanup(sarama.ConsumerG
 }
 
 func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	var courierLocation domain.CourierLocation
 	for {
 		select {
 		case message := <-claim.Messages():
 			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+			var courierLocation domain.CourierLocation
+			//b := []byte("5")
 			if err := json.Unmarshal(message.Value, &courierLocation); err != nil {
 				err = fmt.Errorf("Error json decode: %w", err)
 				return err
