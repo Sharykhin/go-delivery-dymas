@@ -69,7 +69,7 @@ func NewCourierLocationConsumer(courierLocationRepository domain.CourierLocation
 	}, nil
 }
 
-func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCourierGeoPositionMessage(ctx context.Context) {
+func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCourierGeoPositionMessage(ctx context.Context) error {
 	consumptionIsPaused := false
 	ctx, cancel := context.WithCancel(ctx)
 	wg := &sync.WaitGroup{}
@@ -85,6 +85,7 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCour
 			}
 			// check if context was cancelled, signaling that the consumer should stop
 			if ctx.Err() != nil {
+				log.Panicf("Error from consumer: %v", ctx.Err())
 				return
 			}
 			courierLocationConsumer.ready = make(chan bool)
@@ -115,8 +116,10 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCour
 	cancel()
 	wg.Wait()
 	if err := courierLocationConsumer.consumerLocationGroup.Close(); err != nil {
-		log.Panicf("Error closing client: %v", err)
+		return fmt.Errorf("Error closing client: %w", err)
 	}
+
+	return nil
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim

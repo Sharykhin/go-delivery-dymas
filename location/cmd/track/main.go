@@ -27,5 +27,8 @@ func main() {
 		log.Println(err)
 		return
 	}
-	consumerGroup.ConsumeCourierLatestCourierGeoPositionMessage(ctx)
+	err = consumerGroup.ConsumeCourierLatestCourierGeoPositionMessage(ctx)
+	if err != nil {
+		log.Println(err)
+	}
 }
