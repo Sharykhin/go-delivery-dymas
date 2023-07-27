@@ -22,8 +22,8 @@ func main() {
 	if err != nil {
 		log.Panicf("failed to parse variable env: %v\n", err)
 	}
+	client.Close()
 	repo, err := postgres.NewCourierLocationRepository(client)
-	defer repo.Client.Close()
 	if err != nil {
 		log.Panicf("failed to parse variable env: %v\n", err)
 	}
