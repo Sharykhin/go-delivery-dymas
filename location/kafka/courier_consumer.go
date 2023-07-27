@@ -146,6 +146,8 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sar
 			}
 			err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(session.Context(), &courierLocation)
 			if err != nil {
+				err = fmt.Errorf("Save in courier location database: %w", err)
+				log.Println(err)
 				return err
 			}
 			session.MarkMessage(message, "")
