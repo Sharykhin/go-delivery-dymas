@@ -147,6 +147,7 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sar
 			//b := []byte("5")
 			if err := json.Unmarshal(message.Value, &courierLocation); err != nil {
 				err = fmt.Errorf("Error json decode: %w", err)
+				log.Println(err)
 				return err
 			}
 			err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(session.Context(), &courierLocation)
