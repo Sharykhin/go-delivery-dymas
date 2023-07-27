@@ -9,7 +9,7 @@ services:
 
   postgres:
     env_file:
-      - .env
+      - ./envs/db/location/.env
     image: postgres:14-alpine
     ports:
       - 5432:5432
@@ -19,7 +19,7 @@ services:
   migrations_location:
     image: ghcr.io/kukymbr/goose-docker:3.13.4
     env_file:
-      - .env
+      - ./envs/db/location/.env
     environment:
       - GOOSE_DRIVER=postgres
       - GOOSE_DBSTRING=host=postgres port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB}
