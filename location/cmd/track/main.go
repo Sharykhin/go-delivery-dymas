@@ -16,7 +16,7 @@ func main() {
 		return
 	}
 	ctx := context.Background()
-	repo, err := postgres.NewCourierLocationRepository()
+	repo, err := postgres.NewCourierLocationRepository(config.DbName, config.DbUser, config.PasswordDb)
 	defer repo.Client.Close()
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)

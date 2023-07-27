@@ -56,8 +56,6 @@ func NewCourierLocationConsumer(
 	}
 
 	if oldest {
-		fmt.Println(verbose)
-		fmt.Println(oldest)
 		config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	}
 
@@ -144,17 +142,14 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sar
 		case message := <-claim.Messages():
 			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
 			var courierLocation domain.CourierLocation
-			//b := []byte("5")
 			if err := json.Unmarshal(message.Value, &courierLocation); err != nil {
 				err = fmt.Errorf("Error json decode: %w", err)
 				log.Println(err)
-				return err
 			}
 			err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(session.Context(), &courierLocation)
 			if err != nil {
 				err = fmt.Errorf("Save in courier location database: %w", err)
 				log.Println(err)
-				return err
 			}
 			session.MarkMessage(message, "")
 		case <-session.Context().Done():

@@ -13,7 +13,7 @@ const password_db = "S3cret"
 const db_name = "courier_location"
 
 type CourierLocationRepository struct {
-	Client   *sql.DB
+	Client *sql.DB
 }
 
 func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *domain.CourierLocation) error {
@@ -34,8 +34,8 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	return nil
 }
 
-func NewCourierLocationRepository() (*CourierLocationRepository, error) {
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user_db, password_db, db_name)
+func NewCourierLocationRepository(dbName string, dbUser string, dbPassword string) (*CourierLocationRepository, error) {
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbName)
 	db, err := sql.Open("postgres", connPostgres)
 	if err != nil {
 		fmt.Println(err)

@@ -11,6 +11,9 @@ type Config struct {
 	Assignor   string `env:"ASSIGNOR" envDefault:"range"`
 	Oldest     bool   `env:"OLDEST" envDefault:"true"`
 	Verbose    bool   `env:"VERBOSE" envDefault:"false"`
+	DbName     string `env:"POSTGRES_DB" envDefault:"courier_location"`
+	PasswordDb string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
+	DbUser     string `env:"POSTGRES_USER" envDefault:"citizix_user"`
 }
 
 func GetConfig() (config Config, err error) {
