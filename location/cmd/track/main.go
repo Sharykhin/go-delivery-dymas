@@ -25,14 +25,14 @@ func main() {
 	repo, err := postgres.NewCourierLocationRepository(client)
 	defer repo.Client.Close()
 	if err != nil {
-		log.Printf("failed to parse variable env: %v\n", err)
+		log.Panicf("failed to parse variable env: %v\n", err)
 	}
 	consumerGroup, err := kafka.NewCourierLocationConsumer(repo, config.Address, config.Verbose, config.Oldest, config.Assignor)
 	if err != nil {
-		log.Println(err)
+		log.Panic(err)
 	}
 	err = consumerGroup.ConsumeCourierLatestCourierGeoPositionMessage(ctx)
 	if err != nil {
-		log.Println(err)
+		log.Panic(err)
 	}
 }
