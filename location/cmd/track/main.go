@@ -14,13 +14,13 @@ import (
 func main() {
 	config, err := env.GetConfig()
 	if err != nil {
-		log.Printf("failed to parse variable env: %v\n", err)
+		log.Panicf("failed to parse variable env: %v\n", err)
 	}
 	ctx := context.Background()
 	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.PasswordDb, config.DbName)
 	client, err := sql.Open("postgres", connPostgres)
 	if err != nil {
-		log.Printf("failed to parse variable env: %v\n", err)
+		log.Panicf("failed to parse variable env: %v\n", err)
 	}
 	repo, err := postgres.NewCourierLocationRepository(client)
 	defer repo.Client.Close()
