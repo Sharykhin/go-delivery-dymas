@@ -34,15 +34,10 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	return nil
 }
 
-func NewCourierLocationRepository(dbName string, dbUser string, dbPassword string) (*CourierLocationRepository, error) {
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbName)
-	db, err := sql.Open("postgres", connPostgres)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
+func NewCourierLocationRepository(client *sql.DB) (*CourierLocationRepository, error) {
+
 	courierLocationRepository := CourierLocationRepository{
-		Client: db,
+		Client: client,
 	}
 
 	return &courierLocationRepository, nil

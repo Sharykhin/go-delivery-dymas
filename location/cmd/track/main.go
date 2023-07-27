@@ -3,6 +3,8 @@ package main
 // SIGUSR1 toggle the pause/resume consumption
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
@@ -15,7 +17,12 @@ func main() {
 		log.Printf("failed to parse variable env: %v\n", err)
 	}
 	ctx := context.Background()
-	repo, err := postgres.NewCourierLocationRepository(config.DbName, config.DbUser, config.PasswordDb)
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.PasswordDb, config.DbName)
+	client, err := sql.Open("postgres", connPostgres)
+	if err != nil {
+		log.Printf("failed to parse variable env: %v\n", err)
+	}
+	repo, err := postgres.NewCourierLocationRepository(client)
 	defer repo.Client.Close()
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
