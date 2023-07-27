@@ -61,8 +61,7 @@ func NewCourierLocationConsumer(
 
 	consumerGroup, err := sarama.NewConsumerGroup(strings.Split(brokers, ","), cgroup, config)
 	if err != nil {
-		err = fmt.Errorf("failed to publish latest courier location: %w", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to create courier location consumer: %w", err)
 	}
 	return &CourierLocationConsumer{
 		consumerLocationGroup:     consumerGroup,
