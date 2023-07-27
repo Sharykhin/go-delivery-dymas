@@ -15,9 +15,6 @@ import (
 )
 
 const cgroup = "latest_position_courier"
-const assignor = "range"
-const oldest = true
-const verbose = false
 
 type CourierLocationConsumer struct {
 	consumerLocationGroup     sarama.ConsumerGroup
@@ -26,7 +23,13 @@ type CourierLocationConsumer struct {
 	ready                     chan bool
 }
 
-func NewCourierLocationConsumer(courierLocationRepository domain.CourierLocationRepositoryInterface, brokers string) (*CourierLocationConsumer, error) {
+func NewCourierLocationConsumer(
+	courierLocationRepository domain.CourierLocationRepositoryInterface,
+	brokers string,
+	verbose bool,
+	oldest bool,
+	assignor string,
+) (*CourierLocationConsumer, error) {
 	log.Println("Starting a new Sarama consumer")
 
 	if verbose {
@@ -53,6 +56,8 @@ func NewCourierLocationConsumer(courierLocationRepository domain.CourierLocation
 	}
 
 	if oldest {
+		fmt.Println(verbose)
+		fmt.Println(oldest)
 		config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	}
 

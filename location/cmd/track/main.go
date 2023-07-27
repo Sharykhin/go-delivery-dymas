@@ -22,7 +22,7 @@ func main() {
 		log.Printf("failed to parse variable env: %v\n", err)
 		return
 	}
-	consumerGroup, err := kafka.NewCourierLocationConsumer(repo, config.Address)
+	consumerGroup, err := kafka.NewCourierLocationConsumer(repo, config.Address, config.Verbose, config.Oldest, config.Assignor)
 	if err != nil {
 		log.Println(err)
 		return

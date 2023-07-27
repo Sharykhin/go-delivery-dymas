@@ -8,7 +8,9 @@ type Config struct {
 	Address    string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
 	Addr       string `env:"REDIS_ADDRESS" envDefault:"localhost:6379"`
 	PortServer string `env:"PORT_SERVER" envDefault:"8081"`
-	Db         int    `env:"DB_REDIS" envDefault:"0"`
+	Assignor   string `env:"ASSIGNOR" envDefault:"range"`
+	Oldest     bool   `env:"OLDEST" envDefault:"true"`
+	Verbose    bool   `env:"VERBOSE" envDefault:"false"`
 }
 
 func GetConfig() (config Config, err error) {
