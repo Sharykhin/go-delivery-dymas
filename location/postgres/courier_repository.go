@@ -8,17 +8,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const user_db = "citizix_user"
-const password_db = "S3cret"
-const db_name = "courier_location"
-
 type CourierLocationRepository struct {
-	Client *sql.DB
+	client *sql.DB
 }
 
 func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	query := "insert into courier_latest_cord (courier_id, latitude, longitude, created_at) values ($1, $2, $3, $4)"
-	_, err := repo.Client.ExecContext(
+	_, err := repo.client.ExecContext(
 		ctx,
 		query,
 		courierLocation.CourierID,
@@ -34,11 +30,11 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	return nil
 }
 
-func NewCourierLocationRepository(client *sql.DB) (*CourierLocationRepository, error) {
+func NewCourierLocationRepository(client *sql.DB) *CourierLocationRepository {
 
 	courierLocationRepository := CourierLocationRepository{
-		Client: client,
+		client: client,
 	}
 
-	return &courierLocationRepository, nil
+	return &courierLocationRepository
 }

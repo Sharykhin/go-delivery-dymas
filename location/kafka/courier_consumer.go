@@ -17,7 +17,7 @@ import (
 const cgroup = "latest_position_courier"
 
 type CourierLocationConsumer struct {
-	consumerLocationGroup     sarama.ConsumerGroup
+	consumerGroup     sarama.ConsumerGroup
 	keepRunning               bool
 	courierLocationRepository domain.CourierLocationRepositoryInterface
 	ready                     chan bool
@@ -30,7 +30,6 @@ func NewCourierLocationConsumer(
 	oldest bool,
 	assignor string,
 ) (*CourierLocationConsumer, error) {
-	log.Println("Starting a new Sarama consumer")
 
 	if verbose {
 		sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
@@ -64,7 +63,7 @@ func NewCourierLocationConsumer(
 		return nil, fmt.Errorf("failed to create courier location consumer: %w", err)
 	}
 	return &CourierLocationConsumer{
-		consumerLocationGroup:     consumerGroup,
+		consumerGroup:     consumerGroup,
 		keepRunning:               true,
 		ready:                     make(chan bool),
 		courierLocationRepository: courierLocationRepository,
@@ -82,7 +81,7 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCour
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := courierLocationConsumer.consumerLocationGroup.Consume(ctx, strings.Split(topic, ","), courierLocationConsumer); err != nil {
+			if err := courierLocationConsumer.consumerGroup.Consume(ctx, strings.Split(topic, ","), courierLocationConsumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop
@@ -112,12 +111,12 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCour
 			log.Println("terminating: via signal")
 			courierLocationConsumer.keepRunning = false
 		case <-sigusr1:
-			toggleConsumptionFlow(courierLocationConsumer.consumerLocationGroup, &consumptionIsPaused)
+			toggleConsumptionFlow(courierLocationConsumer.consumerGroup, &consumptionIsPaused)
 		}
 	}
 	cancel()
 	wg.Wait()
-	if err := courierLocationConsumer.consumerLocationGroup.Close(); err != nil {
+	if err := courierLocationConsumer.consumerGroup.Close(); err != nil {
 		return fmt.Errorf("Error closing client: %w", err)
 	}
 
@@ -142,13 +141,14 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sar
 			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
 			var courierLocation domain.CourierLocation
 			if err := json.Unmarshal(message.Value, &courierLocation); err != nil {
-				err = fmt.Errorf("Error json decode: %w", err)
-				log.Println(err)
+				log.Printf("Failed to unmarshal Kafka message into courier location struct: %v\n", err)
+				return err
 			}
 			err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(session.Context(), &courierLocation)
 			if err != nil {
 				err = fmt.Errorf("Save in courier location database: %w", err)
 				log.Println(err)
+				return err
 			}
 			session.MarkMessage(message, "")
 		case <-session.Context().Done():
