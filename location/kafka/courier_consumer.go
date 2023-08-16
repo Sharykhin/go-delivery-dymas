@@ -17,7 +17,7 @@ import (
 const cgroup = "latest_position_courier"
 
 type CourierLocationConsumer struct {
-	consumerGroup     sarama.ConsumerGroup
+	consumerGroup             sarama.ConsumerGroup
 	keepRunning               bool
 	courierLocationRepository domain.CourierLocationRepositoryInterface
 	ready                     chan bool
@@ -63,7 +63,7 @@ func NewCourierLocationConsumer(
 		return nil, fmt.Errorf("failed to create courier location consumer: %w", err)
 	}
 	return &CourierLocationConsumer{
-		consumerGroup:     consumerGroup,
+		consumerGroup:             consumerGroup,
 		keepRunning:               true,
 		ready:                     make(chan bool),
 		courierLocationRepository: courierLocationRepository,
@@ -142,13 +142,12 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sar
 			var courierLocation domain.CourierLocation
 			if err := json.Unmarshal(message.Value, &courierLocation); err != nil {
 				log.Printf("Failed to unmarshal Kafka message into courier location struct: %v\n", err)
-				return err
+				session.MarkMessage(message, "")
+				return nil
 			}
 			err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(session.Context(), &courierLocation)
 			if err != nil {
-				err = fmt.Errorf("Save in courier location database: %w", err)
-				log.Println(err)
-				return err
+				log.Printf("Failed to save a courier location in the repository: %v", err)
 			}
 			session.MarkMessage(message, "")
 		case <-session.Context().Done():

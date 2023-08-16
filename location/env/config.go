@@ -5,16 +5,16 @@ import (
 )
 
 type Config struct {
-	Address    string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
-	Addr       string `env:"REDIS_ADDRESS" envDefault:"localhost:6379"`
-	PortServer string `env:"PORT_SERVER" envDefault:"8081"`
-	Db         int    `env:"DB_REDIS" envDefault:"0"`
-	Assignor   string `env:"KAFKA_CONSUMER_ASSIGNOR" envDefault:"range"`
-	Oldest     bool   `env:"KAFKA_CONSUMER_OLDEST" envDefault:"true"`
-	Verbose    bool   `env:"KAFKA_CONSUMER_VERBOSE" envDefault:"false"`
-	DbName     string `env:"POSTGRES_DB" envDefault:"courier_location"`
-	PasswordDb string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
-	DbUser     string `env:"POSTGRES_USER" envDefault:"citizix_user"`
+	Address      string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
+	RedisAddress string `env:"REDIS_ADDRESS" envDefault:"localhost:6379"`
+	PortServer   string `env:"PORT_SERVER" envDefault:"8081"`
+	Db           int    `env:"DB_REDIS" envDefault:"0"`
+	Assignor     string `env:"KAFKA_CONSUMER_ASSIGNOR" envDefault:"range"`
+	Oldest       bool   `env:"KAFKA_CONSUMER_OLDEST" envDefault:"true"`
+	Verbose      bool   `env:"KAFKA_CONSUMER_VERBOSE" envDefault:"false"`
+	DbName       string `env:"POSTGRES_DB" envDefault:"courier_location"`
+	DbPassword   string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
+	DbUser       string `env:"POSTGRES_USER" envDefault:"citizix_user"`
 }
 
 func GetConfig() (config Config, err error) {
