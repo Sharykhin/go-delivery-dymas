@@ -23,7 +23,7 @@ func main() {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
-	redisClient := redis.NewConnect(config.Addr, config.Db)
+	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 	repo := redis.NewCourierLocationRepository(redisClient)
 	courierService := domain.NewCourierLocationService(repo, publisher)
 	locationHandler := handler.NewLocationHandler(courierService)
