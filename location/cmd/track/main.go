@@ -23,7 +23,7 @@ func main() {
 	}
 	defer client.Close()
 	repo := postgres.NewCourierLocationRepository(client)
-	consumerGroup, err := kafka.NewCourierLocationConsumer(repo, config.Address, config.Verbose, config.Oldest, config.Assignor)
+	consumerGroup, err := kafka.NewCourierLocationConsumer(repo, config.KafkaAddress, config.Verbose, config.Oldest, config.Assignor)
 	if err != nil {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
