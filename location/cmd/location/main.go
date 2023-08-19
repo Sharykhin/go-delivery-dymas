@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-	publisher, err := kafka.NewCourierLocationPublisher(config.Address)
+	publisher, err := kafka.NewCourierLocationPublisher(config.KafkaAddress)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
