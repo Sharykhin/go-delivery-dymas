@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
@@ -27,7 +26,7 @@ func main() {
 	defer clientPostgres.Close()
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	courierCreateHandler := handler.NewCourierCreateHandler(courierRepository)
-	http.NewCourierCreateRoute().NewCourierCreateRoute(courierCreateHandler, router)
+	router := http.NewCourierCreateRoute().NewCourierCreateRoute(courierCreateHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServerCourier); err != nil {
 		log.Printf("failed to run http server: %v", err)
 	}

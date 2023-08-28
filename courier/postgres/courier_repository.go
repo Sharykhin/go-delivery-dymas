@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
+	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	_ "github.com/lib/pq"
 )
 

@@ -1,8 +1,7 @@
 package http
 
 import (
-	"fmt"
-	http "github.com/Sharykhin/go-delivery-dymas/location/http/handler"
+	http "github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/gorilla/mux"
 )
 

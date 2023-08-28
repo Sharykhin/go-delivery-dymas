@@ -3,7 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
+	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/go-playground/validator/v10"
 	"log"
 	nethttp "net/http"
