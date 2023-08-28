@@ -27,15 +27,15 @@ func main() {
 		return
 	}
 	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
-	client, err := sql.Open("postgres", connPostgres)
+	clientPostgres, err := sql.Open("postgres", connPostgres)
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
 	}
-	defer client.Close()
+	defer clientPostgres.Close()
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 	repoCourierLocation := redis.NewCourierLocationRepository(redisClient)
 	courierLocationService := domain.NewCourierLocationService(repoCourierLocation, publisher)
-	repoCourier := postgres.NewCourierRepository(client)
+	repoCourier := postgres.NewCourierRepository(clientPostgres)
 	locationHandler := handler.NewLocationHandler(courierLocationService)
 	courierCreateHandler := handler.NewCourierCreateHandler(repoCourier)
 	router := http.NewRouteCourierLocation().NewCourierLocationRoute(locationHandler, mux.NewRouter())
