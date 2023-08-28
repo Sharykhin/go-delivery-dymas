@@ -33,11 +33,11 @@ func main() {
 	}
 	defer clientPostgres.Close()
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
-	repoCourierLocation := redis.NewCourierLocationRepository(redisClient)
-	courierLocationService := domain.NewCourierLocationService(repoCourierLocation, publisher)
-	repoCourier := postgres.NewCourierRepository(clientPostgres)
+	courierLocationRepository := redis.NewCourierLocationRepository(redisClient)
+	courierLocationService := domain.NewCourierLocationService(courierLocationRepository, publisher)
+	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	locationHandler := handler.NewLocationHandler(courierLocationService)
-	courierCreateHandler := handler.NewCourierCreateHandler(repoCourier)
+	courierCreateHandler := handler.NewCourierCreateHandler(courierRepository)
 	router := http.NewRouteCourierLocation().NewCourierLocationRoute(locationHandler, mux.NewRouter())
 	http.NewCourierCreateRoute().NewCourierCreateRoute(courierCreateHandler, router)
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
