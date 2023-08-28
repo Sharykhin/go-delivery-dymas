@@ -23,12 +23,11 @@ func main() {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
-
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
-	courierLocationRepository := redis.NewCourierLocationRepository(redisClient)
-	courierLocationService := domain.NewCourierLocationService(courierLocationRepository, publisher)
-	locationHandler := handler.NewLocationHandler(courierLocationService)
-	router := http.NewRouteCourierLocation().NewCourierLocationRoute(locationHandler, mux.NewRouter())
+	repo := redis.NewCourierLocationRepository(redisClient)
+	courierService := domain.NewCourierLocationService(repo, publisher)
+	locationHandler := handler.NewLocationHandler(courierService)
+	router := http.NewRouter().NewRouter(locationHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
 		log.Printf("failed to run http server: %v", err)
 	}
