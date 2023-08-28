@@ -12,7 +12,6 @@ type CourierLocationServiceInterface interface {
 		courierLocation *CourierLocation,
 	) error
 }
-
 type CourierLocation struct {
 	CourierID string    `json:"courier_id"`
 	Latitude  float64   `json:"latitude"`
