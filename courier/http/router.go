@@ -15,8 +15,8 @@ func NewCourierCreateRoute() *RouteCourierCreate {
 	}
 }
 
-func (r *RouteCourierCreate) NewCourierCreateRoute(locationHandler *http.CourierCreateHandler, router *mux.Router) *mux.Router {
-	router.HandleFunc(r.url, locationHandler.HandlerCourierCreate).Methods("POST")
+func (r *RouteCourierCreate) NewCourierCreateRoute(courierHandler *http.CourierHandler, router *mux.Router) *mux.Router {
+	router.HandleFunc(r.url, courierHandler.HandlerCourierCreate).Methods("POST")
 
 	return router
 }

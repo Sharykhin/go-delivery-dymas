@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type CourierCreateHandler struct {
+type CourierHandler struct {
 	validate          *validator.Validate
 	courierRepository domain.CourierRepositoryInterface
 }
@@ -22,14 +22,14 @@ type ResponseMessage struct {
 
 func NewCourierCreateHandler(
 	repo domain.CourierRepositoryInterface,
-) *CourierCreateHandler {
-	return &CourierCreateHandler{
+) *CourierHandler {
+	return &CourierHandler{
 		validate:          validator.New(),
 		courierRepository: repo,
 	}
 }
 
-func (h *CourierCreateHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
+func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var courierPayload domain.CourierModel
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&courierPayload)
@@ -77,7 +77,7 @@ func (h *CourierCreateHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r 
 	w.WriteHeader(nethttp.StatusNoContent)
 }
 
-func (h *CourierCreateHandler) validatePayload(payload *domain.CourierModel) (isValid bool, response *ResponseMessage) {
+func (h *CourierHandler) validatePayload(payload *domain.CourierModel) (isValid bool, response *ResponseMessage) {
 	err := h.validate.Struct(payload)
 	if err != nil {
 		var errorMessage string
