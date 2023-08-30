@@ -9,7 +9,7 @@ type CourierRepositoryInterface interface {
 }
 
 type Courier struct {
-	Id          string `json:"id" validate:"uuid"`
-	FirstName   string `json:"first_name" validate:"required"`
-	IsAvailable bool   `json:"is_available" validate:"boolean"`
+	Id          string
+	FirstName   string
+	IsAvailable bool
 }
