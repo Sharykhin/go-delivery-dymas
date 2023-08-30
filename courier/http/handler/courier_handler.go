@@ -81,7 +81,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 
 		return
 	}
-	w.WriteHeader(nethttp.StatusNoContent)
+	w.WriteHeader(nethttp.StatusCreated)
 }
 
 func (h *CourierHandler) validatePayload(payload *CourierPayload) (isValid bool, response *ResponseMessage) {
