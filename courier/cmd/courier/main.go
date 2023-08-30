@@ -25,8 +25,8 @@ func main() {
 	}
 	defer clientPostgres.Close()
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	courierCreateHandler := handler.NewCourierHandler(courierRepository)
-	router := http.NewCourierCreateRoute().NewCourierCreateRoute(courierCreateHandler, mux.NewRouter())
+	courierHandler := handler.NewCourierHandler(courierRepository)
+	router := http.NewCourierCreateRoute().NewCourierCreateRoute(courierHandler, mux.NewRouter())
 	if err := http.RunServer(router, ":"+config.PortServerCourier); err != nil {
 		log.Printf("failed to run http server: %v", err)
 	}
