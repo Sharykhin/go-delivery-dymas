@@ -15,12 +15,16 @@ type CourierHandler struct {
 	courierRepository domain.CourierRepositoryInterface
 }
 
+type CourierPayload struct {
+	FirstName string `json:"first_name" validate:"required"`
+}
+
 type ResponseMessage struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
-func NewCourierCreateHandler(
+func NewCourierHandler(
 	repo domain.CourierRepositoryInterface,
 ) *CourierHandler {
 	return &CourierHandler{
@@ -30,7 +34,7 @@ func NewCourierCreateHandler(
 }
 
 func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
-	var courierPayload domain.CourierModel
+	var courierPayload CourierPayload
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&courierPayload)
 
@@ -59,7 +63,9 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	ctx := r.Context()
 	err = h.courierRepository.SaveCourier(
 		ctx,
-		courierPayload,
+		domain.Courier{
+			FirstName: courierPayload.FirstName,
+		},
 	)
 	if err != nil {
 		log.Printf("failed to save latest courier: %v", err)
@@ -77,7 +83,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	w.WriteHeader(nethttp.StatusNoContent)
 }
 
-func (h *CourierHandler) validatePayload(payload *domain.CourierModel) (isValid bool, response *ResponseMessage) {
+func (h *CourierHandler) validatePayload(payload *CourierPayload) (isValid bool, response *ResponseMessage) {
 	err := h.validate.Struct(payload)
 	if err != nil {
 		var errorMessage string

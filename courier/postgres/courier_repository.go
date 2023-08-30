@@ -12,14 +12,12 @@ type CourierRepository struct {
 	client *sql.DB
 }
 
-func (repo CourierRepository) SaveCourier(ctx context.Context, courier domain.CourierModel) error {
-	query := "insert into couriers (id, first_name, is_available) values ($1, $2, $3) ON CONFLICT DO NOTHING"
+func (repo CourierRepository) SaveCourier(ctx context.Context, courier domain.Courier) error {
+	query := "insert into courier (first_name) values ($1) ON CONFLICT DO NOTHING"
 	_, err := repo.client.ExecContext(
 		ctx,
 		query,
-		courier.Id,
 		courier.FirstName,
-		courier.IsAvailable,
 	)
 	if err != nil {
 		fmt.Println(err)

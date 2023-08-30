@@ -5,7 +5,7 @@ import (
 )
 
 type Config struct {
-	DbName            string `env:"POSTGRES_DB" envDefault:"couriers"`
+	DbName            string `env:"POSTGRES_DB" envDefault:"courier"`
 	DbPassword        string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
 	DbUser            string `env:"POSTGRES_USER" envDefault:"citizix_user"`
 	PortServerCourier string `env:"PORT_SERVER_COURIER" envDefault:"8881"`

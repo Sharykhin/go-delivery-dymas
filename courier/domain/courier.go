@@ -5,11 +5,11 @@ import (
 )
 
 type CourierRepositoryInterface interface {
-	SaveCourier(ctx context.Context, courier CourierModel) error
+	SaveCourier(ctx context.Context, courier Courier) error
 }
 
-type CourierModel struct {
-	Id          string `json:"id" validate:"required,uuid"`
+type Courier struct {
+	Id          string `json:"id" validate:"uuid"`
 	FirstName   string `json:"first_name" validate:"required"`
-	IsAvailable bool   `json:"is_available" validate:"required,boolean"`
+	IsAvailable bool   `json:"is_available" validate:"boolean"`
 }
