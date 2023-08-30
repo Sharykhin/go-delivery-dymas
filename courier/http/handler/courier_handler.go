@@ -64,7 +64,8 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	_, err = h.courierRepository.SaveCourier(
 		ctx,
 		domain.Courier{
-			FirstName: courierPayload.FirstName,
+			FirstName:   courierPayload.FirstName,
+			IsAvailable: true,
 		},
 	)
 	if err != nil {

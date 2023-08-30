@@ -12,11 +12,12 @@ type CourierRepository struct {
 }
 
 func (repo CourierRepository) SaveCourier(ctx context.Context, courier domain.Courier) (domain.Courier, error) {
-	query := "insert into courier (first_name) values ($1) RETURNING id, first_name, is_available"
+	query := "insert into courier (first_name, is_available) values ($1,$2) RETURNING id, first_name, is_available"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
 		courier.FirstName,
+		courier.IsAvailable,
 	)
 
 	err := row.Scan(&courier.Id, &courier.FirstName, &courier.IsAvailable)
