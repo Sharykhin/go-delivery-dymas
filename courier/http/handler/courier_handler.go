@@ -61,14 +61,14 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		return
 	}
 	ctx := r.Context()
-	err = h.courierRepository.SaveCourier(
+	_, err = h.courierRepository.SaveCourier(
 		ctx,
 		domain.Courier{
 			FirstName: courierPayload.FirstName,
 		},
 	)
 	if err != nil {
-		log.Printf("failed to save latest courier: %v", err)
+		log.Printf("Failed to save courier: %v", err)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: "Server Error.",

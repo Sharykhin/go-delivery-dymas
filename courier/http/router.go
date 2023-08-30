@@ -1,22 +1,19 @@
 package http
 
 import (
-	http "github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/gorilla/mux"
+	nethttp "net/http"
 )
 
-type RouteCourier struct {
-	url string
+type Route struct {
+	Handler func(nethttp.ResponseWriter, *nethttp.Request)
+	Method  string
 }
 
-func NewCourierCreateRoute() *RouteCourier {
-	return &RouteCourier{
-		url: "/couriers",
+func NewCourierRoute(routes map[string]Route, router *mux.Router) *mux.Router {
+	for url, route := range routes {
+		router.HandleFunc(url, route.Handler).Methods(route.Method)
 	}
-}
-
-func (r *RouteCourier) NewCourierCreateRoute(courierHandler *http.CourierHandler, router *mux.Router) *mux.Router {
-	router.HandleFunc(r.url, courierHandler.HandlerCourierCreate).Methods("POST")
 
 	return router
 }

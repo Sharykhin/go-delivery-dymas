@@ -5,7 +5,7 @@ import (
 )
 
 type CourierRepositoryInterface interface {
-	SaveCourier(ctx context.Context, courier Courier) error
+	SaveCourier(ctx context.Context, courier Courier) (Courier, error)
 }
 
 type Courier struct {
