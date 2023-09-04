@@ -83,15 +83,9 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		return
 	}
 
-	if err != nil {
-		w.WriteHeader(nethttp.StatusBadRequest)
-
-		log.Printf("failed to encode json response: %v\n", err)
-		return
-	}
 	err = json.NewEncoder(w).Encode(courier)
 	if err != nil {
-		w.WriteHeader(nethttp.StatusBadRequest)
+		w.WriteHeader(nethttp.StatusInternalServerError)
 
 		log.Printf("failed to encode json response: %v\n", err)
 		return

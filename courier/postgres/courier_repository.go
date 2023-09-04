@@ -20,9 +20,10 @@ func (repo CourierRepository) SaveCourier(ctx context.Context, courier *domain.C
 		courier.IsAvailable,
 	)
 
-	err := row.Scan(&courier.Id, &courier.FirstName, &courier.IsAvailable)
+	var courierRow domain.Courier
+	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
 
-	return courier, err
+	return &courierRow, err
 }
 
 func NewCourierRepository(client *sql.DB) *CourierRepository {
