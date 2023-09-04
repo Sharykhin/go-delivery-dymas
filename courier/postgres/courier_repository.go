@@ -11,7 +11,7 @@ type CourierRepository struct {
 	client *sql.DB
 }
 
-func (repo CourierRepository) SaveCourier(ctx context.Context, courier domain.Courier) (domain.Courier, error) {
+func (repo CourierRepository) SaveCourier(ctx context.Context, courier *domain.Courier) (*domain.Courier, error) {
 	query := "insert into courier (first_name, is_available) values ($1,$2) RETURNING id, first_name, is_available"
 	row := repo.client.QueryRowContext(
 		ctx,

@@ -61,9 +61,9 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		return
 	}
 	ctx := r.Context()
-	_, err = h.courierRepository.SaveCourier(
+	courier, err := h.courierRepository.SaveCourier(
 		ctx,
-		domain.Courier{
+		&domain.Courier{
 			FirstName:   courierPayload.FirstName,
 			IsAvailable: true,
 		},
@@ -77,8 +77,23 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		if err != nil {
 			log.Printf("failed to encode json response: %v\n", err)
 		}
+
 		w.WriteHeader(nethttp.StatusInternalServerError)
 
+		return
+	}
+
+	if err != nil {
+		w.WriteHeader(nethttp.StatusBadRequest)
+
+		log.Printf("failed to encode json response: %v\n", err)
+		return
+	}
+	err = json.NewEncoder(w).Encode(courier)
+	if err != nil {
+		w.WriteHeader(nethttp.StatusBadRequest)
+
+		log.Printf("failed to encode json response: %v\n", err)
 		return
 	}
 	w.WriteHeader(nethttp.StatusCreated)
