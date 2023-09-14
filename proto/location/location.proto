@@ -4,7 +4,7 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "/location";
 
-service CourierPosition {
+service Courier {
   rpc GetCourierLatestPosition (GetCourierLatestPositionRequest) returns (GetCourierLatestPositionResponse) {}
 }
 
