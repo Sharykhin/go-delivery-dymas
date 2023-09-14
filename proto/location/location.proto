@@ -5,16 +5,16 @@ import "google/protobuf/timestamp.proto";
 option go_package = "/location";
 
 service CourierLatestPosition {
-  rpc getCourierLatestPosition (CourierLatestPositionRequest) returns (CourierLatestPositionResponse) {}
+  rpc getCourierLatestPosition (GetCourierLatestPositionRequest) returns (GetCourierLatestPositionResponse) {}
 }
 
-message CourierLatestPositionRequest {
-    string CourierID = 1;
+message GetCourierLatestPositionRequest {
+    string courier_id = 1;
 }
 
-message CourierLatestPositionResponse {
-    string CourierID = 1;
-  	double  latitude = 2;
+message GetCourierLatestPositionResponse {
+    string courier_id = 1;
+  	double latitude = 2;
   	double longitude = 3;
   	google.protobuf.Timestamp time = 4;
 }
