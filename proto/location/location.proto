@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
-option go_package = "/location";
+option go_package = "generate/location/v1";
 
 service Courier {
   rpc GetCourierLatestPosition (GetCourierLatestPositionRequest) returns (GetCourierLatestPositionResponse) {}
@@ -13,8 +11,6 @@ message GetCourierLatestPositionRequest {
 }
 
 message GetCourierLatestPositionResponse {
-    string courier_id = 1;
   	double latitude = 2;
   	double longitude = 3;
-  	google.protobuf.Timestamp time = 4;
 }
