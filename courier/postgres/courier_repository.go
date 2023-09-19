@@ -26,6 +26,20 @@ func (repo CourierRepository) SaveCourier(ctx context.Context, courier *domain.C
 	return &courierRow, err
 }
 
+func (repo CourierRepository) GetCourierById(ctx context.Context, courierID string) (*domain.Courier, error)  {
+	query := "SELECT * FROM courier WHERE id=$1"
+	row := repo.client.QueryRowContext(
+		ctx,
+		query,
+		courierID,
+	)
+
+	var courierRow domain.Courier
+	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
+
+	return &courierRow, err
+}
+
 func NewCourierRepository(client *sql.DB) *CourierRepository {
 
 	courierRepository := CourierRepository{

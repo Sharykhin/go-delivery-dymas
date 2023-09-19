@@ -21,6 +21,7 @@ type CourierLocation struct {
 
 type CourierLocationRepositoryInterface interface {
 	SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *CourierLocation) error
+	GetLatestPositionCourierById(ctx context.Context, courierID string) (*CourierLocation, error)
 }
 
 type CourierLocationPublisherInterface interface {

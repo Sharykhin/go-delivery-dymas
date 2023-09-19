@@ -6,6 +6,7 @@ import (
 
 type Config struct {
 	KafkaAddress string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
+	CourierGrpcAddress string `env:"COURIER_GRPC_ADDRESS" envDefault:":9666"`
 	RedisAddress string `env:"REDIS_ADDRESS" envDefault:"localhost:6379"`
 	PortServer   string `env:"PORT_SERVER" envDefault:"8081"`
 	Db           int    `env:"DB_REDIS" envDefault:"0"`
