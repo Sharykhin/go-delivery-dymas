@@ -30,6 +30,20 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	return nil
 }
 
+func (repo *CourierLocationRepository) GetLatestPositionCourierById(ctx context.Context, courierID string) (*domain.CourierLocation, error)  {
+	query := "SELECT * FROM courier_latest_cord WHERE courier_id=$1"
+	row := repo.client.QueryRowContext(
+		ctx,
+		query,
+		courierID,
+	)
+
+	var courierLocationRow domain.CourierLocation
+	err := row.Scan(&courierLocationRow.Longitude, &courierLocationRow.Latitude)
+
+	return &courierLocationRow, err
+}
+
 func NewCourierLocationRepository(client *sql.DB) *CourierLocationRepository {
 
 	courierLocationRepository := CourierLocationRepository{

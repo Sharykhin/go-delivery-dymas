@@ -9,6 +9,7 @@ type Config struct {
 	DbPassword        string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
 	DbUser            string `env:"POSTGRES_USER" envDefault:"citizix_user"`
 	PortServerCourier string `env:"PORT_SERVER_COURIER" envDefault:"8881"`
+	CourierGrpcAddress string `env:"COURIER_GRPC_ADDRESS" envDefault:":9666"`
 }
 
 func GetConfig() (config Config, err error) {
