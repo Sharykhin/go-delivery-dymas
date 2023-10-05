@@ -26,8 +26,8 @@ func (repo CourierRepository) SaveCourier(ctx context.Context, courier *domain.C
 	return &courierRow, err
 }
 
-func (repo CourierRepository) GetCourierById(ctx context.Context, courierID string) (*domain.Courier, error)  {
-	query := "SELECT * FROM courier WHERE id=$1"
+func (repo CourierRepository) GetCourierById(ctx context.Context, courierID string) (*domain.Courier, error) {
+	query := "SELECT id,first_name,is_available  FROM courier WHERE id=$1"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,

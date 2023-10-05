@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
+	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"log"
@@ -14,23 +15,23 @@ import (
 type CourierHandler struct {
 	validate          *validator.Validate
 	courierRepository domain.CourierRepositoryInterface
-	courierClient pb.CourierClient
+	courierClient     pb.CourierClient
 }
 
 type CourierPayload struct {
 	FirstName string `json:"first_name" validate:"required"`
 }
 
-type CourierLatestPosition struct {
+type LastPositionPayload struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
 	Longitude float64 `json:"longitude" validate:"required,longitude"`
 }
 
 type CourierLatestPositionPayload struct {
-	courierLatestPosition CourierLatestPosition
-	FirstName string `json:"first_name" validate:"required"`
-	Id        string `json:"id" validate:"uuid"`
-	IsAvailable bool `json:"id" validate:"boolean"`
+	CourierLatestPosition LastPositionPayload `json:"last_position"`
+	FirstName             string              `json:"first_name" validate:"required"`
+	Id                    string              `json:"id" validate:"uuid,required"`
+	IsAvailable           bool                `json:"is_available" validate:"boolean,required"`
 }
 type ResponseMessage struct {
 	Status  string `json:"status"`
@@ -44,7 +45,7 @@ func NewCourierHandler(
 	return &CourierHandler{
 		validate:          validator.New(),
 		courierRepository: repo,
-		courierClient: courierClient,
+		courierClient:     courierClient,
 	}
 }
 
@@ -111,32 +112,34 @@ func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWrite
 		courierID,
 	)
 	if err != nil {
-		log.Printf("Failed to save courier: %v", err)
-		h.internalServerErrorPrepare("Failed to save courier: %v", err, w)
+		h.internalServerErrorPrepare("Failed to get courier: %v", err, w)
 
 		return
 	}
-	courierLatestPositionResponse, err := CourierHandler.courierClient.GetCourierLatestPosition(ctx, pb.GetCourierLatestPositionRequest{
+	courierLatestPositionResponse, err := h.courierClient.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{
 		CourierId: courierID,
 	})
 
 	if err != nil {
-		h.internalServerErrorPrepare("Failed to save courier: %v", err, w)
+		h.internalServerErrorPrepare("Failed to get last position courier: %v", err, w)
 
 		return
 	}
-	courierLatestPositionPayload = CourierLatestPositionPayload{
-		FirstName: courier.FirstName,
-		Id: courier.Id,
-		IsAvailable: courier.IsAvailable,
-		courierLatestPosition: CourierLatestPosition {
-			Latitude: courierLatestPositionResponse.Latitude,
-			Longitude: courierLatestPositionResponse.Longitude,
-		},
+	courierLatestPosition := LastPositionPayload{
+		Latitude:  courierLatestPositionResponse.Latitude,
+		Longitude: courierLatestPositionResponse.Longitude,
 	}
+
+	courierLatestPositionPayload = CourierLatestPositionPayload{
+		FirstName:             courier.FirstName,
+		Id:                    courier.Id,
+		IsAvailable:           courier.IsAvailable,
+		CourierLatestPosition: courierLatestPosition,
+	}
+
 	err = json.NewEncoder(w).Encode(courierLatestPositionPayload)
 	if err != nil {
-		h.internalServerErrorPrepare("failed to encode json response: %v\n", err, w)
+		h.internalServerErrorPrepare("Failed to encode json response: %v\n", err, w)
 
 		return
 	}
@@ -165,7 +168,7 @@ func (h *CourierHandler) validatePayload(payload *CourierPayload) (isValid bool,
 	return true, nil
 }
 
-func (h *CourierHandler) internalServerErrorPrepare(message string, err error, w nethttp.ResponseWriter)  {
+func (h *CourierHandler) internalServerErrorPrepare(message string, err error, w nethttp.ResponseWriter) {
 	log.Printf(message, err)
 	err = json.NewEncoder(w).Encode(&ResponseMessage{
 		Status:  "Error",

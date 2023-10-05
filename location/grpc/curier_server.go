@@ -4,19 +4,20 @@ import (
 	"context"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
-	"google.golang.org/grpc"
-	"log"
-	"net"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
+	"net"
 )
 
 type CourierServer struct {
 	courierLocationRepository domain.CourierLocationRepositoryInterface
+	pb.UnsafeCourierServer
 }
 
-func (courierServer CourierServer)GetCourierLatestPosition(ctx context.Context, getCourierLatestPositionRequest *pb.GetCourierLatestPositionRequest) (*pb.GetCourierLatestPositionResponse, error){
+func (courierServer CourierServer) GetCourierLatestPosition(ctx context.Context, getCourierLatestPositionRequest *pb.GetCourierLatestPositionRequest) (*pb.GetCourierLatestPositionResponse, error) {
 	courierLatestPosition, err := courierServer.courierLocationRepository.GetLatestPositionCourierById(ctx, getCourierLatestPositionRequest.CourierId)
 	if err != nil {
 		return nil, status.Errorf(
@@ -25,23 +26,23 @@ func (courierServer CourierServer)GetCourierLatestPosition(ctx context.Context, 
 		)
 	}
 
-	return pb.GetCourierLatestPositionResponse{
-		Latitude: courierLatestPosition.Latitude,
+	return &pb.GetCourierLatestPositionResponse{
+		Latitude:  courierLatestPosition.Latitude,
 		Longitude: courierLatestPosition.Longitude,
 	}, err
 }
 
-func RunCourierServer(courierLocationRepository domain.CourierLocationRepositoryInterface, courCourierGrpcAddress string)  {
+func RunCourierServer(courierLocationRepository domain.CourierLocationRepositoryInterface, courCourierGrpcAddress string) {
 	lis, err := net.Listen("tcp", courCourierGrpcAddress)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	courierServer := grpc.NewServer()
-	pb.RegisterCourierServer(courierServer, &CourierServer{
+	courierLocationServer := grpc.NewServer()
+	pb.RegisterCourierServer(courierLocationServer, &CourierServer{
 		courierLocationRepository: courierLocationRepository,
 	})
-	if err := courierServer.Serve(lis); err != nil {
+	if err := courierLocationServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
 }
