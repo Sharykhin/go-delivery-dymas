@@ -8,7 +8,6 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/courier/http"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/courier/postgres"
-	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
 	"github.com/gorilla/mux"
 	"log"
 )
@@ -25,14 +24,14 @@ func main() {
 		log.Panicf("Error connection database: %v\n", err)
 	}
 	defer clientPostgres.Close()
-	courierConnection, err := couriergrpc.NewCourierConnection(config.CourierGrpcAddress)
+	courierGRPCConnection, err := couriergrpc.NewCourierConnection(config.CourierGrpcAddress)
 	if err != nil {
 		log.Panicf("Error Courier Server Connection: %v\n", err)
 	}
-	defer courierConnection.Close()
-	courierClient := pb.NewCourierClient(courierConnection)
+	defer courierGRPCConnection.Close()
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	courierHandler := handler.NewCourierHandler(courierRepository, courierClient)
+	courierLocationService := couriergrpc.NewLocationPositionService(courierGRPCConnection)
+	courierHandler := handler.NewCourierHandler(courierRepository, courierLocationService)
 	courierLatestPositionUrl := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
 	routes := map[string]http.Route{"/couriers": {
 		Handler: courierHandler.HandlerCourierCreate,
