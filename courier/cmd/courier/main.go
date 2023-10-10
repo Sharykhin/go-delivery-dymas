@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/courier/grpc"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http"
@@ -30,7 +31,8 @@ func main() {
 	}
 	defer courierGRPCConnection.Close()
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	courierLocationService := couriergrpc.NewLocationPositionService(courierGRPCConnection, courierRepository)
+	courierLocationClient := couriergrpc.NewLocationClient(courierGRPCConnection, courierRepository)
+	courierLocationService := domain.NewLocationPositionService(courierLocationClient)
 	courierHandler := handler.NewCourierHandler(courierLocationService)
 	courierLatestPositionUrl := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
 	routes := map[string]http.Route{"/couriers": {

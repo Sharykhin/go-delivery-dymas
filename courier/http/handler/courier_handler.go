@@ -92,7 +92,7 @@ func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWrite
 	vars := mux.Vars(r)
 	ctx := r.Context()
 	courierID := vars["id"]
-	courierResponse, err := h.locationPositionService.GetCourierLatestPosition(ctx, courierID)
+	courierResponse, err := h.locationPositionService.GetCourierWithLatestPosition(ctx, courierID)
 
 	if err != nil {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusNotFound)
