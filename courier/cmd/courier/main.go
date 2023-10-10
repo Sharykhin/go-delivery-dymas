@@ -30,8 +30,8 @@ func main() {
 	}
 	defer courierGRPCConnection.Close()
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	courierLocationService := couriergrpc.NewLocationPositionService(courierGRPCConnection)
-	courierHandler := handler.NewCourierHandler(courierRepository, courierLocationService)
+	courierLocationService := couriergrpc.NewLocationPositionService(courierGRPCConnection, courierRepository)
+	courierHandler := handler.NewCourierHandler(courierLocationService)
 	courierLatestPositionUrl := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
 	routes := map[string]http.Route{"/couriers": {
 		Handler: courierHandler.HandlerCourierCreate,

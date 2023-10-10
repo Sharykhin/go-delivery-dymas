@@ -21,24 +21,16 @@ type CourierPayload struct {
 	FirstName string `json:"first_name" validate:"required"`
 }
 
-type CourierResponse struct {
-	LatestPosition *domain.LocationPosition `json:"last_position"`
-	FirstName      string                   `json:"first_name" validate:"required"`
-	Id             string                   `json:"id" validate:"uuid,required"`
-	IsAvailable    bool                     `json:"is_available" validate:"boolean,required"`
-}
 type ResponseMessage struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
 func NewCourierHandler(
-	repo domain.CourierRepositoryInterface,
 	locationPositionService domain.LocationPositionServiceInterface,
 ) *CourierHandler {
 	return &CourierHandler{
 		validate:                validator.New(),
-		courierRepository:       repo,
 		locationPositionService: locationPositionService,
 	}
 }
@@ -96,21 +88,11 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 }
 
 func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWriter, r *nethttp.Request) {
-	var courierResponse CourierResponse
 	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	ctx := r.Context()
 	courierID := vars["id"]
-	courier, err := h.courierRepository.GetCourierByID(
-		ctx,
-		courierID,
-	)
-	if err != nil {
-		h.errorHandler("Failed to get courier: %v", err, w, nethttp.StatusNotFound)
-
-		return
-	}
-	latestPositionResponse, err := h.locationPositionService.GetCourierLatestPosition(ctx, courierID)
+	courierResponse, err := h.locationPositionService.GetCourierLatestPosition(ctx, courierID)
 
 	if err != nil {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusNotFound)
@@ -118,12 +100,6 @@ func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWrite
 		return
 	}
 
-	courierResponse = CourierResponse{
-		FirstName:      courier.FirstName,
-		Id:             courier.Id,
-		IsAvailable:    courier.IsAvailable,
-		LatestPosition: latestPositionResponse,
-	}
 	if isValid, response := h.validatePayload(&courierResponse); !isValid {
 		w.WriteHeader(nethttp.StatusBadRequest)
 		err := json.NewEncoder(w).Encode(response)
