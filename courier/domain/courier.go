@@ -2,7 +2,10 @@ package domain
 
 import (
 	"context"
+	"errors"
 )
+
+var ErrorNotFound = errors.New("courier was not found")
 
 type CourierResponse struct {
 	LatestPosition *LocationPosition `json:"last_position"`
@@ -10,15 +13,15 @@ type CourierResponse struct {
 	Id             string            `json:"id" validate:"uuid,required"`
 	IsAvailable    bool              `json:"is_available" validate:"boolean,required"`
 }
-type CourierLocationPositionClientInterface interface {
+type CourierClientInterface interface {
 	GetCourierLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
 }
 type LocationPosition struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
 	Longitude float64 `json:"longitude" validate:"required,longitude"`
 }
-type LocationPositionService struct {
-	CourierClient     CourierLocationPositionClientInterface
+type CourierService struct {
+	CourierClient     CourierClientInterface
 	courierRepository CourierRepositoryInterface
 }
 
@@ -27,7 +30,7 @@ type CourierRepositoryInterface interface {
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
 }
 
-type LocationPositionServiceInterface interface {
+type CourierServiceInterface interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierResponse, error)
 }
 
@@ -37,7 +40,7 @@ type Courier struct {
 	IsAvailable bool
 }
 
-func (s LocationPositionService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierResponse, error) {
+func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierResponse, error) {
 	courier, err := s.courierRepository.GetCourierByID(
 		ctx,
 		courierID,
@@ -62,8 +65,8 @@ func (s LocationPositionService) GetCourierWithLatestPosition(ctx context.Contex
 	return &courierResponse, nil
 }
 
-func NewLocationPositionService(CourierClient CourierLocationPositionClientInterface) *LocationPositionService {
-	return &LocationPositionService{
+func NewCourierService(CourierClient CourierClientInterface) *CourierService {
+	return &CourierService{
 		CourierClient: CourierClient,
 	}
 }

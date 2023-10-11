@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	_ "github.com/lib/pq"
 )
@@ -33,10 +34,11 @@ func (repo CourierRepository) GetCourierByID(ctx context.Context, courierID stri
 		query,
 		courierID,
 	)
-
 	var courierRow domain.Courier
 	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
-
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrorNotFound
+	}
 	return &courierRow, err
 }
 

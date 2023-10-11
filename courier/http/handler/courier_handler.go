@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/go-playground/validator/v10"
@@ -12,9 +13,9 @@ import (
 )
 
 type CourierHandler struct {
-	validate                *validator.Validate
-	courierRepository       domain.CourierRepositoryInterface
-	locationPositionService domain.LocationPositionServiceInterface
+	validate          *validator.Validate
+	courierRepository domain.CourierRepositoryInterface
+	courierService    *domain.CourierService
 }
 
 type CourierPayload struct {
@@ -27,11 +28,11 @@ type ResponseMessage struct {
 }
 
 func NewCourierHandler(
-	locationPositionService domain.LocationPositionServiceInterface,
+	CourierService *domain.CourierService,
 ) *CourierHandler {
 	return &CourierHandler{
-		validate:                validator.New(),
-		locationPositionService: locationPositionService,
+		validate:       validator.New(),
+		courierService: CourierService,
 	}
 }
 
@@ -92,10 +93,15 @@ func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWrite
 	vars := mux.Vars(r)
 	ctx := r.Context()
 	courierID := vars["id"]
-	courierResponse, err := h.locationPositionService.GetCourierWithLatestPosition(ctx, courierID)
-
-	if err != nil {
+	courierResponse, err := h.courierService.GetCourierWithLatestPosition(ctx, courierID)
+	isErrorNotFound := err != nil && errors.Is(err, domain.ErrorNotFound)
+	if isErrorNotFound {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusNotFound)
+
+		return
+	}
+	if err != nil && !isErrorNotFound {
+		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusInternalServerError)
 
 		return
 	}

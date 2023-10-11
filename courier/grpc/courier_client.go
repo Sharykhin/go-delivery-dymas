@@ -12,7 +12,7 @@ type CourierLocationPositionClient struct {
 	courierClientGrpc pb.CourierClient
 }
 
-func NewLocationClient(locationConnection *grpc.ClientConn, repo domain.CourierRepositoryInterface) *CourierLocationPositionClient {
+func NewNewCourierClient(locationConnection *grpc.ClientConn, repo domain.CourierRepositoryInterface) *CourierLocationPositionClient {
 	clientCourier := pb.NewCourierClient(locationConnection)
 	return &CourierLocationPositionClient{
 		courierClientGrpc: clientCourier,
