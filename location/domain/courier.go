@@ -2,9 +2,12 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 )
+
+var ErrorNotFound = errors.New("courier was not found")
 
 type CourierLocationServiceInterface interface {
 	SaveLatestCourierLocation(
