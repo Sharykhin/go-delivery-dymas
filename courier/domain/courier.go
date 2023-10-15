@@ -7,7 +7,7 @@ import (
 
 var ErrorCourierNotFound = errors.New("courier was not found")
 
-type CourierResponse struct {
+type CourierWithLatestPosition struct {
 	LatestPosition LocationPosition `json:"last_position"`
 	FirstName      string           `json:"first_name" validate:"required"`
 	Id             string           `json:"id" validate:"uuid,required"`
@@ -31,7 +31,7 @@ type CourierRepositoryInterface interface {
 }
 
 type CourierServiceInterface interface {
-	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierResponse, error)
+	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
 }
 
 type Courier struct {
@@ -40,7 +40,7 @@ type Courier struct {
 	IsAvailable bool
 }
 
-func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierResponse, error) {
+func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
 	courier, err := s.CourierRepository.GetCourierByID(
 		ctx,
 		courierID,
@@ -56,7 +56,7 @@ func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courie
 		Latitude:  courierLatestPositionResponse.Latitude,
 		Longitude: courierLatestPositionResponse.Longitude,
 	}
-	courierResponse := CourierResponse{
+	courierResponse := CourierWithLatestPosition{
 		FirstName:      courier.FirstName,
 		Id:             courier.Id,
 		IsAvailable:    courier.IsAvailable,
