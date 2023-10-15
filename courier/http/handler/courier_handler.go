@@ -94,13 +94,13 @@ func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWrite
 	ctx := r.Context()
 	courierID := vars["id"]
 	courierResponse, err := h.courierService.GetCourierWithLatestPosition(ctx, courierID)
-	isErrorNotFound := err != nil && errors.Is(err, domain.ErrorNotFound)
-	if isErrorNotFound {
+	isErrorCourierNotFound := err != nil && errors.Is(err, domain.ErrorCourierNotFound)
+	if isErrorCourierNotFound {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusNotFound)
 
 		return
 	}
-	if err != nil && !isErrorNotFound {
+	if err != nil && !isErrorCourierNotFound {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusInternalServerError)
 
 		return

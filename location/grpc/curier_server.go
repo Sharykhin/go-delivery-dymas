@@ -18,14 +18,14 @@ type CourierServer struct {
 func (courierServer CourierServer) GetCourierLatestPosition(ctx context.Context, req *pb.GetCourierLatestPositionRequest) (*pb.GetCourierLatestPositionResponse, error) {
 	courierLatestPosition, err := courierServer.CourierLocationRepository.GetLatestPositionCourierById(ctx, req.CourierId)
 
-	isErrorNotFound := err != nil && errors.Is(err, domain.ErrorNotFound)
-	if isErrorNotFound {
+	isErrorCourierNotFound := err != nil && errors.Is(err, domain.ErrorCourierNotFound)
+	if isErrorCourierNotFound {
 		return nil, status.Errorf(
 			codes.NotFound,
 			fmt.Sprintf("Position Not found: %v", err),
 		)
 	}
-	if err != nil && !isErrorNotFound {
+	if err != nil && !isErrorCourierNotFound {
 		return nil, status.Errorf(
 			codes.Internal,
 			fmt.Sprintf("Position Not found: %v", err),

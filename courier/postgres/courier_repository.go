@@ -37,7 +37,7 @@ func (repo CourierRepository) GetCourierByID(ctx context.Context, courierID stri
 	var courierRow domain.Courier
 	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, domain.ErrorNotFound
+		return nil, domain.ErrorCourierNotFound
 	}
 	return &courierRow, err
 }

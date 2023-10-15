@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-var ErrorNotFound = errors.New("courier was not found")
+var ErrorCourierNotFound = errors.New("courier was not found")
 
 type CourierResponse struct {
 	LatestPosition LocationPosition `json:"last_position"`

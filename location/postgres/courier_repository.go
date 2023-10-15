@@ -42,7 +42,7 @@ func (repo *CourierLocationRepository) GetLatestPositionCourierById(ctx context.
 	var courierLocationRow domain.CourierLocation
 	err := row.Scan(&courierLocationRow.Latitude, &courierLocationRow.Longitude)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, domain.ErrorNotFound
+		return nil, domain.ErrorCourierNotFound
 	}
 
 	return &courierLocationRow, err
