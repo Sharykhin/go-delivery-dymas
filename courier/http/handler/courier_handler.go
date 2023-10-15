@@ -106,7 +106,7 @@ func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWrite
 		return
 	}
 
-	if isValid, response := h.validatePayload(&courierResponse); !isValid {
+	if isValid, response := h.validatePayload(courierResponse); !isValid {
 		w.WriteHeader(nethttp.StatusBadRequest)
 		err := json.NewEncoder(w).Encode(response)
 		if err != nil {

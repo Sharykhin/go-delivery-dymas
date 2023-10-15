@@ -11,7 +11,7 @@ import (
 )
 
 type CourierServer struct {
-	CourierLocationRepository domain.CourierLocationRepositoryInterface
+	CourierLocationRepository domain.CourierRepositoryInterface
 	pb.UnsafeCourierServer
 }
 

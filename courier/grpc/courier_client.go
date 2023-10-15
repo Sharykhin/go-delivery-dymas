@@ -12,7 +12,7 @@ type CourierLocationPositionClient struct {
 	courierClientGrpc pb.CourierClient
 }
 
-func NewNewCourierClient(locationConnection *grpc.ClientConn, repo domain.CourierRepositoryInterface) *CourierLocationPositionClient {
+func NewNewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
 	clientCourier := pb.NewCourierClient(locationConnection)
 	return &CourierLocationPositionClient{
 		courierClientGrpc: clientCourier,
@@ -20,13 +20,12 @@ func NewNewCourierClient(locationConnection *grpc.ClientConn, repo domain.Courie
 }
 func (cl CourierLocationPositionClient) GetCourierLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
 	courierLatestPositionResponse, err := cl.courierClientGrpc.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
+	if err != nil {
+		return nil, err
+	}
 	locationPosition := domain.LocationPosition{
 		Latitude:  courierLatestPositionResponse.Latitude,
 		Longitude: courierLatestPositionResponse.Longitude,
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	return &locationPosition, nil

@@ -10,7 +10,6 @@ import (
 type CourierLocationRepository struct {
 	indexGeo string
 	client   *coreredis.Client
-	domain.CourierLocationRepositoryInterface
 }
 
 const courierLatestCordsKey = "courier_latest_cord"
