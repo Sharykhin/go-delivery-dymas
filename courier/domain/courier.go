@@ -14,7 +14,7 @@ type CourierWithLatestPosition struct {
 	IsAvailable    bool             `json:"is_available" validate:"boolean,required"`
 }
 type CourierClientInterface interface {
-	GetCourierLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
+	GetLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
 }
 type LocationPosition struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
@@ -48,7 +48,7 @@ func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courie
 	if err != nil {
 		return nil, err
 	}
-	courierLatestPositionResponse, err := s.CourierClient.GetCourierLatestPosition(ctx, courierID)
+	courierLatestPositionResponse, err := s.CourierClient.GetLatestPosition(ctx, courierID)
 	if err != nil {
 		return nil, err
 	}

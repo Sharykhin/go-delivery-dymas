@@ -18,7 +18,7 @@ func NewNewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPo
 		courierClientGrpc: clientCourier,
 	}
 }
-func (cl CourierLocationPositionClient) GetCourierLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
+func (cl CourierLocationPositionClient) GetLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
 	courierLatestPositionResponse, err := cl.courierClientGrpc.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
 	if err != nil {
 		return nil, err
