@@ -22,7 +22,7 @@ func (repo CourierRepository) SaveCourier(ctx context.Context, courier *domain.C
 	)
 
 	var courierRow domain.Courier
-	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
+	err := row.Scan(&courierRow.ID, &courierRow.FirstName, &courierRow.IsAvailable)
 
 	return &courierRow, err
 }
@@ -35,9 +35,9 @@ func (repo CourierRepository) GetCourierByID(ctx context.Context, courierID stri
 		courierID,
 	)
 	var courierRow domain.Courier
-	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
+	err := row.Scan(&courierRow.ID, &courierRow.FirstName, &courierRow.IsAvailable)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, domain.ErrorCourierNotFound
+		return nil, domain.ErrCourierNotFound
 	}
 	return &courierRow, err
 }

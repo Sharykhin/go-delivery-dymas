@@ -28,11 +28,11 @@ type ResponseMessage struct {
 }
 
 func NewCourierHandler(
-	CourierService *domain.CourierService,
+	courierService *domain.CourierService,
 ) *CourierHandler {
 	return &CourierHandler{
 		validate:       validator.New(),
-		courierService: CourierService,
+		courierService: courierService,
 	}
 }
 
@@ -88,32 +88,24 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	w.WriteHeader(nethttp.StatusCreated)
 }
 
-func (h *CourierHandler) HandlerGetCourierLatestPosition(w nethttp.ResponseWriter, r *nethttp.Request) {
+func (h *CourierHandler) HandlerGetCourier(w nethttp.ResponseWriter, r *nethttp.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	ctx := r.Context()
 	courierID := vars["id"]
 	courierResponse, err := h.courierService.GetCourierWithLatestPosition(ctx, courierID)
-	isErrorCourierNotFound := err != nil && errors.Is(err, domain.ErrorCourierNotFound)
-	if isErrorCourierNotFound {
+	isErrCourierNotFound := err != nil && errors.Is(err, domain.ErrCourierNotFound)
+	if isErrCourierNotFound {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusNotFound)
 
 		return
 	}
-	if err != nil && !isErrorCourierNotFound {
+	if err != nil && !isErrCourierNotFound {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusInternalServerError)
 
 		return
 	}
 
-	if isValid, response := h.validatePayload(courierResponse); !isValid {
-		w.WriteHeader(nethttp.StatusBadRequest)
-		err := json.NewEncoder(w).Encode(response)
-		if err != nil {
-			log.Printf("failed to encode json response: %v\n", err)
-		}
-		return
-	}
 	err = json.NewEncoder(w).Encode(courierResponse)
 	if err != nil {
 		h.errorHandler("Failed to encode json response: %v\n", err, w, nethttp.StatusInternalServerError)

@@ -31,7 +31,7 @@ func main() {
 	}
 	defer courierGRPCConnection.Close()
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	courierClient := couriergrpc.NewNewCourierClient(courierGRPCConnection)
+	courierClient := couriergrpc.NewCourierClient(courierGRPCConnection)
 	courierService := domain.NewCourierService(courierClient, courierRepository)
 	courierHandler := handler.NewCourierHandler(courierService)
 	courierLatestPositionUrl := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
@@ -40,7 +40,7 @@ func main() {
 		Method:  "POST",
 	},
 		courierLatestPositionUrl: {
-			Handler: courierHandler.HandlerGetCourierLatestPosition,
+			Handler: courierHandler.HandlerGetCourier,
 			Method:  "GET",
 		},
 	}

@@ -9,17 +9,17 @@ import (
 )
 
 type CourierLocationPositionClient struct {
-	courierClientGrpc pb.CourierClient
+	courierClientGRPC pb.CourierClient
 }
 
-func NewNewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
+func NewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
 	clientCourier := pb.NewCourierClient(locationConnection)
 	return &CourierLocationPositionClient{
-		courierClientGrpc: clientCourier,
+		courierClientGRPC: clientCourier,
 	}
 }
 func (cl CourierLocationPositionClient) GetLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
-	courierLatestPositionResponse, err := cl.courierClientGrpc.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
+	courierLatestPositionResponse, err := cl.courierClientGRPC.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
 	if err != nil {
 		return nil, err
 	}

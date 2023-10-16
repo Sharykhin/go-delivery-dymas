@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var ErrorCourierNotFound = errors.New("courier was not found")
+var ErrCourierNotFound = errors.New("courier was not found")
 
 type CourierLocationServiceInterface interface {
 	SaveLatestCourierLocation(

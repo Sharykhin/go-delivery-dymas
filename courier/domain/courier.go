@@ -3,26 +3,27 @@ package domain
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
-var ErrorCourierNotFound = errors.New("courier was not found")
+var ErrCourierNotFound = errors.New("courier was not found")
 
 type CourierWithLatestPosition struct {
-	LatestPosition LocationPosition `json:"last_position"`
-	FirstName      string           `json:"first_name" validate:"required"`
-	Id             string           `json:"id" validate:"uuid,required"`
-	IsAvailable    bool             `json:"is_available" validate:"boolean,required"`
+	LatestPosition LocationPosition
+	FirstName      string
+	ID             string
+	IsAvailable    bool
 }
 type CourierClientInterface interface {
 	GetLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
 }
 type LocationPosition struct {
-	Latitude  float64 `json:"latitude" validate:"required,latitude"`
-	Longitude float64 `json:"longitude" validate:"required,longitude"`
+	Latitude  float64
+	Longitude float64
 }
 type CourierService struct {
-	CourierClient     CourierClientInterface
-	CourierRepository CourierRepositoryInterface
+	courierClient     CourierClientInterface
+	courierRepository CourierRepositoryInterface
 }
 
 type CourierRepositoryInterface interface {
@@ -35,20 +36,20 @@ type CourierServiceInterface interface {
 }
 
 type Courier struct {
-	Id          string
+	ID          string
 	FirstName   string
 	IsAvailable bool
 }
 
-func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
-	courier, err := s.CourierRepository.GetCourierByID(
+func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
+	courier, err := s.courierRepository.GetCourierByID(
 		ctx,
 		courierID,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get courier from the repository: %w", err)
 	}
-	courierLatestPositionResponse, err := s.CourierClient.GetLatestPosition(ctx, courierID)
+	courierLatestPositionResponse, err := s.courierClient.GetLatestPosition(ctx, courierID)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +59,7 @@ func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courie
 	}
 	courierResponse := CourierWithLatestPosition{
 		FirstName:      courier.FirstName,
-		Id:             courier.Id,
+		ID:             courier.ID,
 		IsAvailable:    courier.IsAvailable,
 		LatestPosition: locationPosition,
 	}
@@ -67,7 +68,7 @@ func (s CourierService) GetCourierWithLatestPosition(ctx context.Context, courie
 
 func NewCourierService(CourierClient CourierClientInterface, repo CourierRepositoryInterface) *CourierService {
 	return &CourierService{
-		CourierClient:     CourierClient,
-		CourierRepository: repo,
+		courierClient:     CourierClient,
+		courierRepository: repo,
 	}
 }
