@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
@@ -16,21 +17,26 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func main() {
+	var wg sync.WaitGroup
 	config, err := env.GetConfig()
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
 		return
 	}
-	serverSignalErrChan := make(chan int)
-	go runHttpServer(config, serverSignalErrChan)
-	go runGRPC(config, serverSignalErrChan)
-	<-serverSignalErrChan
+	wg.Add(2)
+	go runHttpServer(config, wg)
+	go runGRPC(config, wg)
+	wg.Wait()
 }
 
-func runHttpServer(config env.Config, serverSignalErrChan chan int) {
+func runHttpServer(config env.Config, wg sync.WaitGroup) {
 
 	publisher, err := kafka.NewCourierLocationPublisher(config.KafkaAddress)
 	if err != nil {
@@ -42,31 +48,35 @@ func runHttpServer(config env.Config, serverSignalErrChan chan int) {
 	courierService := domain.NewCourierLocationService(repo, publisher)
 	locationHandler := handler.NewLocationHandler(courierService)
 	router := http.NewRouter().NewRouter(locationHandler, mux.NewRouter())
-	if err := http.RunServer(router, ":"+config.PortServer); err != nil {
-		log.Printf("failed to run http server: %v", err)
-	}
-	serverSignalErrChan <- 1
+	http.RunServer(router, ":"+config.PortServer)
+	redisClient.Close()
+	wg.Done()
 }
 
-func runGRPC(config env.Config, serverSignalErrChan chan int) {
+func runGRPC(config env.Config, wg sync.WaitGroup) {
 	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
 	client, err := sql.Open("postgres", connPostgres)
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
 	}
-	defer client.Close()
 	repo := postgres.NewCourierLocationRepository(client)
 	lis, err := net.Listen("tcp", config.CourierGrpcAddress)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-
 	courierLocationServer := grpc.NewServer()
 	pb.RegisterCourierServer(courierLocationServer, &couriergrpc.CourierServer{
 		CourierLocationRepository: repo,
 	})
-	if err := courierLocationServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %s", err)
-	}
-	serverSignalErrChan <- 1
+	go func() {
+		if err := courierLocationServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %s", err)
+		}
+	}()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	<-ctx.Done()
+	stop()
+	courierLocationServer.GracefulStop()
+	client.Close()
+	wg.Done()
 }
