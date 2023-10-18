@@ -9,7 +9,7 @@ import (
 var ErrCourierNotFound = errors.New("courier was not found")
 
 type CourierWithLatestPosition struct {
-	LatestPosition LocationPosition
+	LatestPosition *LocationPosition
 	FirstName      string
 	ID             string
 	IsAvailable    bool
@@ -42,6 +42,8 @@ type Courier struct {
 }
 
 func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
+	var locationPosition *LocationPosition
+
 	courier, err := s.courierRepository.GetCourierByID(
 		ctx,
 		courierID,
@@ -51,12 +53,15 @@ func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, couri
 	}
 	courierLatestPositionResponse, err := s.courierClient.GetLatestPosition(ctx, courierID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get courier from the repository: %w", err)
 	}
-	locationPosition := LocationPosition{
-		Latitude:  courierLatestPositionResponse.Latitude,
-		Longitude: courierLatestPositionResponse.Longitude,
+	if courierLatestPositionResponse != nil {
+		locationPosition = &LocationPosition{
+			Latitude:  courierLatestPositionResponse.Latitude,
+			Longitude: courierLatestPositionResponse.Longitude,
+		}
 	}
+
 	courierResponse := CourierWithLatestPosition{
 		FirstName:      courier.FirstName,
 		ID:             courier.ID,

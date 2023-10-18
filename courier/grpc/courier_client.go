@@ -5,7 +5,10 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
+	"log"
 )
 
 type CourierLocationPositionClient struct {
@@ -20,6 +23,12 @@ func NewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPosit
 }
 func (cl CourierLocationPositionClient) GetLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
 	courierLatestPositionResponse, err := cl.courierClientGRPC.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
+	code, ok := status.FromError(err)
+	if err != nil && ok == true && code.Code() == codes.NotFound {
+		log.Printf("Not Found: %v\n", err)
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
