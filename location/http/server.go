@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func RunServer(router *mux.Router, port string) {
+func RunServer(ctx context.Context, router *mux.Router, port string) {
 	fmt.Println(port)
 	nethttp.Handle(string('/'), router)
 	fmt.Println("Server is listening...")
@@ -22,10 +22,10 @@ func RunServer(router *mux.Router, port string) {
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			log.Fatalf("listen: %s\n", err)
+			log.Printf("listen: %s\n", err)
 		}
 	}()
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-ctx.Done()
 	stop()
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

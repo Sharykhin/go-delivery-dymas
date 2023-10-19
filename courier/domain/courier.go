@@ -52,7 +52,8 @@ func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, couri
 		return nil, fmt.Errorf("failed to get courier from the repository: %w", err)
 	}
 	courierLatestPositionResponse, err := s.courierClient.GetLatestPosition(ctx, courierID)
-	if err != nil {
+	isErrCourierNotFound := errors.Is(err, ErrCourierNotFound)
+	if err != nil && !isErrCourierNotFound {
 		return nil, fmt.Errorf("failed to get courier from the repository: %w", err)
 	}
 	if courierLatestPositionResponse != nil {

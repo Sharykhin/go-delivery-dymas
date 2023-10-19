@@ -25,7 +25,7 @@ func (courierServer CourierServer) GetCourierLatestPosition(ctx context.Context,
 			fmt.Sprintf("Position Not found: %v", err),
 		)
 	}
-	if err != nil && !isErrCourierNotFound {
+	if err != nil {
 		return nil, status.Errorf(
 			codes.Internal,
 			fmt.Sprintf("Position Not found: %v", err),

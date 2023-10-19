@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/go-playground/validator/v10"
@@ -94,13 +93,7 @@ func (h *CourierHandler) HandlerGetCourier(w nethttp.ResponseWriter, r *nethttp.
 	ctx := r.Context()
 	courierID := vars["id"]
 	courierResponse, err := h.courierService.GetCourierWithLatestPosition(ctx, courierID)
-	isErrCourierNotFound := err != nil && errors.Is(err, domain.ErrCourierNotFound)
-	if isErrCourierNotFound {
-		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusNotFound)
-
-		return
-	}
-	if err != nil && !isErrCourierNotFound {
+	if err != nil {
 		h.errorHandler("Failed to get last position courier: %v", err, w, nethttp.StatusInternalServerError)
 
 		return
@@ -115,7 +108,7 @@ func (h *CourierHandler) HandlerGetCourier(w nethttp.ResponseWriter, r *nethttp.
 	w.WriteHeader(nethttp.StatusOK)
 }
 
-func (h *CourierHandler) validatePayload(s interface{}) (isValid bool, response *ResponseMessage) {
+func (h *CourierHandler) validatePayload(s any) (bool, *ResponseMessage) {
 	err := h.validate.Struct(s)
 	if err != nil {
 		var errorMessage string

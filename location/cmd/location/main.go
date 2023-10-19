@@ -26,40 +26,42 @@ import (
 func main() {
 	var wg sync.WaitGroup
 	config, err := env.GetConfig()
+	ctx := context.Background()
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
 		return
 	}
-	wg.Add(2)
-	go runHttpServer(config, wg)
-	go runGRPC(config, wg)
-	wg.Wait()
-}
-
-func runHttpServer(config env.Config, wg sync.WaitGroup) {
-
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
+	clientPostgres, err := sql.Open("postgres", connPostgres)
+	if err != nil {
+		log.Panicf("Error connection database: %v\n", err)
+	}
+	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
+	defer clientPostgres.Close()
 	publisher, err := kafka.NewCourierLocationPublisher(config.KafkaAddress)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
-	repo := redis.NewCourierLocationRepository(redisClient)
-	courierService := domain.NewCourierLocationService(repo, publisher)
+	repoRedis := redis.NewCourierLocationRepository(redisClient)
+	courierService := domain.NewCourierLocationService(repoRedis, publisher)
+	defer redisClient.Close()
+	wg.Add(2)
+	go runHttpServer(ctx, config, &wg, courierService)
+	go runGRPC(ctx, config, &wg, repoPostgres)
+	wg.Wait()
+}
+
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierLocationServiceInterface) {
+
 	locationHandler := handler.NewLocationHandler(courierService)
 	router := http.NewRouter().NewRouter(locationHandler, mux.NewRouter())
-	http.RunServer(router, ":"+config.PortServer)
-	redisClient.Close()
+	http.RunServer(ctx, router, ":"+config.PortServer)
 	wg.Done()
 }
 
-func runGRPC(config env.Config, wg sync.WaitGroup) {
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
-	client, err := sql.Open("postgres", connPostgres)
-	if err != nil {
-		log.Panicf("Error connection database: %v\n", err)
-	}
-	repo := postgres.NewCourierLocationRepository(client)
+func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo domain.CourierRepositoryInterface) {
 	lis, err := net.Listen("tcp", config.CourierGrpcAddress)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -77,6 +79,5 @@ func runGRPC(config env.Config, wg sync.WaitGroup) {
 	<-ctx.Done()
 	stop()
 	courierLocationServer.GracefulStop()
-	client.Close()
 	wg.Done()
 }
