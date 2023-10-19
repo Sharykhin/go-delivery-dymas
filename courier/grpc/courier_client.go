@@ -24,7 +24,7 @@ func NewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPosit
 func (cl CourierLocationPositionClient) GetLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
 	courierLatestPositionResponse, err := cl.courierClientGRPC.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
 	code, ok := status.FromError(err)
-	if ok == true && code.Code() == codes.NotFound {
+	if ok && code.Code() == codes.NotFound {
 		log.Printf("Not Found: %v\n", err)
 		return nil, domain.ErrCourierNotFound
 	}

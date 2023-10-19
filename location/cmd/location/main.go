@@ -36,17 +36,17 @@ func main() {
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
 	}
-	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
 	defer clientPostgres.Close()
+	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
 	publisher, err := kafka.NewCourierLocationPublisher(config.KafkaAddress)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
+	defer redisClient.Close()
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
 	courierService := domain.NewCourierLocationService(repoRedis, publisher)
-	defer redisClient.Close()
 	wg.Add(2)
 	go runHttpServer(ctx, config, &wg, courierService)
 	go runGRPC(ctx, config, &wg, repoPostgres)
