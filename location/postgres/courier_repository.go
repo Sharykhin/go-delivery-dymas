@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	_ "github.com/lib/pq"
@@ -30,8 +31,8 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	return nil
 }
 
-func (repo *CourierLocationRepository) GetLatestPositionCourierById(ctx context.Context, courierID string) (*domain.CourierLocation, error)  {
-	query := "SELECT * FROM courier_latest_cord WHERE courier_id=$1"
+func (repo *CourierLocationRepository) GetLatestPositionCourierById(ctx context.Context, courierID string) (*domain.CourierLocation, error) {
+	query := "SELECT latitude, longitude  FROM courier_latest_cord WHERE courier_id=$1 ORDER BY created_at DESC LIMIT 1"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
@@ -39,7 +40,10 @@ func (repo *CourierLocationRepository) GetLatestPositionCourierById(ctx context.
 	)
 
 	var courierLocationRow domain.CourierLocation
-	err := row.Scan(&courierLocationRow.Longitude, &courierLocationRow.Latitude)
+	err := row.Scan(&courierLocationRow.Latitude, &courierLocationRow.Longitude)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrCourierNotFound
+	}
 
 	return &courierLocationRow, err
 }

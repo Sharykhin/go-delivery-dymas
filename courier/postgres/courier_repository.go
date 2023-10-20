@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	_ "github.com/lib/pq"
 )
@@ -21,21 +22,26 @@ func (repo CourierRepository) SaveCourier(ctx context.Context, courier *domain.C
 	)
 
 	var courierRow domain.Courier
-	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
+	err := row.Scan(&courierRow.ID, &courierRow.FirstName, &courierRow.IsAvailable)
 
 	return &courierRow, err
 }
 
-func (repo CourierRepository) GetCourierById(ctx context.Context, courierID string) (*domain.Courier, error)  {
-	query := "SELECT * FROM courier WHERE id=$1"
+func (repo CourierRepository) GetCourierByID(ctx context.Context, courierID string) (*domain.Courier, error) {
+	query := "SELECT id,first_name,is_available  FROM courier WHERE id=$1"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
 		courierID,
 	)
-
 	var courierRow domain.Courier
-	err := row.Scan(&courierRow.Id, &courierRow.FirstName, &courierRow.IsAvailable)
+	err := row.Scan(&courierRow.ID, &courierRow.FirstName, &courierRow.IsAvailable)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrCourierNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
 
 	return &courierRow, err
 }

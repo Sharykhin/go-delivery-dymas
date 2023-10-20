@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/courier/grpc"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http"
@@ -24,16 +25,22 @@ func main() {
 		log.Panicf("Error connection database: %v\n", err)
 	}
 	defer clientPostgres.Close()
-	courierGrpc := couriergrpc.NewConnection(config.CourierGrpcAddress)
-	defer courierGrpc.close()
+	courierGRPCConnection, err := couriergrpc.NewCourierConnection(config.CourierGrpcAddress)
+	if err != nil {
+		log.Panicf("Error Courier Server Connection: %v\n", err)
+	}
+	defer courierGRPCConnection.Close()
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	courierHandler := handler.NewCourierHandler(courierRepository, courierGrpc)
+	courierClient := couriergrpc.NewCourierClient(courierGRPCConnection)
+	courierService := domain.NewCourierService(courierClient, courierRepository)
+	courierHandler := handler.NewCourierHandler(courierService)
+	courierLatestPositionUrl := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
 	routes := map[string]http.Route{"/couriers": {
-			Handler: courierHandler.HandlerCourierCreate,
-			Method:  "POST",
-		},
-		"/couriers/:id": {
-			Handler: courierHandler.HandlerGetCourierLatestPosition,
+		Handler: courierHandler.HandlerCourierCreate,
+		Method:  "POST",
+	},
+		courierLatestPositionUrl: {
+			Handler: courierHandler.HandlerGetCourier,
 			Method:  "GET",
 		},
 	}
