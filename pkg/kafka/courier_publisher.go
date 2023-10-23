@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Shopify/sarama"
 )
 
@@ -32,7 +31,7 @@ func (courierPublisher *CourierLocationLatestPublisher) publishLatestCourierGeoP
 	courierPublisher.publisher.Input() <- &message
 }
 
-func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
+func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *any) error {
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
