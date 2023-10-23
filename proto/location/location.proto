@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "generate/location/v1";
+
+service Courier {
+  rpc GetCourierLatestPosition (GetCourierLatestPositionRequest) returns (GetCourierLatestPositionResponse) {}
+}
+
+message GetCourierLatestPositionRequest {
+    string courier_id = 1;
+}
+
+message GetCourierLatestPositionResponse {
+  	double latitude = 2;
+  	double longitude = 3;
+}
