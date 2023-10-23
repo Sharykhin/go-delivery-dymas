@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/IBM/sarama"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/location/grpc"
@@ -39,7 +40,21 @@ func main() {
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
 
-	publisher := kafka.NewCourierLocationPublisher(kafka.NewPublisher("latest_position_courier"))
+	publisher := kafka.NewCourierLocationPublisher(
+		kafka.NewPublisher(
+			"latest_position_courier",
+			kafka.WithBrokersAddress(config.KafkaAddress),
+			kafka.WithProducerAck(sarama.WaitForAll),
+		),
+	)
+
+	//
+
+	publisher = kafka.NewCourierLocationPublisher(
+		kafka.NewPublisher(
+			"latest_position_courier",
+		),
+	)
 
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 	defer redisClient.Close()

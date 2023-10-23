@@ -17,8 +17,62 @@ type Publisher interface {
 }
 
 type publisher struct {
-	topicName string
-	producer  sarama.AsyncProducer
+	topicName     string
+	brokerAddress string
+	requiredAcks  sarama.RequiredAcks
+
+	producer sarama.AsyncProducer
+}
+
+// NewPublisher creates a new instance of Kafka publisher and returns general Publisher interface.
+// As for given parameters it only accepts topic name. Managing producer Partitioner and RequiredAcks
+// are not supported yet but will be implemented in latter versions.
+func NewPublisher(topicName string, opts ...func(*publisher)) Publisher {
+	if topicName == "" {
+		log.Panic("topic name is required for creating kafka publisher")
+	}
+
+	p := &publisher{
+		requiredAcks:  sarama.WaitForLocal,
+		brokerAddress: os.Getenv("KAFKA_BROKER_ADDRESS"),
+		topicName:     topicName,
+	}
+	for _, opt := range opts {
+		opt(p)
+	}
+
+	config := sarama.NewConfig()
+	if p.brokerAddress == "" {
+		log.Panic("kafka broker address is missing, use WithKafkaAddress option or KAFKA_ADDRESS env variable")
+	}
+
+	config.Producer.Partitioner = sarama.NewManualPartitioner
+	config.Producer.RequiredAcks = p.requiredAcks
+
+	producer, err := sarama.NewAsyncProducer([]string{p.brokerAddress}, config)
+	if err != nil {
+		log.Panicf("failed to initialize async producer: %v", err)
+	}
+
+	return &publisher{
+		producer: producer,
+	}
+}
+
+// WithBrokersAddress provides Kafka broker address. By default, when NewPublisher is called it take it from
+// KAFKA_BROKER_ADDRESS environment variable. But if needed to override this use this option.
+func WithBrokersAddress(brokerAddress string) func(*publisher) {
+	return func(p *publisher) {
+		p.brokerAddress = brokerAddress
+	}
+}
+
+// WithProducerAck set the producer acknowledgements. By default, when NewPublisher is called it sets sarama.WaitForLocal.
+// Use this option if you need to override this value.
+func WithProducerAck(acks sarama.RequiredAcks) func(*publisher) {
+	return func(p *publisher) {
+		p.requiredAcks = acks
+	}
 }
 
 // SendJSONMessage sends message as JSON. Before sending sarama produce message it marshals the given message
@@ -36,25 +90,4 @@ func (p *publisher) SendJSONMessage(_ context.Context, message any) error {
 	}
 
 	return nil
-}
-
-// NewPublisher creates a new instance of Kafka publisher and returns general Publisher interface.
-// As for given parameters it only accepts topic name. Managing producer Partitioner and RequiredAcks
-// are not supported yet but will be implemented in latter versions.
-func NewPublisher(topicName string) Publisher {
-	config := sarama.NewConfig()
-	config.Producer.Partitioner = sarama.NewManualPartitioner
-	config.Producer.RequiredAcks = sarama.WaitForLocal
-	address := os.Getenv("KAFKA_ADDRESS")
-	if address == "" {
-		log.Panic("env variable KAFKA_ADDRESS is required")
-	}
-	producer, err := sarama.NewAsyncProducer([]string{address}, config)
-	if err != nil {
-		log.Panicf("failed to initialize async producer: %v", err)
-	}
-
-	return &publisher{
-		producer: producer,
-	}
 }
