@@ -14,13 +14,12 @@ import (
 	"syscall"
 )
 
-const cgroup = "latest_position_courier"
-
 type CourierLocationConsumer struct {
 	consumerGroup             sarama.ConsumerGroup
 	keepRunning               bool
 	courierLocationRepository domain.CourierLocationRepositoryInterface
 	ready                     chan bool
+	topic                     string
 }
 
 func NewCourierLocationConsumer(
@@ -81,7 +80,7 @@ func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCour
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := courierLocationConsumer.consumerGroup.Consume(ctx, strings.Split(topic, ","), courierLocationConsumer); err != nil {
+			if err := courierLocationConsumer.consumerGroup.Consume(ctx, strings.Split(CourierLocationConsumer.topic, ","), courierLocationConsumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop

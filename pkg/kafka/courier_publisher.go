@@ -8,13 +8,12 @@ import (
 	"github.com/Shopify/sarama"
 )
 
-const topic = "latest_position_courier"
-
 type CourierLocationLatestPublisher struct {
 	publisher sarama.AsyncProducer
+	topic     string
 }
 
-func NewCourierLocationPublisher(address string) (*CourierLocationLatestPublisher, error) {
+func NewCourierLocationPublisher(address string, topic string) (*CourierLocationLatestPublisher, error) {
 	courierPublisher := CourierLocationLatestPublisher{}
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner
@@ -25,6 +24,7 @@ func NewCourierLocationPublisher(address string) (*CourierLocationLatestPublishe
 	}
 
 	courierPublisher.publisher = producer
+	courierPublisher.topic = topic
 	return &courierPublisher, nil
 }
 
@@ -39,7 +39,7 @@ func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLoca
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
 	courierPublisher.publishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
-		Topic: topic,
+		Topic: courierPublisher.topic,
 		Value: sarama.StringEncoder(message),
 	})
 

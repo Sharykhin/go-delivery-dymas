@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
-	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
+	"github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 	"log"
 )
 
@@ -23,7 +23,7 @@ func main() {
 	}
 	defer client.Close()
 	repo := postgres.NewCourierLocationRepository(client)
-	consumerGroup, err := kafka.NewCourierLocationConsumer(repo, config.KafkaAddress, config.Verbose, config.Oldest, config.Assignor)
+	consumerGroup, err := kafka.NewCourierLocationConsumer(repo, config.KafkaAddress, config.Verbose, config.Oldest, config.Assignor, "latest_position_courier")
 	if err != nil {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
