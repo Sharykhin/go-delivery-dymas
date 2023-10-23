@@ -1,6 +1,6 @@
 module github.com/Sharykhin/go-delivery-dymas/location
 
-go 1.21.1
+go 1.20
 
 require (
 	github.com/IBM/sarama v1.40.0
