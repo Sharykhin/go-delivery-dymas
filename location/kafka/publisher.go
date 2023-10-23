@@ -25,8 +25,8 @@ type publisher struct {
 }
 
 // NewPublisher creates a new instance of Kafka publisher and returns general Publisher interface.
-// As for given parameters it only accepts topic name. Managing producer Partitioner and RequiredAcks
-// are not supported yet but will be implemented in latter versions.
+// As for given parameters topic name is required and if needed via functional options pattern you can
+// define kafka broker address or change producer acknowledgements.
 func NewPublisher(topicName string, opts ...func(*publisher)) Publisher {
 	if topicName == "" {
 		log.Panic("topic name is required for creating kafka publisher")
