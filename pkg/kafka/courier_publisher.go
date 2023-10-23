@@ -7,13 +7,13 @@ import (
 	"github.com/Shopify/sarama"
 )
 
-type CourierLocationLatestPublisher struct {
-	publisher sarama.AsyncProducer
-	topic     string
+type Publisher struct {
+	producer sarama.AsyncProducer
+	topic    string
 }
 
-func NewCourierLocationPublisher(address string, topic string) (*CourierLocationLatestPublisher, error) {
-	courierPublisher := CourierLocationLatestPublisher{}
+func NewPublisher(address string, topic string, Publisher *any) (*any, error) {
+	publisher := Publisher
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForLocal
@@ -22,23 +22,23 @@ func NewCourierLocationPublisher(address string, topic string) (*CourierLocation
 		return nil, fmt.Errorf("failed to create a new sarama async producer: %w", err)
 	}
 
-	courierPublisher.publisher = producer
-	courierPublisher.topic = topic
-	return &courierPublisher, nil
+	publisher.producer = producer
+	publisher.topic = topic
+	return publisher, nil
 }
 
-func (courierPublisher *CourierLocationLatestPublisher) publishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
-	courierPublisher.publisher.Input() <- &message
+func (publisher *Publisher) publishMessage(message sarama.ProducerMessage) {
+	publisher.producer.Input() <- &message
 }
 
-func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *any) error {
+func (publisher *Publisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *any) error {
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
-	courierPublisher.publishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
-		Topic: courierPublisher.topic,
+	publisher.publishMessage(sarama.ProducerMessage{
+		Topic: publisher.topic,
 		Value: sarama.StringEncoder(message),
 	})
 
