@@ -2,8 +2,7 @@ package kafka
 
 import (
 	"context"
-	"encoding/json"
-	
+
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
 
@@ -20,12 +19,8 @@ func NewCourierLocationConsumer(
 	}
 }
 
-func (c *CourierLocationConsumer) HandleJSONMessage(ctx context.Context, payload []byte) error {
-	var location domain.CourierLocation
-	err := json.Unmarshal(payload, &location)
-	if err != nil {
-		return nil
-	}
+func (c *CourierLocationConsumer) HandleMessage(ctx context.Context, payload *domain.CourierLocation) error {
+	// Do your stuff
 
 	return nil
 }

@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -13,11 +14,11 @@ import (
 	"github.com/IBM/sarama"
 )
 
-type JSONHandler interface {
-	HandleJSONMessage(ctx context.Context, payload []byte) error
+type ConsumerHandler[T any] interface {
+	HandleMessage(ctx context.Context, payload T) error
 }
 
-type Consumer struct {
+type Consumer[T any] struct {
 	verboseEnabled bool
 	assignor       string
 	topic          string
@@ -25,24 +26,14 @@ type Consumer struct {
 	ready          chan bool
 
 	consumerGroup sarama.ConsumerGroup
-	jsonHandler   JSONHandler
+	jsonHandler   ConsumerHandler[T]
 }
 
-func WithVerboseConsumer(isEnabled bool) func(*Consumer) {
-	return func(consumer *Consumer) {
-		consumer.verboseEnabled = isEnabled
-	}
-}
-
-func NewConsumer(topic string, opts ...func(*Consumer)) *Consumer {
-	consumer := &Consumer{
+func NewConsumer[T any](topic string) *Consumer[T] {
+	consumer := &Consumer[T]{
 		topic:       topic,
 		keepRunning: true,
 		ready:       make(chan bool),
-	}
-	// create consumer group
-	for _, opt := range opts {
-		opt(consumer)
 	}
 
 	if consumer.verboseEnabled {
@@ -80,22 +71,22 @@ func NewConsumer(topic string, opts ...func(*Consumer)) *Consumer {
 	return consumer
 }
 
-func (c *Consumer) Setup(sarama.ConsumerGroupSession) error {
+func (c *Consumer[T]) Setup(sarama.ConsumerGroupSession) error {
 	// Mark the consumer as ready
 	close(c.ready)
 
 	return nil
 }
 
-func (c *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
+func (c *Consumer[T]) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-func (c *Consumer) RegisterJSONHandler(ctx context.Context, handler JSONHandler) {
+func (c *Consumer[T]) RegisterJSONHandler(ctx context.Context, handler ConsumerHandler[T]) {
 	c.jsonHandler = handler
 }
 
-func (c *Consumer) StartConsuming(ctx context.Context) error {
+func (c *Consumer[T]) StartConsuming(ctx context.Context) error {
 	consumptionIsPaused := false
 	ctx, cancel := context.WithCancel(ctx)
 	wg := &sync.WaitGroup{}
@@ -148,7 +139,7 @@ func (c *Consumer) StartConsuming(ctx context.Context) error {
 	return nil
 }
 
-func (c *Consumer) toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *bool) {
+func (c *Consumer[T]) toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *bool) {
 	if *isPaused {
 		client.ResumeAll()
 		log.Println("Resuming consumption")
@@ -160,12 +151,18 @@ func (c *Consumer) toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *
 	*isPaused = !*isPaused
 }
 
-func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+func (c *Consumer[T]) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for {
 		select {
 		case message := <-claim.Messages():
 			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-			err := c.jsonHandler.HandleJSONMessage(session.Context(), message.Value)
+			var payload T
+			if err := json.Unmarshal(message.Value, &payload); err != nil {
+				session.MarkMessage(message, "")
+				continue
+			}
+
+			err := c.jsonHandler.HandleMessage(session.Context(), payload)
 			if err != nil {
 				log.Printf("Failed to save a courier location in the repository: %v", err)
 			}
