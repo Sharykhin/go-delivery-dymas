@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"context"
 	"github.com/IBM/sarama"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	kafkapkg "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
@@ -11,7 +10,7 @@ import (
 const cgroup = "latest_position_courier"
 
 type CourierLocationConsumer struct {
-	consumerGroup             kafkapkg.ConsumerGroup
+	kafkapkg.ConsumerGroup
 	courierLocationRepository domain.CourierLocationRepositoryInterface
 }
 
@@ -24,6 +23,7 @@ func NewCourierLocationConsumer(
 ) (*CourierLocationConsumer, error) {
 
 	consumerGroup, err := kafkapkg.NewGroupConsumer(
+		kafkapkg.CourierLocationConsumer{},
 		kafkapkg.WithBrokers(brokers),
 		kafkapkg.WithVerbose(verbose),
 		kafkapkg.WithOldest(oldest),
@@ -33,21 +33,6 @@ func NewCourierLocationConsumer(
 		consumerGroup:             consumerGroup,
 		courierLocationRepository: courierLocationRepository,
 	}, err
-}
-
-func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCourierGeoPositionMessage(ctx context.Context) error {
-	return courierLocationConsumer.consumerGroup.ConsumeMessage(ctx, courierLocationConsumer)
-}
-
-// Setup is run at the beginning of a new session, before ConsumeClaim
-func (courierLocationConsumer *CourierLocationConsumer) Setup(sarama.ConsumerGroupSession) error {
-	// Mark the consumer as ready
-	close(courierLocationConsumer.consumerGroup.Ready)
-	return nil
-}
-
-func (courierLocationConsumer *CourierLocationConsumer) Cleanup(sarama.ConsumerGroupSession) error {
-	return nil
 }
 
 func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {

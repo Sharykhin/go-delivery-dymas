@@ -25,8 +25,7 @@ type ConsumerGroup struct {
 	Ready         chan bool
 }
 
-func NewGroupConsumer(cgroup string, opts ...func(cg *ConsumerGroup)) (*ConsumerGroup, error) {
-	var consumerGroup ConsumerGroup
+func NewGroupConsumer(cgroup string, consumerGroup ConsumerGroup, opts ...func(cg *ConsumerGroup)) (*ConsumerGroup, error) {
 	for _, opt := range opts {
 		opt(&consumerGroup)
 	}
@@ -155,6 +154,17 @@ func (consumerGroup *ConsumerGroup) HandleJsonMessage(ctx context.Context, claim
 			return nil
 		}
 	}
+}
+
+// Setup is run at the beginning of a new session, before ConsumeClaim
+func (consumerGroup *ConsumerGroup) Setup(sarama.ConsumerGroupSession) error {
+	// Mark the consumer as ready
+	close(consumerGroup.consumerGroup.Ready)
+	return nil
+}
+
+func (consumerGroup *ConsumerGroup) Cleanup(sarama.ConsumerGroupSession) error {
+	return nil
 }
 
 func toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *bool) {
