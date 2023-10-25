@@ -27,4 +27,5 @@ func main() {
 
 	consumer := kafakconsumer.NewConsumer("latest_position_courier", kafakconsumer.WithVerboseConsumer(true))
 	consumer.RegisterJSONHandler(ctx, kafka.NewCourierLocationConsumer(repo))
+	consumer.StartConsuming(ctx)
 }
