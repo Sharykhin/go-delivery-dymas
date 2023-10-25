@@ -37,7 +37,7 @@ func NewCourierLocationConsumer(
 
 func (courierLocationConsumer *CourierLocationConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 
-	return courierLocationConsumer.consumerGroup.HandleJsonMessage(ctx, claim, domain.CourierLocation{}, func() error {
+	return courierLocationConsumer.HandleJsonMessage(ctx, claim, domain.CourierLocation{}, func() error {
 		err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(session.Context(), &courierLocation)
 		if err != nil {
 			log.Printf("Failed to save a courier location in the repository: %v", err)
