@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
 	"log"
@@ -67,19 +68,19 @@ func withAssignor(assignor string) func(cg *ConsumerGroup) {
 	}
 }
 
-func withVerbose(verbose bool) func(cg *ConsumerGroup) {
+func WithVerbose(verbose bool) func(cg *ConsumerGroup) {
 	return func(cg *ConsumerGroup) {
 		cg.verbose = verbose
 	}
 }
 
-func withOldest(oldest bool) func(cg *ConsumerGroup) {
+func WithOldest(oldest bool) func(cg *ConsumerGroup) {
 	return func(cg *ConsumerGroup) {
 		cg.oldest = oldest
 	}
 }
 
-func withBrokers(brokers string) func(cg *ConsumerGroup) {
+func WithBrokers(brokers string) func(cg *ConsumerGroup) {
 	return func(cg *ConsumerGroup) {
 		cg.brokers = brokers
 	}
@@ -136,6 +137,24 @@ func (consumerGroup *ConsumerGroup) ConsumeMessage(ctx context.Context, handler 
 	}
 
 	return nil
+}
+
+func (consumerGroup *ConsumerGroup) HandleJsonMessage(ctx context.Context, claim sarama.ConsumerGroupClaim, payload any, customHandler func() error) error {
+	for {
+		select {
+		case message := <-claim.Messages():
+			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+			if err := json.Unmarshal(message.Value, &payload); err != nil {
+				log.Printf("Failed to unmarshal Kafka message into courier location struct: %v\n", err)
+				session.MarkMessage(message, "")
+				return nil
+			}
+			customHandler()
+			session.MarkMessage(message, "")
+		case <-session.Context().Done():
+			return nil
+		}
+	}
 }
 
 func toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *bool) {
