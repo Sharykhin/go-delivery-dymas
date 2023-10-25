@@ -14,7 +14,7 @@ import (
 )
 
 type JSONHandler interface {
-	HandleJSONMessage(ctx context.Context, payload any) error
+	HandleJSONMessage(ctx context.Context, payload []byte) error
 }
 
 type Consumer struct {
