@@ -7,6 +7,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
+	kafakconsumer "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 	"log"
 )
 
@@ -27,6 +28,9 @@ func main() {
 	if err != nil {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
+
+	consumer := kafakconsumer.NewConsumer(kafakconsumer.WithVerboseConsumer(true))
+	consumer.RegisterJSONConsumer(ctx, "latest_position_courier", kafka.NewCourierLocationConsumer(repo))
 	err = consumerGroup.ConsumeCourierLatestCourierGeoPositionMessage(ctx)
 	if err != nil {
 		log.Panicf("Failed to consume message: %v\n", err)
