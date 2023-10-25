@@ -29,8 +29,8 @@ func main() {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
 
-	consumer := kafakconsumer.NewConsumer(kafakconsumer.WithVerboseConsumer(true))
-	consumer.RegisterJSONHandler(ctx, "latest_position_courier", kafka.NewCourierLocationConsumer(repo))
+	consumer := kafakconsumer.NewConsumer("latest_position_courier", kafakconsumer.WithVerboseConsumer(true))
+	consumer.RegisterJSONHandler(ctx, kafka.NewCourierLocationConsumer(repo))
 	err = consumerGroup.ConsumeCourierLatestCourierGeoPositionMessage(ctx)
 	if err != nil {
 		log.Panicf("Failed to consume message: %v\n", err)

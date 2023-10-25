@@ -70,6 +70,16 @@ func NewCourierLocationConsumer(
 	}, nil
 }
 
+func (c *CourierLocationConsumer) HandleJSONMessage(ctx context.Context, payload []byte) error {
+	var location domain.CourierLocation
+	err := json.Unmarshal(payload, &location)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
 func (courierLocationConsumer *CourierLocationConsumer) ConsumeCourierLatestCourierGeoPositionMessage(ctx context.Context) error {
 	consumptionIsPaused := false
 	ctx, cancel := context.WithCancel(ctx)

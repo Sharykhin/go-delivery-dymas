@@ -13,7 +13,7 @@ require (
 )
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231025144501-0ed70550ecdc // indirect
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231025150108-cf48188f8c67 // indirect
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
