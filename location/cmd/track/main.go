@@ -30,7 +30,7 @@ func main() {
 	}
 
 	consumer := kafakconsumer.NewConsumer(kafakconsumer.WithVerboseConsumer(true))
-	consumer.RegisterJSONConsumer(ctx, "latest_position_courier", kafka.NewCourierLocationConsumer(repo))
+	consumer.RegisterJSONHandler(ctx, "latest_position_courier", kafka.NewCourierLocationConsumer(repo))
 	err = consumerGroup.ConsumeCourierLatestCourierGeoPositionMessage(ctx)
 	if err != nil {
 		log.Panicf("Failed to consume message: %v\n", err)
