@@ -9,8 +9,6 @@ import (
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
-const cgroup = "latest_position_courier"
-
 type CourierLocationMessageJsonHandler struct {
 	courierLocationRepository domain.CourierLocationRepositoryInterface
 }
@@ -31,7 +29,7 @@ func NewCourierLocationConsumer(
 		verbose,
 		oldest,
 		assignor,
-		'latest_position_courier',
+		"latest_position_courier",
 	)
 }
 

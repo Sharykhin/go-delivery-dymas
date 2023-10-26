@@ -60,7 +60,7 @@ func NewConsumer(
 		config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	}
 
-	consumerGroup, err := sarama.NewConsumerGroup(strings.Split(brokers, ","), cgroup, config)
+	consumerGroup, err := sarama.NewConsumerGroup(strings.Split(brokers, ","), topic, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create courier location consumer: %w", err)
 	}
@@ -84,7 +84,7 @@ func (consumer *Consumer) ConsumeMessage(ctx context.Context) error {
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := consumer.consumerGroup.Consume(ctx, strings.Split(topic, ","), consumer); err != nil {
+			if err := consumer.consumerGroup.Consume(ctx, strings.Split(consumer.topic, ","), consumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop
@@ -142,7 +142,10 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		select {
 		case message := <-claim.Messages():
 			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-			consumer.jsonMessageHandler.HandleJsonMessage(session.Context(), message)
+			err := consumer.jsonMessageHandler.HandleJsonMessage(session.Context(), message)
+			if err != nil {
+				log.Println(err)
+			}
 			session.MarkMessage(message, "")
 		case <-session.Context().Done():
 			return nil
