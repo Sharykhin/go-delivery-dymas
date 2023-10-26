@@ -19,7 +19,7 @@ func NewCourierLocationConsumer(
 	}
 }
 
-func (c *CourierLocationConsumer) HandleMessage(ctx context.Context, payload *domain.CourierLocation) error {
+func (c *CourierLocationConsumer) HandleMessage(ctx context.Context, payload domain.CourierLocation) error {
 	// Do your stuff
 
 	return nil

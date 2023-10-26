@@ -23,17 +23,37 @@ type Consumer[T any] struct {
 	assignor       string
 	topic          string
 	keepRunning    bool
+	brokerAddress  string
 	ready          chan bool
 
 	consumerGroup sarama.ConsumerGroup
-	jsonHandler   ConsumerHandler[T]
+	handler       ConsumerHandler[T]
 }
 
-func NewConsumer[T any](topic string) *Consumer[T] {
+func WithConsumerBrokerAddress(brokerAddress string) func(consumer *Consumer[any]) {
+	return func(consumer *Consumer[any]) {
+		consumer.brokerAddress = brokerAddress
+	}
+}
+
+func WithConsumerVerboseEnabled(isEnabled bool) func(consumer *Consumer[any]) {
+	return func(consumer *Consumer[any]) {
+		consumer.verboseEnabled = isEnabled
+	}
+}
+
+func NewJSONConsumer[T any](topic string, handler ConsumerHandler[T], opts ...func(consumer *Consumer[T])) *Consumer[T] {
 	consumer := &Consumer[T]{
-		topic:       topic,
-		keepRunning: true,
-		ready:       make(chan bool),
+		topic:          topic,
+		assignor:       "sticky",
+		verboseEnabled: false,
+		keepRunning:    true,
+		ready:          make(chan bool),
+		handler:        handler,
+	}
+
+	for _, opt := range opts {
+		opt(consumer)
 	}
 
 	if consumer.verboseEnabled {
@@ -61,7 +81,7 @@ func NewConsumer[T any](topic string) *Consumer[T] {
 
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
-	consumerGroup, err := sarama.NewConsumerGroup(strings.Split("", ","), consumer.topic, config)
+	consumerGroup, err := sarama.NewConsumerGroup(strings.Split(consumer.brokerAddress, ","), consumer.topic, config)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -80,10 +100,6 @@ func (c *Consumer[T]) Setup(sarama.ConsumerGroupSession) error {
 
 func (c *Consumer[T]) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
-}
-
-func (c *Consumer[T]) RegisterJSONHandler(ctx context.Context, handler ConsumerHandler[T]) {
-	c.jsonHandler = handler
 }
 
 func (c *Consumer[T]) StartConsuming(ctx context.Context) error {
@@ -162,7 +178,7 @@ func (c *Consumer[T]) ConsumeClaim(session sarama.ConsumerGroupSession, claim sa
 				continue
 			}
 
-			err := c.jsonHandler.HandleMessage(session.Context(), payload)
+			err := c.handler.HandleMessage(session.Context(), payload)
 			if err != nil {
 				log.Printf("Failed to save a courier location in the repository: %v", err)
 			}

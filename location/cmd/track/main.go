@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
@@ -25,7 +26,6 @@ func main() {
 	defer client.Close()
 	repo := postgres.NewCourierLocationRepository(client)
 
-	consumer := kafakconsumer.NewConsumer("latest_position_courier", kafakconsumer.WithVerboseConsumer(true))
-	consumer.RegisterJSONHandler(ctx, kafka.NewCourierLocationConsumer(repo))
-	consumer.StartConsuming(ctx)
+	locationConsumer := kafka.NewCourierLocationConsumer(repo)
+	err := kafakconsumer.NewConsumer[domain.CourierLocation]("latest_position_courier").RegisterJSONHandler(ctx, locationConsumer).StartConsuming(ctx)
 }
