@@ -27,5 +27,12 @@ func main() {
 	repo := postgres.NewCourierLocationRepository(client)
 
 	locationConsumer := kafka.NewCourierLocationConsumer(repo)
-	err := kafakconsumer.NewConsumer[domain.CourierLocation]("latest_position_courier").RegisterJSONHandler(ctx, locationConsumer).StartConsuming(ctx)
+	err = kafakconsumer.NewJSONConsumer[domain.CourierLocation](
+		"latest_position_courier",
+		locationConsumer,
+		kafakconsumer.NewConsumerConfig(),
+	).StartConsuming(ctx)
+	if err != nil {
+		log.Panicf("failed to run consumer: %v", err)
+	}
 }

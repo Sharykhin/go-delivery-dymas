@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
@@ -21,6 +22,6 @@ func NewCourierLocationConsumer(
 
 func (c *CourierLocationConsumer) HandleMessage(ctx context.Context, payload domain.CourierLocation) error {
 	// Do your stuff
-
+	fmt.Println("payload nah")
 	return nil
 }

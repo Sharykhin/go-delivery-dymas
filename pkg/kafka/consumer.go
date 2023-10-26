@@ -19,44 +19,36 @@ type ConsumerHandler[T any] interface {
 }
 
 type Consumer[T any] struct {
-	verboseEnabled bool
-	assignor       string
-	topic          string
-	keepRunning    bool
-	brokerAddress  string
-	ready          chan bool
+	topic         string
+	keepRunning   bool
+	brokerAddress string
+	ready         chan bool
 
 	consumerGroup sarama.ConsumerGroup
 	handler       ConsumerHandler[T]
 }
 
-func WithConsumerBrokerAddress(brokerAddress string) func(consumer *Consumer[any]) {
-	return func(consumer *Consumer[any]) {
-		consumer.brokerAddress = brokerAddress
+type ConsumerConfig struct {
+	Assignor       string
+	VerboseEnabled bool
+}
+
+func NewConsumerConfig() *ConsumerConfig {
+	return &ConsumerConfig{
+		Assignor:       "sticky",
+		VerboseEnabled: false,
 	}
 }
 
-func WithConsumerVerboseEnabled(isEnabled bool) func(consumer *Consumer[any]) {
-	return func(consumer *Consumer[any]) {
-		consumer.verboseEnabled = isEnabled
-	}
-}
-
-func NewJSONConsumer[T any](topic string, handler ConsumerHandler[T], opts ...func(consumer *Consumer[T])) *Consumer[T] {
+func NewJSONConsumer[T any](topic string, handler ConsumerHandler[T], cfg *ConsumerConfig) *Consumer[T] {
 	consumer := &Consumer[T]{
-		topic:          topic,
-		assignor:       "sticky",
-		verboseEnabled: false,
-		keepRunning:    true,
-		ready:          make(chan bool),
-		handler:        handler,
+		topic:       topic,
+		keepRunning: true,
+		ready:       make(chan bool),
+		handler:     handler,
 	}
 
-	for _, opt := range opts {
-		opt(consumer)
-	}
-
-	if consumer.verboseEnabled {
+	if cfg.VerboseEnabled {
 		sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
 	}
 
@@ -66,7 +58,7 @@ func NewJSONConsumer[T any](topic string, handler ConsumerHandler[T], opts ...fu
 	 */
 	config := sarama.NewConfig()
 
-	switch consumer.assignor {
+	switch cfg.Assignor {
 	case "sticky":
 		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategySticky()}
 	case "roundrobin":
@@ -74,7 +66,7 @@ func NewJSONConsumer[T any](topic string, handler ConsumerHandler[T], opts ...fu
 	case "range":
 		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRange()}
 	default:
-		err := fmt.Errorf("unrecognized consumer group partition assignor: %s", consumer.assignor)
+		err := fmt.Errorf("unrecognized consumer group partition assignor: %s", cfg.Assignor)
 
 		log.Panic(err)
 	}
