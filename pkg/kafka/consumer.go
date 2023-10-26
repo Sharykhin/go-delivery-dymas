@@ -12,10 +12,8 @@ import (
 	"syscall"
 )
 
-const cgroup = "latest_position_courier"
-
 type JsonMessageHandler interface {
-	HandleJsonMessage()
+	HandleJsonMessage(ctx context.Context, message *sarama.ConsumerMessage) error
 }
 
 type Consumer struct {
@@ -23,6 +21,7 @@ type Consumer struct {
 	keepRunning        bool
 	ready              chan bool
 	jsonMessageHandler JsonMessageHandler
+	topic              string
 }
 
 func NewConsumer(
@@ -31,6 +30,7 @@ func NewConsumer(
 	verbose bool,
 	oldest bool,
 	assignor string,
+	topic string,
 ) (*Consumer, error) {
 
 	if verbose {
@@ -68,6 +68,7 @@ func NewConsumer(
 		consumerGroup:      consumerGroup,
 		keepRunning:        true,
 		ready:              make(chan bool),
+		topic:              topic,
 		jsonMessageHandler: jsonMessageHandler,
 	}, nil
 }
@@ -141,7 +142,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		select {
 		case message := <-claim.Messages():
 			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-			consumer.jsonMessageHandler.HandleJsonMessage()
+			consumer.jsonMessageHandler.HandleJsonMessage(session.Context(), message)
 			session.MarkMessage(message, "")
 		case <-session.Context().Done():
 			return nil

@@ -27,7 +27,7 @@ func main() {
 	if err != nil {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
-	err = consumerGroup.ConsumeCourierLatestCourierGeoPositionMessage(ctx)
+	err = consumerGroup.ConsumeMessage(ctx)
 	if err != nil {
 		log.Panicf("Failed to consume message: %v\n", err)
 	}
