@@ -39,12 +39,12 @@ func main() {
 	}
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
-	publisher := pkgkafka.NewPublisher(config.KafkaAddress)
-	courierLocationPublisher, err := kafka.NewCourierLocationPublisher(publisher)
+	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
+	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher)
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 	defer redisClient.Close()
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
