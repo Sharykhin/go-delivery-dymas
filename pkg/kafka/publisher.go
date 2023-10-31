@@ -16,7 +16,7 @@ type HandlerMessageJson interface {
 	HandleJsonMessage(ctx context.Context) ([]byte, error)
 }
 
-func NewCourierLocationPublisher(address string) (*CourierLocationLatestPublisher, error) {
+func NewPublisher(address string) (*Publisher, error) {
 	publisher := Publisher{}
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner

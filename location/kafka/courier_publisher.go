@@ -11,7 +11,7 @@ import (
 const topic = "latest_position_courier"
 
 type CourierLocationLatestPublisher struct {
-	publisher pkgkafka.Publisher
+	publisher *pkgkafka.Publisher
 }
 
 func NewCourierLocationPublisher(publisher *pkgkafka.Publisher) *CourierLocationLatestPublisher {
