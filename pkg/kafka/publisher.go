@@ -10,13 +10,14 @@ const topic = "latest_position_courier"
 
 type Publisher struct {
 	producer sarama.AsyncProducer
+	topic    string
 }
 
 type HandlerMessageJson interface {
 	HandleJsonMessage(ctx context.Context) ([]byte, error)
 }
 
-func NewPublisher(address string) (*Publisher, error) {
+func NewPublisher(address string, topic string) (*Publisher, error) {
 	publisher := Publisher{}
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner
@@ -27,6 +28,7 @@ func NewPublisher(address string) (*Publisher, error) {
 	}
 
 	publisher.producer = producer
+	publisher.topic = topic
 	return &publisher, nil
 }
 
@@ -36,7 +38,7 @@ func (publisher *Publisher) publish(message sarama.ProducerMessage) {
 
 func (publisher *Publisher) PublishMessage(message []byte) error {
 	publisher.publish(sarama.ProducerMessage{
-		Topic: topic,
+		Topic: publisher.topic,
 		Value: sarama.StringEncoder(message),
 	})
 
