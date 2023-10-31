@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
-	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
 type CourierLocationMessageJsonHandler struct {
@@ -15,22 +14,12 @@ type CourierLocationMessageJsonHandler struct {
 
 func NewCourierLocationConsumer(
 	courierLocationRepository domain.CourierLocationRepositoryInterface,
-	brokers string,
-	verbose bool,
-	oldest bool,
-	assignor string,
-) (*pkgkafka.Consumer, error) {
+) *CourierLocationMessageJsonHandler {
 	courierLocationMessageJsonHandler := &CourierLocationMessageJsonHandler{
 		courierLocationRepository: courierLocationRepository,
 	}
-	return pkgkafka.NewConsumer(
-		courierLocationMessageJsonHandler,
-		brokers,
-		verbose,
-		oldest,
-		assignor,
-		"latest_position_courier",
-	)
+
+	return courierLocationMessageJsonHandler
 }
 
 func (handlerMessage *CourierLocationMessageJsonHandler) HandleJsonMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
