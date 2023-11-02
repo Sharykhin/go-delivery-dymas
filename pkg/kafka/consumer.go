@@ -3,36 +3,36 @@ package kafka
 import (
 	"context"
 	"fmt"
-	"github.com/IBM/sarama"
 	"log"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
 	"syscall"
+
+	"github.com/IBM/sarama"
 )
 
-type JsonMessageHandler interface {
-	HandleJsonMessage(ctx context.Context, message *sarama.ConsumerMessage) error
+type JSONMessageHandler interface {
+	HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error
 }
 
 type Consumer struct {
-	consumerGroup      sarama.ConsumerGroup
 	keepRunning        bool
-	ready              chan bool
-	jsonMessageHandler JsonMessageHandler
 	topic              string
+	jsonMessageHandler JSONMessageHandler
+	ready              chan bool
+	consumerGroup      sarama.ConsumerGroup
 }
 
 func NewConsumer(
-	jsonMessageHandler JsonMessageHandler,
+	jsonMessageHandler JSONMessageHandler,
 	brokers string,
 	verbose bool,
 	oldest bool,
 	assignor string,
 	topic string,
 ) (*Consumer, error) {
-
 	if verbose {
 		sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
 	}
@@ -51,7 +51,7 @@ func NewConsumer(
 	case "range":
 		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRange()}
 	default:
-		err := fmt.Errorf("Unrecognized consumer group partition assignor: %s", assignor)
+		err := fmt.Errorf("unrecognized consumer group partition assignor: %s", assignor)
 
 		return nil, err
 	}
@@ -64,6 +64,7 @@ func NewConsumer(
 	if err != nil {
 		return nil, fmt.Errorf("failed to create courier location consumer: %w", err)
 	}
+
 	return &Consumer{
 		consumerGroup:      consumerGroup,
 		keepRunning:        true,
@@ -76,10 +77,11 @@ func NewConsumer(
 func (consumer *Consumer) ConsumeMessage(ctx context.Context) error {
 	consumptionIsPaused := false
 	ctx, cancel := context.WithCancel(ctx)
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
+	waitGroup := &sync.WaitGroup{}
+	waitGroup.Add(1)
+
 	go func() {
-		defer wg.Done()
+		defer waitGroup.Done()
 		for {
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
@@ -87,11 +89,13 @@ func (consumer *Consumer) ConsumeMessage(ctx context.Context) error {
 			if err := consumer.consumerGroup.Consume(ctx, strings.Split(consumer.topic, ","), consumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
+
 			// check if context was cancelled, signaling that the consumer should stop
 			if ctx.Err() != nil {
 				log.Panicf("Error from consumer: %v", ctx.Err())
 				return
 			}
+
 			consumer.ready = make(chan bool)
 		}
 	}()
@@ -109,16 +113,19 @@ func (consumer *Consumer) ConsumeMessage(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			log.Println("terminating: context cancelled")
+
 			consumer.keepRunning = false
 		case <-sigterm:
 			log.Println("terminating: via signal")
+
 			consumer.keepRunning = false
 		case <-sigusr1:
 			toggleConsumptionFlow(consumer.consumerGroup, &consumptionIsPaused)
 		}
 	}
 	cancel()
-	wg.Wait()
+	waitGroup.Wait()
+
 	if err := consumer.consumerGroup.Close(); err != nil {
 		return fmt.Errorf("Error closing client: %w", err)
 	}
@@ -126,7 +133,7 @@ func (consumer *Consumer) ConsumeMessage(ctx context.Context) error {
 	return nil
 }
 
-// Setup is run at the beginning of a new session, before ConsumeClaim
+// Setup is run at the beginning of a new session, before ConsumeClaim.
 func (consumer *Consumer) Setup(sarama.ConsumerGroupSession) error {
 	// Mark the consumer as ready
 	close(consumer.ready)
@@ -142,10 +149,12 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		select {
 		case message := <-claim.Messages():
 			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-			err := consumer.jsonMessageHandler.HandleJsonMessage(session.Context(), message)
+			err := consumer.jsonMessageHandler.HandleJSONMessage(session.Context(), message)
+
 			if err != nil {
 				log.Println(err)
 			}
+
 			session.MarkMessage(message, "")
 		case <-session.Context().Done():
 			return nil

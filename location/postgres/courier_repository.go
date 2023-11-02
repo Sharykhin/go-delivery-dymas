@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
-	_ "github.com/lib/pq"
 )
 
 type CourierLocationRepository struct {
@@ -23,15 +23,16 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 		courierLocation.Longitude,
 		courierLocation.CreatedAt,
 	)
+
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("Row couirier location was not saved: %w", err)
+		return fmt.Errorf("row couirier location was not saved: %w", err)
 	}
 
 	return nil
 }
 
-func (repo *CourierLocationRepository) GetLatestPositionCourierById(ctx context.Context, courierID string) (*domain.CourierLocation, error) {
+func (repo *CourierLocationRepository) GetLatestPositionCourierByID(ctx context.Context, courierID string) (*domain.CourierLocation, error) {
 	query := "SELECT latitude, longitude  FROM courier_latest_cord WHERE courier_id=$1 ORDER BY created_at DESC LIMIT 1"
 	row := repo.client.QueryRowContext(
 		ctx,
@@ -49,7 +50,6 @@ func (repo *CourierLocationRepository) GetLatestPositionCourierById(ctx context.
 }
 
 func NewCourierLocationRepository(client *sql.DB) *CourierLocationRepository {
-
 	courierLocationRepository := CourierLocationRepository{
 		client: client,
 	}

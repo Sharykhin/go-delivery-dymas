@@ -3,12 +3,12 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
-
-const topic = "latest_position_courier"
 
 type CourierLocationLatestPublisher struct {
 	publisher *pkgkafka.Publisher
@@ -26,7 +26,14 @@ func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLoca
 	if err != nil {
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
-	courierPublisher.publisher.PublishMessage(message)
+	if courierPublisher.publisher != nil {
+		err = courierPublisher.publisher.PublishMessage(ctx, message)
+		if err != nil {
+			return fmt.Errorf("failed to publish courier location: %w", err)
+		}
+	} else {
+		return errors.New("courier publisher was not found")
+	}
 
 	return nil
 }

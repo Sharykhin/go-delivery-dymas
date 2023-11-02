@@ -5,7 +5,6 @@ import (
 )
 
 func NewConnect(addr string, db int) *coreredis.Client {
-
 	var options = &coreredis.Options{
 		Addr: addr,
 		DB:   db,
@@ -15,3 +14,5 @@ func NewConnect(addr string, db int) *coreredis.Client {
 
 	return client
 }
+
+// gg

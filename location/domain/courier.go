@@ -27,7 +27,7 @@ type CourierLocationRepositoryInterface interface {
 }
 type CourierRepositoryInterface interface {
 	CourierLocationRepositoryInterface
-	GetLatestPositionCourierById(ctx context.Context, courierID string) (*CourierLocation, error)
+	GetLatestPositionCourierByID(ctx context.Context, courierID string) (*CourierLocation, error)
 }
 type CourierLocationPublisherInterface interface {
 	PublishLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error

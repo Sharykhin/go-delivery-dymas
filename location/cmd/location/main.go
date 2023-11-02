@@ -37,6 +37,7 @@ func main() {
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
 	}
+	//
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
 	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "latest_position_courier")

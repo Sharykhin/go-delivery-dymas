@@ -24,9 +24,9 @@ func main() {
 	}
 	defer client.Close()
 	repo := postgres.NewCourierLocationRepository(client)
-	courierLocationMessageJsonHandler := kafka.NewCourierLocationConsumer(repo)
-	consumerGroup, err := pkgkafka.NewConsumer(
-		courierLocationMessageJsonHandler,
+	courierLocationConsumer := kafka.NewCourierLocationConsumer(repo)
+	consumer, err := pkgkafka.NewConsumer(
+		courierLocationConsumer,
 		config.KafkaAddress,
 		config.Verbose,
 		config.Oldest,
@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
-	err = consumerGroup.ConsumeMessage(ctx)
+	err = consumer.ConsumeMessage(ctx)
 	if err != nil {
 		log.Panicf("Failed to consume message: %v\n", err)
 	}

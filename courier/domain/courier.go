@@ -21,6 +21,7 @@ type LocationPosition struct {
 	Latitude  float64
 	Longitude float64
 }
+
 type CourierService struct {
 	courierClient     CourierClientInterface
 	courierRepository CourierRepositoryInterface
@@ -51,11 +52,14 @@ func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, couri
 	if err != nil {
 		return nil, fmt.Errorf("failed to get courier from the repository: %w", err)
 	}
+
 	courierLatestPositionResponse, err := s.courierClient.GetLatestPosition(ctx, courierID)
 	isErrCourierNotFound := errors.Is(err, ErrCourierNotFound)
+
 	if err != nil && !isErrCourierNotFound {
 		return nil, fmt.Errorf("failed to get courier: %w", err)
 	}
+
 	if courierLatestPositionResponse != nil {
 		locationPosition = &LocationPosition{
 			Latitude:  courierLatestPositionResponse.Latitude,
@@ -69,12 +73,13 @@ func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, couri
 		IsAvailable:    courier.IsAvailable,
 		LatestPosition: locationPosition,
 	}
+
 	return &courierResponse, nil
 }
 
-func NewCourierService(CourierClient CourierClientInterface, repo CourierRepositoryInterface) *CourierService {
+func NewCourierService(courierClient CourierClientInterface, repo CourierRepositoryInterface) *CourierService {
 	return &CourierService{
-		courierClient:     CourierClient,
+		courierClient:     courierClient,
 		courierRepository: repo,
 	}
 }
