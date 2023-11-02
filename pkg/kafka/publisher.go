@@ -37,7 +37,7 @@ func (publisher *Publisher) publish(message sarama.ProducerMessage) {
 	publisher.producer.Input() <- &message
 }
 
-func (publisher *Publisher) PublishMessage(message []byte) error {
+func (publisher *Publisher) PublishMessage(ctx context.Context, message []byte) error {
 	publisher.publish(sarama.ProducerMessage{
 		Topic: publisher.topic,
 		Value: sarama.StringEncoder(message),
