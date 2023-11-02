@@ -23,6 +23,7 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 			Latitude:  courierLocation.Latitude,
 			Longitude: courierLocation.Longitude,
 		}).Err()
+
 	if err != nil {
 		return fmt.Errorf("failed to add courier geo location into redis: %w", err)
 	}

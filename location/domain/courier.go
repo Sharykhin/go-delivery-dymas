@@ -40,9 +40,11 @@ type CourierLocationService struct {
 
 func (courierLocationService *CourierLocationService) SaveLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
 	err := courierLocationService.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
+
 	if err != nil {
 		return fmt.Errorf("failed to store latest courier location in the repository: %w", err)
 	}
+
 	err = courierLocationService.publisher.PublishLatestCourierLocation(ctx, courierLocation)
 
 	if err != nil {

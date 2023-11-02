@@ -33,10 +33,13 @@ func main() {
 		config.Assignor,
 		"latest_position_courier",
 	)
+
 	if err != nil {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
+
 	err = consumer.ConsumeMessage(ctx)
+
 	if err != nil {
 		log.Panicf("Failed to consume message: %v\n", err)
 	}

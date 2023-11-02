@@ -26,8 +26,10 @@ func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLoca
 	if err != nil {
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
+
 	if courierPublisher.publisher != nil {
 		err = courierPublisher.publisher.PublishMessage(ctx, message)
+
 		if err != nil {
 			return fmt.Errorf("failed to publish courier location: %w", err)
 		}

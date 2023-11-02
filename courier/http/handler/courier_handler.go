@@ -124,6 +124,7 @@ func (h *CourierHandler) HandlerGetCourier(w nethttp.ResponseWriter, r *nethttp.
 
 func (h *CourierHandler) validatePayload(s any) (bool, *ResponseMessage) {
 	err := h.validate.Struct(s)
+
 	if err != nil {
 		var errorMessage string
 

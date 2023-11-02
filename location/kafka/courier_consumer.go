@@ -25,12 +25,16 @@ func NewCourierLocationConsumer(
 
 func (courierLocationConsumer *CourierLocationConsumer) HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
 	var courierLocation domain.CourierLocation
+
 	if err := json.Unmarshal(message.Value, &courierLocation); err != nil {
 		return fmt.Errorf("failed to unmarshal Kafka message into courier location struct: %w", err)
 	}
+
 	err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(ctx, &courierLocation)
+
 	if err != nil {
 		return fmt.Errorf("failed to save a courier location in the repository: %w", err)
 	}
+
 	return nil
 }
