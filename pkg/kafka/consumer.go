@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,13 +13,12 @@ import (
 	"github.com/IBM/sarama"
 )
 
-var ErrHandleMessage = errors.New("courier was not found")
-
 type JSONMessageHandler interface {
 	HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error
 	IsRetryAttempt(err error) bool
 }
 
+// Consumer Consume message from kafka
 type Consumer struct {
 	keepRunning        bool
 	topic              string
