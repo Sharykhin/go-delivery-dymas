@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,8 +14,11 @@ import (
 	"github.com/IBM/sarama"
 )
 
+var ErrHandleMessage = errors.New("courier was not found")
+
 type JSONMessageHandler interface {
 	HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error
+	IsRetryAttempt(err error) bool
 }
 
 type Consumer struct {
@@ -153,6 +157,10 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 
 			if err != nil {
 				log.Println(err)
+			}
+
+			if err != nil && consumer.jsonMessageHandler.IsRetryAttempt(err) {
+				return err
 			}
 
 			session.MarkMessage(message, "")

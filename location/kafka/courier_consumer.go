@@ -11,13 +11,16 @@ import (
 
 type CourierLocationConsumer struct {
 	courierLocationRepository domain.CourierLocationRepositoryInterface
+	errorHandler              domain.TypeErrorHandler
 }
 
 func NewCourierLocationConsumer(
 	courierLocationRepository domain.CourierLocationRepositoryInterface,
+	h domain.TypeErrorHandler,
 ) *CourierLocationConsumer {
 	courierLocationConsumer := &CourierLocationConsumer{
 		courierLocationRepository: courierLocationRepository,
+		errorHandler:              h,
 	}
 
 	return courierLocationConsumer
@@ -37,4 +40,8 @@ func (courierLocationConsumer *CourierLocationConsumer) HandleJSONMessage(ctx co
 	}
 
 	return nil
+}
+
+func (courierLocationConsumer *CourierLocationConsumer) IsRetryAttempt(err error) bool {
+	return courierLocationConsumer.errorHandler.CompareTypeError(err)
 }
