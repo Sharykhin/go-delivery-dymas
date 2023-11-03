@@ -13,27 +13,6 @@ type CourierLocationRepository struct {
 	client *sql.DB
 }
 
-type ErrorTypeHandlerDatabase struct {
-	errors []error
-}
-
-func (e *ErrorTypeHandlerDatabase) CompareTypeError(err error) bool {
-	for _, errCompare := range e.errors {
-
-		isErrorExists := errors.Is(errCompare, err)
-
-		if isErrorExists {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (e *ErrorTypeHandlerDatabase) AddTypeError(err error) {
-	e.errors = append(e.errors, err)
-}
-
 func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	query := "insert into courier_latest_cord (courier_id, latitude, longitude, created_at) values ($1, $2, $3, $4) ON CONFLICT DO NOTHING"
 	_, err := repo.client.ExecContext(
@@ -47,7 +26,9 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("row couirier location was not saved: %w", err)
+		if errors.Is(err, sql.ErrConnDone) {
+			return err
+		}
 	}
 
 	return nil
@@ -77,10 +58,4 @@ func NewCourierLocationRepository(client *sql.DB) *CourierLocationRepository {
 	}
 
 	return &courierLocationRepository
-}
-
-func NewErrorTypeHandleDatabase() *ErrorTypeHandlerDatabase {
-	var errorTypeHandlerDatabase *ErrorTypeHandlerDatabase
-	errorTypeHandlerDatabase.AddTypeError(sql.ErrConnDone)
-	return errorTypeHandlerDatabase
 }

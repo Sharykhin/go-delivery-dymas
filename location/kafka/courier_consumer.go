@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/IBM/sarama"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
@@ -11,16 +12,13 @@ import (
 
 type CourierLocationConsumer struct {
 	courierLocationRepository domain.CourierLocationRepositoryInterface
-	errorHandler              domain.TypeErrorHandler
 }
 
 func NewCourierLocationConsumer(
 	courierLocationRepository domain.CourierLocationRepositoryInterface,
-	h domain.TypeErrorHandler,
 ) *CourierLocationConsumer {
 	courierLocationConsumer := &CourierLocationConsumer{
 		courierLocationRepository: courierLocationRepository,
-		errorHandler:              h,
 	}
 
 	return courierLocationConsumer
@@ -30,7 +28,9 @@ func (courierLocationConsumer *CourierLocationConsumer) HandleJSONMessage(ctx co
 	var courierLocation domain.CourierLocation
 
 	if err := json.Unmarshal(message.Value, &courierLocation); err != nil {
-		return fmt.Errorf("failed to unmarshal Kafka message into courier location struct: %w", err)
+		log.Printf("failed to unmarshal Kafka message into courier location struct: %v\n", err)
+
+		return nil
 	}
 
 	err := courierLocationConsumer.courierLocationRepository.SaveLatestCourierGeoPosition(ctx, &courierLocation)
@@ -40,8 +40,4 @@ func (courierLocationConsumer *CourierLocationConsumer) HandleJSONMessage(ctx co
 	}
 
 	return nil
-}
-
-func (courierLocationConsumer *CourierLocationConsumer) IsRetryAttempt(err error) bool {
-	return courierLocationConsumer.errorHandler.CompareTypeError(err)
 }

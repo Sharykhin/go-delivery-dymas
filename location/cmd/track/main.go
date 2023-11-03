@@ -23,9 +23,8 @@ func main() {
 		log.Panicf("Error connection database: %v\n", err)
 	}
 	defer client.Close()
-	errorDatabaseHandler := postgres.NewErrorTypeHandleDatabase()
 	repo := postgres.NewCourierLocationRepository(client)
-	courierLocationConsumer := kafka.NewCourierLocationConsumer(repo, errorDatabaseHandler)
+	courierLocationConsumer := kafka.NewCourierLocationConsumer(repo)
 	consumer, err := pkgkafka.NewConsumer(
 		courierLocationConsumer,
 		config.KafkaAddress,
