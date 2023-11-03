@@ -7,15 +7,13 @@ import (
 	"github.com/Shopify/sarama"
 )
 
+// Publisher Async send message in kafka
 type Publisher struct {
 	producer sarama.AsyncProducer
 	topic    string
 }
 
-type JSONMessagePublishHandler interface {
-	JSONMessageHandle(ctx context.Context) ([]byte, error)
-}
-
+// NewPublisher Create new Publisher Async for sending in kafka
 func NewPublisher(address, topic string) (*Publisher, error) {
 	publisher := Publisher{}
 	config := sarama.NewConfig()
@@ -37,6 +35,7 @@ func (publisher *Publisher) publish(message sarama.ProducerMessage) {
 	publisher.producer.Input() <- &message
 }
 
+// PublishMessage  Send async message in kafka
 func (publisher *Publisher) PublishMessage(ctx context.Context, message []byte) error {
 	publisher.publish(sarama.ProducerMessage{
 		Topic: publisher.topic,

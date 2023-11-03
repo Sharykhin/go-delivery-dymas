@@ -13,12 +13,12 @@ import (
 	"github.com/IBM/sarama"
 )
 
+// JSONMessageHandler Handler jso message that sending in kafka
 type JSONMessageHandler interface {
 	HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error
-	IsRetryAttempt(err error) bool
 }
 
-// Consumer Consume message from kafka
+// Consumer represents a Sarama consumer group consumer
 type Consumer struct {
 	keepRunning        bool
 	topic              string
@@ -27,6 +27,7 @@ type Consumer struct {
 	consumerGroup      sarama.ConsumerGroup
 }
 
+// NewConsumer Create new Consumer with specify consumer group
 func NewConsumer(
 	jsonMessageHandler JSONMessageHandler,
 	brokers string,
@@ -76,6 +77,7 @@ func NewConsumer(
 	}, nil
 }
 
+// ConsumeMessage Consume message in format json from kafka for specific consumer group
 func (consumer *Consumer) ConsumeMessage(ctx context.Context) error {
 	consumptionIsPaused := false
 	ctx, cancel := context.WithCancel(ctx)
