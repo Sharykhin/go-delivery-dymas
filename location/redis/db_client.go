@@ -14,5 +14,3 @@ func NewConnect(addr string, db int) *coreredis.Client {
 
 	return client
 }
-
-// gg

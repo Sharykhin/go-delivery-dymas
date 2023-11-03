@@ -16,11 +16,6 @@ type CourierLocationServiceInterface interface {
 	) error
 }
 
-type TypeErrorHandler interface {
-	CompareTypeError(err error) bool
-	AddTypeError(err error)
-}
-
 type CourierLocation struct {
 	CourierID string    `json:"courier_id"`
 	Latitude  float64   `json:"latitude"`
