@@ -156,10 +156,6 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			err := consumer.jsonMessageHandler.HandleJSONMessage(session.Context(), message)
 
 			if err != nil {
-				log.Println(err)
-			}
-
-			if err != nil && consumer.jsonMessageHandler.IsRetryAttempt(err) {
 				return err
 			}
 
