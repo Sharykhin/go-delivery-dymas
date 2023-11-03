@@ -24,6 +24,7 @@ func NewCourierLocationConsumer(
 	return courierLocationConsumer
 }
 
+// HandleJSONMessage Handle kafka message in json format
 func (courierLocationConsumer *CourierLocationConsumer) HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
 	var courierLocation domain.CourierLocation
 

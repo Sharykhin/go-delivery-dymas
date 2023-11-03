@@ -3,7 +3,6 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
@@ -20,6 +19,7 @@ func NewCourierLocationPublisher(publisher *pkgkafka.Publisher) *CourierLocation
 	return &courierPublisher
 }
 
+// PublishLatestCourierLocation Send latest courier position message in json format in kafka
 func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	message, err := json.Marshal(courierLocation)
 
@@ -27,14 +27,10 @@ func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLoca
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
 
-	if courierPublisher.publisher != nil {
-		err = courierPublisher.publisher.PublishMessage(ctx, message)
+	err = courierPublisher.publisher.PublishMessage(ctx, message)
 
-		if err != nil {
-			return fmt.Errorf("failed to publish courier location: %w", err)
-		}
-	} else {
-		return errors.New("courier publisher was not found")
+	if err != nil {
+		return fmt.Errorf("failed to publish courier location: %w", err)
 	}
 
 	return nil
