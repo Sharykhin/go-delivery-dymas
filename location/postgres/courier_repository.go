@@ -9,7 +9,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
 
-// CourierLocationRepository Courier Location need for getting location courier.
+// CourierLocationRepository needs for managing location courier.
 type CourierLocationRepository struct {
 	client *sql.DB
 }

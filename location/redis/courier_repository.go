@@ -8,6 +8,7 @@ import (
 	coreredis "github.com/redis/go-redis/v9"
 )
 
+// CourierLocationRepository needs for managing location courier.
 type CourierLocationRepository struct {
 	indexGeo string
 	client   *coreredis.Client
