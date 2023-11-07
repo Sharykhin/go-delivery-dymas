@@ -19,7 +19,7 @@ func NewCourierLocationPublisher(publisher *pkgkafka.Publisher) *CourierLocation
 	return &courierPublisher
 }
 
-// PublishLatestCourierLocation Send latest courier position message in json format in kafka
+// PublishLatestCourierLocation sends latest courier position message in json format in Kafka.
 func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	message, err := json.Marshal(courierLocation)
 
