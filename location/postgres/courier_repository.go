@@ -14,7 +14,7 @@ type CourierLocationRepository struct {
 	client *sql.DB
 }
 
-// SaveLatestCourierGeoPosition Save Courier Latest Position courier in db.
+// SaveLatestCourierGeoPosition saves Courier Latest Position courier in db.
 func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	query := "insert into courier_latest_cord (courier_id, latitude, longitude, created_at) values ($1, $2, $3, $4) ON CONFLICT DO NOTHING"
 	_, err := repo.client.ExecContext(
