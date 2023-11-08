@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gorilla/mux"
+
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/courier/grpc"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/courier/postgres"
-	"github.com/gorilla/mux"
 )
 
 func main() {

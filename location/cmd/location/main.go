@@ -4,6 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
+	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
+
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/location/grpc"
@@ -14,14 +24,6 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/redis"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
-	"github.com/gorilla/mux"
-	"google.golang.org/grpc"
-	"log"
-	"net"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 )
 
 func main() {

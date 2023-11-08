@@ -2,10 +2,12 @@ package http
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	nethttp "net/http"
+
+	"github.com/gorilla/mux"
 )
 
+// RunServer runs http server
 func RunServer(router *mux.Router, port string) error {
 	fmt.Println(port)
 	nethttp.Handle(string('/'), router)

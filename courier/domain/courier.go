@@ -8,40 +8,50 @@ import (
 
 var ErrCourierNotFound = errors.New("courier was not found")
 
+// CourierWithLatestPosition Model courier provides information and current latest position
 type CourierWithLatestPosition struct {
 	LatestPosition *LocationPosition
 	FirstName      string
 	ID             string
 	IsAvailable    bool
 }
+
+// CourierClientInterface gets latest location position courier from storage
 type CourierClientInterface interface {
 	GetLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
 }
+
+// LocationPosition provides location position courier
 type LocationPosition struct {
 	Latitude  float64
 	Longitude float64
 }
 
+// CourierService provides information about courier and latest position from storage
 type CourierService struct {
 	courierClient     CourierClientInterface
 	courierRepository CourierRepositoryInterface
 }
 
+// CourierRepositoryInterface saves and reads courier from storage
 type CourierRepositoryInterface interface {
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
 }
 
+// CourierServiceInterface Gets information about courier and latest position courier from storage
 type CourierServiceInterface interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
 }
 
+// Courier provides information about courier
 type Courier struct {
 	ID          string
 	FirstName   string
 	IsAvailable bool
 }
 
+// GetCourierWithLatestPosition gets latest position from server and storage
 func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
 	var locationPosition *LocationPosition
 
@@ -77,6 +87,7 @@ func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, couri
 	return &courierResponse, nil
 }
 
+// NewCourierService creates new courier service
 func NewCourierService(courierClient CourierClientInterface, repo CourierRepositoryInterface) *CourierService {
 	return &CourierService{
 		courierClient:     courierClient,

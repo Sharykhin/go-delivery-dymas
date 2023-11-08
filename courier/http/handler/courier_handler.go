@@ -7,26 +7,31 @@ import (
 	nethttp "net/http"
 	"strings"
 
-	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+
+	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 )
 
+// CourierHandler handles courier request.
 type CourierHandler struct {
 	validate          *validator.Validate
 	courierRepository domain.CourierRepositoryInterface
 	courierService    *domain.CourierService
 }
 
+// CourierPayload passes payload in courier create request.
 type CourierPayload struct {
 	FirstName string `json:"first_name" validate:"required"`
 }
 
+// ResponseMessage provides format response on courier request.
 type ResponseMessage struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
+// NewCourierHandler  creates courier handler.
 func NewCourierHandler(
 	courierService *domain.CourierService,
 ) *CourierHandler {
@@ -36,6 +41,7 @@ func NewCourierHandler(
 	}
 }
 
+// HandlerCourierCreate handles request create courier.
 func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var courierPayload CourierPayload
 
@@ -98,6 +104,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	w.WriteHeader(nethttp.StatusCreated)
 }
 
+// HandlerGetCourier handles request get courier.
 func (h *CourierHandler) HandlerGetCourier(w nethttp.ResponseWriter, r *nethttp.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
