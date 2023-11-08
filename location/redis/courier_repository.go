@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	coreredis "github.com/redis/go-redis/v9"
+
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
 
 // CourierLocationRepository needs for managing location courier in Redis.
