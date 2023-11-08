@@ -9,10 +9,12 @@ import (
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
+// CourierLocationLatestPublisher Publisher for kafka
 type CourierLocationLatestPublisher struct {
 	publisher *pkgkafka.Publisher
 }
 
+// NewCourierLocationPublisher creates new publisher and init
 func NewCourierLocationPublisher(publisher *pkgkafka.Publisher) *CourierLocationLatestPublisher {
 	courierPublisher := CourierLocationLatestPublisher{}
 	courierPublisher.publisher = publisher

@@ -55,6 +55,7 @@ func (repo *CourierLocationRepository) GetLatestPositionCourierByID(ctx context.
 	return &courierLocationRow, err
 }
 
+// NewCourierLocationRepository creates new courier location repository.
 func NewCourierLocationRepository(client *sql.DB) *CourierLocationRepository {
 	courierLocationRepository := CourierLocationRepository{
 		client: client,
