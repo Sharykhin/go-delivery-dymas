@@ -26,7 +26,7 @@ func main() {
 	clientPostgres, err := sql.Open("postgres", connPostgres)
 
 	if err != nil {
-		log.Panicf("Error connection database: %v\n", err)
+		log.Panicf("error connection database: %v\n", err)
 	}
 
 	defer clientPostgres.Close()
