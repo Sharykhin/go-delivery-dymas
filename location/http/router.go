@@ -13,7 +13,7 @@ type Router struct {
 	uuidRegexp string
 }
 
-// NewRouter creates new route and init
+// NewRouter creates new route and init.
 func NewRouter() *Router {
 	return &Router{
 		url:        "/courier/{courier_id:%s}/location",
@@ -21,7 +21,7 @@ func NewRouter() *Router {
 	}
 }
 
-// NewRouter creates new route
+// NewRouter creates new route.
 func (r *Router) NewRouter(locationHandler *http.LocationHandler, router *mux.Router) *mux.Router {
 	r.url = fmt.Sprintf(r.url, r.uuidRegexp)
 	router.HandleFunc(r.url, locationHandler.HandlerCouriersLocation).Methods("POST")
