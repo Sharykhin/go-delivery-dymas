@@ -21,7 +21,7 @@ type CourierClientInterface interface {
 	GetLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
 }
 
-// LocationPosition provides location position courier
+// LocationPosition describes a geo position with simple latitude and longitude coordinates. In the courier domain is it used in order to store the latest courier position.
 type LocationPosition struct {
 	Latitude  float64
 	Longitude float64
