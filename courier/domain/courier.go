@@ -8,7 +8,7 @@ import (
 
 var ErrCourierNotFound = errors.New("courier was not found")
 
-// CourierWithLatestPosition Model courier provides information and current latest position
+// CourierWithLatestPosition is a model of a courier, which provides general information and the latest courier position.
 type CourierWithLatestPosition struct {
 	LatestPosition *LocationPosition
 	FirstName      string
