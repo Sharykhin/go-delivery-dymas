@@ -48,7 +48,7 @@ func main() {
 		Method:  "POST",
 	},
 		courierLatestPositionURL: {
-			Handler: courierHandler.HandlerGetCourier,
+			Handler: courierHandler.GetCourier,
 			Method:  "GET",
 		},
 	}
