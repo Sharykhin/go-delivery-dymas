@@ -34,7 +34,7 @@ func main() {
 	courierGRPCConnection, err := couriergrpc.NewCourierConnection(config.CourierGrpcAddress)
 
 	if err != nil {
-		log.Panicf("Error Courier Server Connection: %v\n", err)
+		log.Panicf("error courier gRPC client connection: %v\n", err)
 	}
 	defer courierGRPCConnection.Close()
 
