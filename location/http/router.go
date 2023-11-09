@@ -3,8 +3,9 @@ package http
 import (
 	"fmt"
 
-	http "github.com/Sharykhin/go-delivery-dymas/location/http/handler"
 	"github.com/gorilla/mux"
+
+	http "github.com/Sharykhin/go-delivery-dymas/location/http/handler"
 )
 
 type Router struct {

@@ -7,9 +7,10 @@ import (
 	nethttp "net/http"
 	"strings"
 
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
 
 type LocationPayload struct {
