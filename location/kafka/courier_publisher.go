@@ -4,44 +4,36 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
-	"github.com/Shopify/sarama"
+	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
-const topic = "latest_position_courier"
-
+// CourierLocationLatestPublisher Publisher for kafka
 type CourierLocationLatestPublisher struct {
-	publisher sarama.AsyncProducer
+	publisher *pkgkafka.Publisher
 }
 
-func NewCourierLocationPublisher(address string) (*CourierLocationLatestPublisher, error) {
+// NewCourierLocationPublisher creates new publisher and init
+func NewCourierLocationPublisher(publisher *pkgkafka.Publisher) *CourierLocationLatestPublisher {
 	courierPublisher := CourierLocationLatestPublisher{}
-	config := sarama.NewConfig()
-	config.Producer.Partitioner = sarama.NewManualPartitioner
-	config.Producer.RequiredAcks = sarama.WaitForLocal
-	producer, err := sarama.NewAsyncProducer([]string{address}, config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create a new sarama async producer: %w", err)
-	}
-
-	courierPublisher.publisher = producer
-	return &courierPublisher, nil
+	courierPublisher.publisher = publisher
+	return &courierPublisher
 }
 
-func (courierPublisher *CourierLocationLatestPublisher) publishLatestCourierGeoPositionMessage(message sarama.ProducerMessage) {
-	courierPublisher.publisher.Input() <- &message
-}
-
+// PublishLatestCourierLocation sends latest courier position message in json format in Kafka.
 func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
 	message, err := json.Marshal(courierLocation)
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
-	courierPublisher.publishLatestCourierGeoPositionMessage(sarama.ProducerMessage{
-		Topic: topic,
-		Value: sarama.StringEncoder(message),
-	})
+
+	err = courierPublisher.publisher.PublishMessage(ctx, message)
+
+	if err != nil {
+		return fmt.Errorf("failed to publish courier location: %w", err)
+	}
 
 	return nil
 }

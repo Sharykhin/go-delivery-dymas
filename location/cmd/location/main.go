@@ -4,6 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
+	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
+
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/location/grpc"
@@ -12,15 +22,8 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
 	"github.com/Sharykhin/go-delivery-dymas/location/redis"
+	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
-	"github.com/gorilla/mux"
-	"google.golang.org/grpc"
-	"log"
-	"net"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 )
 
 func main() {
@@ -36,17 +39,19 @@ func main() {
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
 	}
+	//
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
-	publisher, err := kafka.NewCourierLocationPublisher(config.KafkaAddress)
+	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "latest_position_courier")
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
+	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher)
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 	defer redisClient.Close()
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
-	courierService := domain.NewCourierLocationService(repoRedis, publisher)
+	courierService := domain.NewCourierLocationService(repoRedis, courierLocationPublisher)
 	wg.Add(2)
 	go runHttpServer(ctx, config, &wg, courierService)
 	go runGRPC(ctx, config, &wg, repoPostgres)

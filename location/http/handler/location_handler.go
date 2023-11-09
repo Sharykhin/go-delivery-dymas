@@ -3,12 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
-	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/mux"
 	"log"
 	nethttp "net/http"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
+
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
 
 type LocationPayload struct {
@@ -26,6 +28,7 @@ type LocationHandler struct {
 	courierLocationService domain.CourierLocationServiceInterface
 }
 
+// NewLocationHandler creates location handler
 func NewLocationHandler(
 	courierLocationService domain.CourierLocationServiceInterface,
 ) *LocationHandler {
@@ -57,6 +60,7 @@ func (h *LocationHandler) validatePayload(payload *LocationPayload) (isValid boo
 	return true, nil
 }
 
+// HandlerCouriersLocation gets latest courier position
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var locationPayload LocationPayload
 	w.Header().Set("Content-Type", "application/json")

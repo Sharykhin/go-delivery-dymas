@@ -9,12 +9,15 @@ import (
 
 var ErrCourierNotFound = errors.New("courier was not found")
 
+// CourierLocationServiceInterface saves courier position in storage
 type CourierLocationServiceInterface interface {
 	SaveLatestCourierLocation(
 		ctx context.Context,
 		courierLocation *CourierLocation,
 	) error
 }
+
+// CourierLocation provides information about coords courier
 type CourierLocation struct {
 	CourierID string    `json:"courier_id"`
 	Latitude  float64   `json:"latitude"`
@@ -22,27 +25,36 @@ type CourierLocation struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// CourierLocationRepositoryInterface saves latest location position courier in storage
 type CourierLocationRepositoryInterface interface {
 	SaveLatestCourierGeoPosition(ctx context.Context, courierLocation *CourierLocation) error
 }
+
+// CourierRepositoryInterface gets latest position by uuid from storage
 type CourierRepositoryInterface interface {
 	CourierLocationRepositoryInterface
-	GetLatestPositionCourierById(ctx context.Context, courierID string) (*CourierLocation, error)
+	GetLatestPositionCourierByID(ctx context.Context, courierID string) (*CourierLocation, error)
 }
+
+// CourierLocationPublisherInterface publish message some systems
 type CourierLocationPublisherInterface interface {
 	PublishLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error
 }
 
+// CourierLocationService saves and publishes courier location
 type CourierLocationService struct {
 	repo      CourierLocationRepositoryInterface
 	publisher CourierLocationPublisherInterface
 }
 
+// SaveLatestCourierLocation saves and publish courier location
 func (courierLocationService *CourierLocationService) SaveLatestCourierLocation(ctx context.Context, courierLocation *CourierLocation) error {
 	err := courierLocationService.repo.SaveLatestCourierGeoPosition(ctx, courierLocation)
+
 	if err != nil {
 		return fmt.Errorf("failed to store latest courier location in the repository: %w", err)
 	}
+
 	err = courierLocationService.publisher.PublishLatestCourierLocation(ctx, courierLocation)
 
 	if err != nil {
@@ -52,6 +64,7 @@ func (courierLocationService *CourierLocationService) SaveLatestCourierLocation(
 	return nil
 }
 
+// NewCourierLocation creates model currier location with current data
 func NewCourierLocation(id string, latitude, longitude float64) *CourierLocation {
 	return &CourierLocation{
 		CourierID: id,
@@ -61,6 +74,7 @@ func NewCourierLocation(id string, latitude, longitude float64) *CourierLocation
 	}
 }
 
+// NewCourierLocationService creates courier service and init
 func NewCourierLocationService(repo CourierLocationRepositoryInterface, courierLocationPublisher CourierLocationPublisherInterface) *CourierLocationService {
 	return &CourierLocationService{
 		repo:      repo,

@@ -3,10 +3,14 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/Sharykhin/go-delivery-dymas/location/domain"
+
 	coreredis "github.com/redis/go-redis/v9"
+
+	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
 
+// CourierLocationRepository needs for managing location courier in Redis.
+// At the current moment it provides API to store only the latest courier position.
 type CourierLocationRepository struct {
 	indexGeo string
 	client   *coreredis.Client
@@ -22,6 +26,7 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 			Latitude:  courierLocation.Latitude,
 			Longitude: courierLocation.Longitude,
 		}).Err()
+
 	if err != nil {
 		return fmt.Errorf("failed to add courier geo location into redis: %w", err)
 	}
@@ -29,8 +34,8 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	return nil
 }
 
+// NewCourierLocationRepository  creates courier location repository.
 func NewCourierLocationRepository(client *coreredis.Client) *CourierLocationRepository {
-
 	return &CourierLocationRepository{
 		indexGeo: courierLatestCordsKey,
 		client:   client,

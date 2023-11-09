@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
 	"google.golang.org/grpc/codes"
@@ -15,8 +16,9 @@ type CourierServer struct {
 	pb.UnsafeCourierServer
 }
 
+// GetCourierLatestPosition gets courier latest position.
 func (courierServer CourierServer) GetCourierLatestPosition(ctx context.Context, req *pb.GetCourierLatestPositionRequest) (*pb.GetCourierLatestPositionResponse, error) {
-	courierLatestPosition, err := courierServer.CourierLocationRepository.GetLatestPositionCourierById(ctx, req.CourierId)
+	courierLatestPosition, err := courierServer.CourierLocationRepository.GetLatestPositionCourierByID(ctx, req.CourierId)
 
 	isErrCourierNotFound := err != nil && errors.Is(err, domain.ErrCourierNotFound)
 	if isErrCourierNotFound {
@@ -25,6 +27,7 @@ func (courierServer CourierServer) GetCourierLatestPosition(ctx context.Context,
 			fmt.Sprintf("Position Not found: %v", err),
 		)
 	}
+
 	if err != nil {
 		return nil, status.Errorf(
 			codes.Internal,

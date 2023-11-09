@@ -4,14 +4,16 @@ import (
 	coreenv "github.com/caarlos0/env/v8"
 )
 
+// Config provides values env
 type Config struct {
-	DbName            string `env:"POSTGRES_DB" envDefault:"courier"`
-	DbPassword        string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
-	DbUser            string `env:"POSTGRES_USER" envDefault:"citizix_user"`
-	PortServerCourier string `env:"PORT_SERVER_COURIER" envDefault:"8881"`
+	DBName             string `env:"POSTGRES_DB" envDefault:"courier"`
+	DBPassword         string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
+	DBUser             string `env:"POSTGRES_USER" envDefault:"citizix_user"`
+	PortServerCourier  string `env:"PORT_SERVER_COURIER" envDefault:"8881"`
 	CourierGrpcAddress string `env:"COURIER_GRPC_ADDRESS" envDefault:":9666"`
 }
 
+// GetConfig gets Configs env
 func GetConfig() (config Config, err error) {
 	cfg := Config{}
 	err = coreenv.Parse(&cfg)
