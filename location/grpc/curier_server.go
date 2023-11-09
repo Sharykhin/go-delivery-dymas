@@ -16,6 +16,7 @@ type CourierServer struct {
 	pb.UnsafeCourierServer
 }
 
+// GetCourierLatestPosition gets courier latest position.
 func (courierServer CourierServer) GetCourierLatestPosition(ctx context.Context, req *pb.GetCourierLatestPositionRequest) (*pb.GetCourierLatestPositionResponse, error) {
 	courierLatestPosition, err := courierServer.CourierLocationRepository.GetLatestPositionCourierByID(ctx, req.CourierId)
 

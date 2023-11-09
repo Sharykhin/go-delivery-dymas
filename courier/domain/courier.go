@@ -53,7 +53,6 @@ type Courier struct {
 
 // GetCourierWithLatestPosition gets latest position from server and storage
 func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
-	var locationPosition *LocationPosition
 
 	courier, err := s.courierRepository.GetCourierByID(
 		ctx,
@@ -69,6 +68,8 @@ func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, couri
 	if err != nil && !isErrCourierNotFound {
 		return nil, fmt.Errorf("failed to get courier latest position: %w", err)
 	}
+
+	var locationPosition *LocationPosition
 
 	if courierLatestPositionResponse != nil {
 		locationPosition = &LocationPosition{

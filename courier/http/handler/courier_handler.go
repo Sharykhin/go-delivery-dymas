@@ -104,8 +104,8 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	w.WriteHeader(nethttp.StatusCreated)
 }
 
-// HandlerGetCourier handles request get courier.
-func (h *CourierHandler) HandlerGetCourier(w nethttp.ResponseWriter, r *nethttp.Request) {
+// GetCourier handles request get courier.
+func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
