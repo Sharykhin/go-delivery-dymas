@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// RunServer  runs courier http server
+// RunServer  runs courier http server.
 func RunServer(ctx context.Context, router *mux.Router, port string) {
 	fmt.Println(port)
 	nethttp.Handle(string('/'), router)
