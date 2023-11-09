@@ -4,7 +4,7 @@ import (
 	coreenv "github.com/caarlos0/env/v8"
 )
 
-// Config Provides values env
+// Config provides values env
 type Config struct {
 	DBName             string `env:"POSTGRES_DB" envDefault:"courier"`
 	DBPassword         string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
