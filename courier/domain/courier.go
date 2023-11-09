@@ -16,7 +16,7 @@ type CourierWithLatestPosition struct {
 	IsAvailable    bool
 }
 
-// CourierClientInterface gets latest location position courier from storage
+// CourierClientInterface gets latest location position courier.
 type CourierClientInterface interface {
 	GetLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
 }
