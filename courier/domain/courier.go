@@ -39,7 +39,7 @@ type CourierRepositoryInterface interface {
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
 }
 
-// CourierServiceInterface Gets information about courier and latest position courier from storage
+// CourierServiceInterface gets information about courier and latest position courier from storage
 type CourierServiceInterface interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
 }
