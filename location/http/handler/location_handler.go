@@ -44,12 +44,12 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	var locationPayload LocationPayload
 	err := json.NewDecoder(r.Body).Decode(&locationPayload)
 
-	if isDecode := httpHandler.DecodePayloadFromJson(w, r, &locationPayload); !isDecode {
+	if isDecode := h.httpHandler.DecodePayloadFromJson(w, r, &locationPayload); !isDecode {
 		log.Printf("failed to encode json response error: %v\n", err)
 		return
 	}
 
-	if isValid := h.ValidatePayload(&locationPayload); !isValid {
+	if isValid := h.httpHandler.ValidatePayload(&locationPayload); !isValid {
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
 
-		httpHandler.ErrorResponse("Server Error.", w, nethttp.StatusInternalServerError)
+		h.httpHandler.ErrorResponse("Server Error.", w, nethttp.StatusInternalServerError)
 
 		return
 	}

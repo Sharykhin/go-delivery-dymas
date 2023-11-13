@@ -46,11 +46,11 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 
 	var courierPayload CourierPayload
 
-	if isDecode := httpHandler.DecodePayloadFromJson(w, r, &courierPayload); !isDecode {
+	if isDecode := h.httpHandler.DecodePayloadFromJson(w, r, &courierPayload); !isDecode {
 		return
 	}
 
-	if isValid := httpHandler.ValidatePayload(w, &courierPayload); !isValid {
+	if isValid := h.httpHandler.ValidatePayload(w, &courierPayload); !isValid {
 		return
 	}
 
@@ -65,12 +65,12 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 
 	if err != nil {
 		log.Printf("Failed to save courier: %v", err)
-		httpHandler.ErrorResponse("Failed to save courier", w, nethttp.StatusInternalServerError)
+		h.httpHandler.ErrorResponse("Failed to save courier", w, nethttp.StatusInternalServerError)
 
 		return
 	}
 
-	if isEncode := httpHandler.EncodeResponseToJson(w, r, courier); !isEncode {
+	if isEncode := h.httpHandler.EncodeResponseToJson(w, r, courier); !isEncode {
 		return
 	}
 
@@ -88,12 +88,12 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 
 	if err != nil {
 		log.Printf("failed to save courier: %v", err)
-		httpHandler.ErrorResponse("Failed to get courier", w, nethttp.StatusInternalServerError)
+		h.httpHandler.ErrorResponse("Failed to get courier", w, nethttp.StatusInternalServerError)
 
 		return
 	}
 
-	if isEncode := httpHandler.EncodeResponseToJson(w, r, courierResponse); !isEncode {
+	if isEncode := h.httpHandler.EncodeResponseToJson(w, r, courierResponse); !isEncode {
 		return
 	}
 
