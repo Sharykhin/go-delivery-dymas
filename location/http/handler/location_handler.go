@@ -2,15 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	nethttp "net/http"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
+	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 )
 
 type LocationPayload struct {
@@ -26,6 +25,7 @@ type ResponseMessage struct {
 type LocationHandler struct {
 	validate               *validator.Validate
 	courierLocationService domain.CourierLocationServiceInterface
+	httpHandler            pkghttp.Handler
 }
 
 // NewLocationHandler creates location handler
@@ -38,56 +38,21 @@ func NewLocationHandler(
 	}
 }
 
-func (h *LocationHandler) validatePayload(payload *LocationPayload) (isValid bool, response *ResponseMessage) {
-	err := h.validate.Struct(payload)
-	if err != nil {
-		var errorMessage string
-
-		for _, errStruct := range err.(validator.ValidationErrors) {
-			message := fmt.Sprintf("Incorrect Value %s %f", errStruct.StructField(), errStruct.Value())
-			errorMessage += message + ","
-		}
-
-		errorMessage = strings.Trim(errorMessage, ",")
-
-		return false, &ResponseMessage{
-			Status:  "Error",
-			Message: errorMessage,
-		}
-
-	}
-
-	return true, nil
-}
-
 // HandlerCouriersLocation gets latest courier position
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
-	var locationPayload LocationPayload
 	w.Header().Set("Content-Type", "application/json")
+	var locationPayload LocationPayload
 	err := json.NewDecoder(r.Body).Decode(&locationPayload)
 
-	if err != nil {
-		w.WriteHeader(nethttp.StatusBadRequest)
-		err := json.NewEncoder(w).Encode(&ResponseMessage{
-			Status:  "Error",
-			Message: "Incorrect json! Please check your JSON formating.",
-		})
-
-		if err != nil {
-			log.Printf("failed to encode json response error: %v\n", err)
-		}
-
+	if isDecode := httpHandler.DecodePayloadFromJson(w, r, &locationPayload); !isDecode {
+		log.Printf("failed to encode json response error: %v\n", err)
 		return
 	}
 
-	if isValid, response := h.validatePayload(&locationPayload); !isValid {
-		w.WriteHeader(nethttp.StatusBadRequest)
-		err := json.NewEncoder(w).Encode(response)
-		if err != nil {
-			log.Printf("failed to encode json response: %v\n", err)
-		}
+	if isValid := h.ValidatePayload(&locationPayload); !isValid {
 		return
 	}
+
 	vars := mux.Vars(r)
 	courierID := vars["courier_id"]
 	ctx := r.Context()
@@ -97,18 +62,14 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		locationPayload.Longitude,
 	)
 	err = h.courierLocationService.SaveLatestCourierLocation(ctx, courierLocation)
+
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
-		err := json.NewEncoder(w).Encode(&ResponseMessage{
-			Status:  "Error",
-			Message: "Server Error.",
-		})
-		if err != nil {
-			log.Printf("failed to encode json response: %v\n", err)
-		}
-		w.WriteHeader(nethttp.StatusInternalServerError)
+
+		httpHandler.ErrorResponse("Server Error.", w, nethttp.StatusInternalServerError)
 
 		return
 	}
+
 	w.WriteHeader(nethttp.StatusNoContent)
 }
