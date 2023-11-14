@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	github.com/IBM/sarama v1.41.3
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114194153-0e2ceb2fb6af
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114200914-f6447742a009
 	github.com/Shopify/sarama v1.38.1
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-playground/validator/v10 v10.16.0
