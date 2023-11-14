@@ -11,13 +11,12 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var ErrDecodePayloadFailed = errors.New("failed to decode payload")
-
-var ErrEncodeFailed error
+// ErrDecodeFailed we return this error when we can not decode payload from http query
+var ErrDecodeFailed = errors.New("failed to decode payload")
 
 var ErrValidatePayloadFailed = errors.New("failed to validated payload")
 
-// ResponseMessage returns when we have bad request or we have problem on server
+// ResponseMessage returns when we have bad request, or we have problem on server
 type ResponseMessage struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
@@ -34,7 +33,6 @@ func (h *Handler) DecodePayloadFromJson(r *nethttp.Request, requestData any) err
 
 	if err != nil {
 		log.Printf("incorrect json! please check your json formatting: %v\n", err)
-		return ErrDecodePayloadFailed
 
 		return ErrDecodeFailed
 	}
@@ -47,10 +45,8 @@ func (h *Handler) EncodeResponseToJson(w nethttp.ResponseWriter, requestData any
 	err := json.NewEncoder(w).Encode(requestData)
 
 	if err != nil {
-		log.Printf("failed to encode json response: %v\n", err)
-		ErrEncodeFailed = errors.New("failed to encode json response")
+		log.Panicf("failed to encode json response: %v\n", err)
 
-		return ErrEncodeFailed
 	}
 
 	return nil
@@ -62,7 +58,7 @@ func (h *Handler) ValidatePayload(payload any) error {
 
 	if err != nil {
 
-	return fmt.Errorf("%v:%w", err, ErrValidatePayloadFailed)
+		return fmt.Errorf("%v:%w", err, ErrValidatePayloadFailed)
 
 		return ErrValidatePayloadFailed
 	}
@@ -87,20 +83,7 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 		w.WriteHeader(nethttp.StatusBadRequest)
 
 		return
-	} else if errors.Is(errFailResponse, ErrEncodeFailed) {
-		err := json.NewEncoder(w).Encode(&ResponseMessage{
-			Status:  "Error",
-			Message: errFailResponse.Error(),
-		})
-
-		if err != nil {
-			log.Printf("failed to encode json response: %v\n", err)
-		}
-
-		w.WriteHeader(nethttp.StatusInternalServerError)
-
-		return
-	} else if errors.Is(errFailResponse, ErrValidatePayloadFailed) {
+	} else if errors.As(errFailResponse, ErrValidatePayloadFailed) {
 		var errorMessage string
 
 		for _, errStruct := range errFailResponse.(validator.ValidationErrors) {
@@ -118,8 +101,8 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 
 		return
 
-	} else {
-		log.Printf("Server error: %v\n", errFailResponse)
-		w.WriteHeader(nethttp.StatusInternalServerError)
 	}
+
+	log.Printf("Server error: %v\n", errFailResponse)
+	w.WriteHeader(nethttp.StatusInternalServerError)
 }

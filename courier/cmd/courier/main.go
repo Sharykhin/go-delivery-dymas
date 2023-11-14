@@ -43,7 +43,11 @@ func main() {
 	courierClient := couriergrpc.NewCourierClient(courierGRPCConnection)
 	courierService := domain.NewCourierService(courierClient, courierRepository)
 	courierHandler := handler.NewCourierHandler(courierService)
-	courierLatestPositionURL := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
+	courierLatestPositionURL := fmt.Sprintf(
+		"/couriers/{id:%s}",
+		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
+	)
+
 	routes := map[string]pkghttp.Route{"/couriers": {
 		Handler: courierHandler.HandlerCourierCreate,
 		Method:  "POST",
@@ -53,6 +57,7 @@ func main() {
 			Method:  "GET",
 		},
 	}
+
 	router := pkghttp.NewCourierRoute(routes, mux.NewRouter())
 
 	if err := http.RunServer(router, ":"+config.PortServerCourier); err != nil {
