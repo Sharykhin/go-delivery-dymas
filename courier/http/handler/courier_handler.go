@@ -68,7 +68,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		return
 	}
 
-	if err := h.httpHandler.EncodeResponseToJson(w, courier); err != nil {
+h.httpHandler.EncodeResponseToJson(w, courier);
 		h.httpHandler.FailResponse(w, err)
 
 		return
