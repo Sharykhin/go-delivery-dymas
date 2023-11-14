@@ -34,7 +34,7 @@ func (h *Handler) DecodePayloadFromJson(r *nethttp.Request, requestData any) err
 
 	if err != nil {
 		log.Printf("incorrect json! please check your json formatting: %v\n", err)
-		ErrDecodeFailed = errors.New("incorrect json! please check your json formatting")
+		return ErrDecodePayloadFailed
 
 		return ErrDecodeFailed
 	}
