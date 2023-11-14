@@ -46,11 +46,15 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 
 	var courierPayload CourierPayload
 
-	if isDecode := h.httpHandler.DecodePayloadFromJson(w, r, &courierPayload); !isDecode {
+	if err := h.httpHandler.DecodePayloadFromJson(r, &courierPayload); err != nil {
+		h.httpHandler.FailResponse(w, err)
+
 		return
 	}
 
-	if isValid := h.httpHandler.ValidatePayload(w, &courierPayload); !isValid {
+	if err := h.httpHandler.ValidatePayload(&courierPayload); err != nil {
+		h.httpHandler.FailResponse(w, err)
+
 		return
 	}
 
@@ -65,12 +69,14 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 
 	if err != nil {
 		log.Printf("Failed to save courier: %v", err)
-		h.httpHandler.ErrorResponse("Failed to save courier", w, nethttp.StatusInternalServerError)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
 
-	if isEncode := h.httpHandler.EncodeResponseToJson(w, r, courier); !isEncode {
+	if err := h.httpHandler.EncodeResponseToJson(w, courier); err != nil {
+		h.httpHandler.FailResponse(w, err)
+
 		return
 	}
 
@@ -93,7 +99,9 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 		return
 	}
 
-	if isEncode := h.httpHandler.EncodeResponseToJson(w, r, courierResponse); !isEncode {
+	if err := h.httpHandler.EncodeResponseToJson(w, r, courierResponse); err != nil {
+		h.httpHandler.FailResponse(w, err)
+
 		return
 	}
 

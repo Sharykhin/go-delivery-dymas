@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"log"
 	nethttp "net/http"
 
@@ -42,14 +41,16 @@ func NewLocationHandler(
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var locationPayload LocationPayload
-	err := json.NewDecoder(r.Body).Decode(&locationPayload)
 
-	if isDecode := h.httpHandler.DecodePayloadFromJson(w, r, &locationPayload); !isDecode {
-		log.Printf("failed to encode json response error: %v\n", err)
+	if err := h.httpHandler.DecodePayloadFromJson(r, &locationPayload); err != nil {
+		h.httpHandler.FailResponse(w, err)
+
 		return
 	}
 
-	if isValid := h.httpHandler.ValidatePayload(&locationPayload); !isValid {
+	if err := h.httpHandler.ValidatePayload(&locationPayload); err != nil {
+		h.httpHandler.FailResponse(w, err)
+
 		return
 	}
 
@@ -61,12 +62,13 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		locationPayload.Latitude,
 		locationPayload.Longitude,
 	)
-	err = h.courierLocationService.SaveLatestCourierLocation(ctx, courierLocation)
+
+	err := h.courierLocationService.SaveLatestCourierLocation(ctx, courierLocation)
 
 	if err != nil {
 		log.Printf("failed to store latest courier position: %v", err)
 
-		h.httpHandler.ErrorResponse("Server Error.", w, nethttp.StatusInternalServerError)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}

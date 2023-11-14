@@ -7,14 +7,14 @@ toolchain go1.21.4
 require (
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3
 	github.com/caarlos0/env/v8 v8.0.0
-	github.com/go-playground/validator/v10 v10.15.1
-	github.com/gorilla/mux v1.8.0
+	github.com/go-playground/validator/v10 v10.16.0
+	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
 	google.golang.org/grpc v1.58.1
 )
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231109185905-a1fb6d9697e8 // indirect
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231113092833-582595439511 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
