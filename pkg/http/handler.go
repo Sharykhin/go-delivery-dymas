@@ -84,7 +84,7 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 		w.WriteHeader(nethttp.StatusBadRequest)
 
 		return
-	} else if errors.As(errFailResponse, ErrValidatePayloadFailed) {
+	} else if errors.Is(errFailResponse, ErrValidatePayloadFailed) {
 		var errorMessage string
 
 		for _, errStruct := range errFailResponse.(validator.ValidationErrors) {
