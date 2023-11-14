@@ -15,7 +15,7 @@ var ErrDecodeFailed error
 
 var ErrEncodeFailed error
 
-var ErrValidatePayloadFailed error
+var ErrValidatePayloadFailed = errors.New("failed to validated payload")
 
 // ResponseMessage returns when we have bad request or we have problem on server
 type ResponseMessage struct {
