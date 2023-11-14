@@ -17,16 +17,18 @@ var ErrEncodeFailed error
 
 var ErrValidatePayloadFailed error
 
-// ResponseMessage provides format response on courier request.
+// ResponseMessage returns when we have bad request or we have problem on server
 type ResponseMessage struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
+// Handler abstract handler we can reuse it in different handlers
 type Handler struct {
 	validate *validator.Validate
 }
 
+// DecodePayloadFromJson decodes payload from body http query and handle exceptions scenarios
 func (h *Handler) DecodePayloadFromJson(r *nethttp.Request, requestData any) error {
 	err := json.NewDecoder(r.Body).Decode(requestData)
 
@@ -40,6 +42,7 @@ func (h *Handler) DecodePayloadFromJson(r *nethttp.Request, requestData any) err
 	return nil
 }
 
+// EncodeResponseToJson  Encodes response,that return user for http query and handle exceptions scenarios
 func (h *Handler) EncodeResponseToJson(w nethttp.ResponseWriter, requestData any) error {
 	err := json.NewEncoder(w).Encode(requestData)
 
@@ -53,6 +56,7 @@ func (h *Handler) EncodeResponseToJson(w nethttp.ResponseWriter, requestData any
 	return nil
 }
 
+// ValidatePayload validates some payload from http query
 func (h *Handler) ValidatePayload(payload any) error {
 	err := h.validate.Struct(payload)
 
@@ -66,6 +70,7 @@ func (h *Handler) ValidatePayload(payload any) error {
 	return nil
 }
 
+// FailResponse returns response for bad request
 func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) {
 
 	if errors.Is(errFailResponse, ErrDecodeFailed) {

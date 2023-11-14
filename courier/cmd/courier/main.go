@@ -13,6 +13,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/courier/http"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/courier/postgres"
+	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 )
 
 func main() {
@@ -43,7 +44,7 @@ func main() {
 	courierService := domain.NewCourierService(courierClient, courierRepository)
 	courierHandler := handler.NewCourierHandler(courierService)
 	courierLatestPositionURL := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
-	routes := map[string]http.Route{"/couriers": {
+	routes := map[string]pkghttp.Route{"/couriers": {
 		Handler: courierHandler.HandlerCourierCreate,
 		Method:  "POST",
 	},
@@ -52,7 +53,7 @@ func main() {
 			Method:  "GET",
 		},
 	}
-	router := http.NewCourierRoute(routes, mux.NewRouter())
+	router := pkghttp.NewCourierRoute(routes, mux.NewRouter())
 
 	if err := http.RunServer(router, ":"+config.PortServerCourier); err != nil {
 		log.Printf("failed to run http server: %v", err)

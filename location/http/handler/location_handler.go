@@ -11,16 +11,13 @@ import (
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 )
 
+// LocationPayload imagine payload from http query
 type LocationPayload struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
 	Longitude float64 `json:"longitude" validate:"required,longitude"`
 }
 
-type ResponseMessage struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
-
+// LocationHandler handles request depending on location courier
 type LocationHandler struct {
 	validate               *validator.Validate
 	courierLocationService domain.CourierLocationServiceInterface
@@ -37,7 +34,7 @@ func NewLocationHandler(
 	}
 }
 
-// HandlerCouriersLocation gets latest courier position
+// HandlerCouriersLocation handles request depending on location courier and validate query have valid payload and save data from payload in storage
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var locationPayload LocationPayload

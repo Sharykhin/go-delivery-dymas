@@ -22,6 +22,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
 	"github.com/Sharykhin/go-delivery-dymas/location/redis"
+	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
 )
@@ -61,7 +62,13 @@ func main() {
 func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierLocationServiceInterface) {
 
 	locationHandler := handler.NewLocationHandler(courierService)
-	router := http.NewRouter().NewRouter(locationHandler, mux.NewRouter())
+	routes := map[string]pkghttp.Route{"/courier/{courier_id:%s}/location": {
+		Handler: locationHandler.HandlerCouriersLocation,
+		Method:  "POST",
+	},
+	}
+	router := pkghttp.NewCourierRoute(routes, mux.NewRouter())
+	router = http.NewRouter().NewRouter(locationHandler, mux.NewRouter())
 	http.RunServer(ctx, router, ":"+config.PortServer)
 	wg.Done()
 }

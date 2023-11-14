@@ -24,12 +24,6 @@ type CourierPayload struct {
 	FirstName string `json:"first_name" validate:"required"`
 }
 
-// ResponseMessage provides format response on courier request.
-type ResponseMessage struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
-
 // NewCourierHandler  creates courier handler.
 func NewCourierHandler(
 	courierService *domain.CourierService,
