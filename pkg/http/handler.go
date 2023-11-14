@@ -11,7 +11,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var ErrDecodeFailed error
+var ErrDecodePayloadFailed = errors.New("failed to decode payload")
 
 var ErrEncodeFailed error
 
