@@ -19,7 +19,6 @@ type LocationPayload struct {
 
 // LocationHandler handles request depending on location courier
 type LocationHandler struct {
-	validate               *validator.Validate
 	courierLocationService domain.CourierLocationServiceInterface
 	httpHandler            pkghttp.Handler
 }
@@ -29,8 +28,10 @@ func NewLocationHandler(
 	courierLocationService domain.CourierLocationServiceInterface,
 ) *LocationHandler {
 	return &LocationHandler{
-		validate:               validator.New(),
 		courierLocationService: courierLocationService,
+		httpHandler: pkghttp.Handler{
+			Validator: validator.New(),
+		},
 	}
 }
 

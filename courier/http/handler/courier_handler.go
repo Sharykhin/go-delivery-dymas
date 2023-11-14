@@ -29,8 +29,10 @@ func NewCourierHandler(
 	courierService *domain.CourierService,
 ) *CourierHandler {
 	return &CourierHandler{
-		validate:       validator.New(),
 		courierService: courierService,
+		httpHandler: pkghttp.Handler{
+			Validator: validator.New(),
+		},
 	}
 }
 
@@ -68,11 +70,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		return
 	}
 
-h.httpHandler.EncodeResponseToJson(w, courier);
-		h.httpHandler.FailResponse(w, err)
-
-		return
-	}
+	h.httpHandler.EncodeResponseToJson(w, courier)
 
 	w.WriteHeader(nethttp.StatusCreated)
 }

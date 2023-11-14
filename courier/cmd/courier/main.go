@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
@@ -58,7 +59,7 @@ func main() {
 		},
 	}
 
-	router := pkghttp.NewCourierRoute(routes, mux.NewRouter())
+	router := pkghttp.NewRoute(routes, mux.NewRouter())
 
 	if err := http.RunServer(router, ":"+config.PortServerCourier); err != nil {
 		log.Printf("failed to run http server: %v", err)

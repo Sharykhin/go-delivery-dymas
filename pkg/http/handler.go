@@ -24,7 +24,7 @@ type ResponseMessage struct {
 
 // Handler abstract handler we can reuse it in different handlers
 type Handler struct {
-	validate *validator.Validate
+	Validator *validator.Validate
 }
 
 // DecodePayloadFromJson decodes payload from body http query and handle exceptions scenarios
@@ -45,6 +45,7 @@ func (h *Handler) EncodeResponseToJson(w nethttp.ResponseWriter, requestData any
 	err := json.NewEncoder(w).Encode(requestData)
 
 	if err != nil {
+		w.WriteHeader(nethttp.StatusInternalServerError)
 		log.Panicf("failed to encode json response: %v\n", err)
 
 	}
@@ -54,7 +55,7 @@ func (h *Handler) EncodeResponseToJson(w nethttp.ResponseWriter, requestData any
 
 // ValidatePayload validates some payload from http query
 func (h *Handler) ValidatePayload(payload any) error {
-	err := h.validate.Struct(payload)
+	err := h.Validator.Struct(payload)
 
 	if err != nil {
 
