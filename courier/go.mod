@@ -5,6 +5,7 @@ go 1.21.3
 toolchain go1.21.4
 
 require (
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114180702-befd3da40c9c
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-playground/validator/v10 v10.16.0
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231113092833-582595439511 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
