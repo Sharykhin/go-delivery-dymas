@@ -88,12 +88,12 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 
 	if err != nil {
 		log.Printf("failed to save courier: %v", err)
-		h.httpHandler.ErrorResponse("Failed to get courier", w, nethttp.StatusInternalServerError)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
 
-	if err := h.httpHandler.EncodeResponseToJson(w, r, courierResponse); err != nil {
+	if err := h.httpHandler.EncodeResponseToJson(w, courierResponse); err != nil {
 		h.httpHandler.FailResponse(w, err)
 
 		return
