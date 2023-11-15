@@ -58,8 +58,14 @@ func (h *Handler) ValidatePayload(payload any) error {
 	err := h.Validator.Struct(payload)
 
 	if err != nil {
+		var errorMessage string
+		for _, errStruct := range err.(validator.ValidationErrors) {
+			message := fmt.Sprintf("Incorrect Value %s %f", errStruct.StructField(), errStruct.Value())
+			errorMessage += message + ","
+		}
 
-		return fmt.Errorf("%v:%w", err, ErrValidatePayloadFailed)
+		errorMessage = strings.Trim(errorMessage, ",")
+		return fmt.Errorf("%v:%w", errorMessage, ErrValidatePayloadFailed)
 
 		return ErrValidatePayloadFailed
 	}
@@ -85,17 +91,10 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 
 		return
 	} else if errors.Is(errFailResponse, ErrValidatePayloadFailed) {
-		var errorMessage string
 
-		for _, errStruct := range ErrValidatePayloadFailed.(validator.ValidationErrors) {
-			message := fmt.Sprintf("Incorrect Value %s %f", errStruct.StructField(), errStruct.Value())
-			errorMessage += message + ","
-		}
-
-		errorMessage = strings.Trim(errorMessage, ",")
 		json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
-			Message: errorMessage,
+			Message: errFailResponse.Error(),
 		})
 
 		w.WriteHeader(nethttp.StatusBadRequest)
