@@ -14,6 +14,8 @@ github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114204818-15e95fdc9df4 h1
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114204818-15e95fdc9df4/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231115160533-b970a43817bd h1:J7Z+Pe546MHNIIBvlr1le7m0PNzPnSkwNnN1rYMHzm0=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231115160533-b970a43817bd/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231115175822-fc03ab964079 h1:mQFFrfcOaA84FTPXpqlMGnSKuwCKA2Gyxb6C6W9B9ms=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231115175822-fc03ab964079/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3 h1:ICSpiZrN0EzwxqEIT0TrmoqEjV5TCJqNjOW+CDPxrnk=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
 github.com/caarlos0/env/v8 v8.0.0 h1:POhxHhSpuxrLMIdvTGARuZqR4Jjm8AYmoi/JKlcScs0=
