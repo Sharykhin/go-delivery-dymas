@@ -24,6 +24,8 @@ github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114194153-0e2ceb2fb6af h1
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114194153-0e2ceb2fb6af/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114200914-f6447742a009 h1:HdW1ZOTJ57G0r2GC4+DiY7/UWGvPKTebJwLYqHYJPhk=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114200914-f6447742a009/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114204818-15e95fdc9df4 h1:BZNPiQhyqwecDMW9KU0QMwnFh6brW4P/Fw3Ht9Trtmk=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231114204818-15e95fdc9df4/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3 h1:ICSpiZrN0EzwxqEIT0TrmoqEjV5TCJqNjOW+CDPxrnk=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
 github.com/Shopify/sarama v1.38.1 h1:lqqPUPQZ7zPqYlWpTh+LQ9bhYNu2xJL6k1SJN4WVe2A=

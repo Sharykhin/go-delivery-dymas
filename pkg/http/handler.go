@@ -59,7 +59,7 @@ func (h *Handler) ValidatePayload(payload any) error {
 
 	if err != nil {
 
-		return fmt.Errorf("%v:%w", err, ErrValidatePayloadFailed)
+		return fmt.Errorf("%w:%w", err, ErrValidatePayloadFailed)
 
 		return ErrValidatePayloadFailed
 	}
