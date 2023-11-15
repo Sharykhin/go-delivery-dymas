@@ -84,10 +84,10 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 		w.WriteHeader(nethttp.StatusBadRequest)
 
 		return
-	} else if errors.Is(errFailResponse, ErrValidatePayloadFailed) {
+	} else if errors.As(errFailResponse, &ErrValidatePayloadFailed) {
 		var errorMessage string
 
-		for _, errStruct := range errors.Unwrap(errFailResponse).(validator.ValidationErrors) {
+		for _, errStruct := range ErrValidatePayloadFailed.(validator.ValidationErrors) {
 			message := fmt.Sprintf("Incorrect Value %s %f", errStruct.StructField(), errStruct.Value())
 			errorMessage += message + ","
 		}
