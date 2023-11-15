@@ -59,7 +59,7 @@ func (h *Handler) ValidatePayload(payload any) error {
 
 	if err != nil {
 
-		return fmt.Errorf("%w:%w", err, ErrValidatePayloadFailed)
+		return fmt.Errorf("%v:%w", err, ErrValidatePayloadFailed)
 
 		return ErrValidatePayloadFailed
 	}
@@ -84,7 +84,7 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 		w.WriteHeader(nethttp.StatusBadRequest)
 
 		return
-	} else if errors.As(errFailResponse, &ErrValidatePayloadFailed) {
+	} else if errors.Is(errFailResponse, ErrValidatePayloadFailed) {
 		var errorMessage string
 
 		for _, errStruct := range ErrValidatePayloadFailed.(validator.ValidationErrors) {
