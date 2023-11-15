@@ -91,7 +91,7 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 
 		return
 	} else if errors.Is(errFailResponse, ErrValidatePayloadFailed) {
-
+		log.Printf("validate payload: %v", errFailResponse)
 		json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
