@@ -28,7 +28,6 @@ type HandlerInterface interface {
 	SuccessResponse(w nethttp.ResponseWriter, requestData any, status int)
 	ValidatePayload(payload any) error
 	FailResponse(w nethttp.ResponseWriter, errFailResponse error)
-	AddJSONContentType(w nethttp.ResponseWriter)
 }
 
 // Handler abstract handler we can reuse it in different handlers
