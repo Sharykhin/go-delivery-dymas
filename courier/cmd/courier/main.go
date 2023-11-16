@@ -43,7 +43,7 @@ func main() {
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	courierClient := couriergrpc.NewCourierClient(courierGRPCConnection)
 	courierService := domain.NewCourierService(courierClient, courierRepository)
-	courierHandler := handler.NewCourierHandler(courierService)
+	courierHandler := handler.NewCourierHandler(courierService, pkghttp.NewHandler())
 	courierLatestPositionURL := fmt.Sprintf(
 		"/couriers/{id:%s}",
 		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",

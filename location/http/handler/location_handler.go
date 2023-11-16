@@ -37,7 +37,6 @@ func NewLocationHandler(
 
 // HandlerCouriersLocation handles request depending on location courier and validate query have valid payload and save data from payload in storage
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	var locationPayload LocationPayload
 
 	if err := h.httpHandler.DecodePayloadFromJson(r, &locationPayload); err != nil {

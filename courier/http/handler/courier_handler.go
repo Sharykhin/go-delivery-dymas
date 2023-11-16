@@ -4,7 +4,6 @@ import (
 	"log"
 	nethttp "net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
@@ -13,10 +12,9 @@ import (
 
 // CourierHandler handles courier request.
 type CourierHandler struct {
-	validate          *validator.Validate
 	courierRepository domain.CourierRepositoryInterface
 	courierService    *domain.CourierService
-	httpHandler       pkghttp.Handler
+	httpHandler       pkghttp.HandlerInterface
 }
 
 // CourierPayload passes payload in courier create request.
@@ -27,18 +25,16 @@ type CourierPayload struct {
 // NewCourierHandler  creates courier handler.
 func NewCourierHandler(
 	courierService *domain.CourierService,
+	handler pkghttp.HandlerInterface,
 ) *CourierHandler {
 	return &CourierHandler{
 		courierService: courierService,
-		httpHandler: pkghttp.Handler{
-			Validator: validator.New(),
-		},
+		httpHandler:    handler,
 	}
 }
 
 // HandlerCourierCreate handles request create courier.
 func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	var courierPayload CourierPayload
 
@@ -70,14 +66,13 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		return
 	}
 
-	h.httpHandler.EncodeResponseToJson(w, courier)
+	h.httpHandler.SuccessResponse(w, courier)
 
 	w.WriteHeader(nethttp.StatusCreated)
 }
 
 // GetCourier handles request get courier.
 func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
 	ctx := r.Context()
@@ -91,7 +86,7 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 		return
 	}
 
-	if err := h.httpHandler.EncodeResponseToJson(w, courierResponse); err != nil {
+	if err := h.httpHandler.SuccessResponse(w, courierResponse); err != nil {
 		h.httpHandler.FailResponse(w, err)
 
 		return
