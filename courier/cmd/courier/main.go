@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
@@ -13,6 +14,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/courier/http"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/courier/postgres"
+	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 )
 
 func main() {
@@ -41,9 +43,13 @@ func main() {
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	courierClient := couriergrpc.NewCourierClient(courierGRPCConnection)
 	courierService := domain.NewCourierService(courierClient, courierRepository)
-	courierHandler := handler.NewCourierHandler(courierService)
-	courierLatestPositionURL := fmt.Sprintf("/couriers/{id:%s}", http.UuidRegexp)
-	routes := map[string]http.Route{"/couriers": {
+	courierHandler := handler.NewCourierHandler(courierService, pkghttp.NewHandler())
+	courierLatestPositionURL := fmt.Sprintf(
+		"/couriers/{id:%s}",
+		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
+	)
+
+	routes := map[string]pkghttp.Route{"/couriers": {
 		Handler: courierHandler.HandlerCourierCreate,
 		Method:  "POST",
 	},
@@ -52,7 +58,8 @@ func main() {
 			Method:  "GET",
 		},
 	}
-	router := http.NewCourierRoute(routes, mux.NewRouter())
+
+	router := pkghttp.NewRoute(routes, mux.NewRouter())
 
 	if err := http.RunServer(router, ":"+config.PortServerCourier); err != nil {
 		log.Printf("failed to run http server: %v", err)
