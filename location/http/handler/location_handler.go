@@ -4,7 +4,6 @@ import (
 	"log"
 	nethttp "net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
@@ -20,18 +19,17 @@ type LocationPayload struct {
 // LocationHandler handles request depending on location courier
 type LocationHandler struct {
 	courierLocationService domain.CourierLocationServiceInterface
-	httpHandler            pkghttp.Handler
+	httpHandler            pkghttp.HandlerInterface
 }
 
 // NewLocationHandler creates location handler
 func NewLocationHandler(
 	courierLocationService domain.CourierLocationServiceInterface,
+	handler pkghttp.HandlerInterface,
 ) *LocationHandler {
 	return &LocationHandler{
 		courierLocationService: courierLocationService,
-		httpHandler: pkghttp.Handler{
-			Validator: validator.New(),
-		},
+		httpHandler:            handler,
 	}
 }
 
