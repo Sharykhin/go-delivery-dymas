@@ -85,7 +85,7 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 	courierResponse, err := h.courierService.GetCourierWithLatestPosition(ctx, courierID)
 
 	if err != nil {
-		log.Printf("failed to save courier: %v", err)
+		log.Printf("failed to get courier: %v", err)
 		h.httpHandler.FailResponse(w, err)
 
 		return
