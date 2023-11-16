@@ -24,7 +24,7 @@ type ResponseMessage struct {
 }
 
 type HandlerInterface interface {
-	DecodePayloadFromJson(r *nethttp.Request, requestData any) error
+	DecodePayloadFromJson(r *nethttp.Request, requestData any)
 	SuccessResponse(w nethttp.ResponseWriter, requestData any, status int)
 	ValidatePayload(payload any) error
 	FailResponse(w nethttp.ResponseWriter, errFailResponse error)

@@ -66,7 +66,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 		return
 	}
 
-	h.httpHandler.SuccessResponse(w, courier)
+	h.httpHandler.SuccessResponse(w, courier, nethttp.StatusCreated)
 
 	w.WriteHeader(nethttp.StatusCreated)
 }
@@ -86,11 +86,9 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 		return
 	}
 
-	if err := h.httpHandler.SuccessResponse(w, courierResponse); err != nil {
+	if err := h.httpHandler.SuccessResponse(w, courierResponse, nethttp.StatusOK); err != nil {
 		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
-
-	w.WriteHeader(nethttp.StatusOK)
 }
