@@ -113,8 +113,8 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 	}
 }
 
-func NewHandler() Handler {
-	return Handler{
+func NewHandler() *Handler {
+	return &Handler{
 		Validator: validator.New(),
 	}
 }
