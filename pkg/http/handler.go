@@ -24,7 +24,7 @@ type ResponseMessage struct {
 }
 
 type HandlerInterface interface {
-	DecodePayloadFromJson(r *nethttp.Request, requestData any)
+	DecodePayloadFromJson(r *nethttp.Request, requestData any) error
 	SuccessResponse(w nethttp.ResponseWriter, requestData any, status int)
 	ValidatePayload(payload any) error
 	FailResponse(w nethttp.ResponseWriter, errFailResponse error)
@@ -49,7 +49,7 @@ func (h *Handler) DecodePayloadFromJson(r *nethttp.Request, requestData any) err
 }
 
 // SuccessResponse  Encodes response,that return user for http query and handle exceptions scenarios
-func (h *Handler) SuccessResponse(w nethttp.ResponseWriter, requestData any, status int) error {
+func (h *Handler) SuccessResponse(w nethttp.ResponseWriter, requestData any, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(requestData)
 
@@ -60,8 +60,6 @@ func (h *Handler) SuccessResponse(w nethttp.ResponseWriter, requestData any, sta
 	}
 
 	w.WriteHeader(status)
-
-	return nil
 }
 
 // ValidatePayload validates some payload from http query
