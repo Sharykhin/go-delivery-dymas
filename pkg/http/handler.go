@@ -113,6 +113,7 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 	}
 }
 
+// NewHandler creates http handler for handling http requests
 func NewHandler() *Handler {
 	return &Handler{
 		Validator: validator.New(),
