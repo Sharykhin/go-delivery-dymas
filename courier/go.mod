@@ -5,7 +5,7 @@ go 1.21.3
 toolchain go1.21.4
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231116125751-a2096436e423
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231116130953-6119adb698b8
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-playground/validator/v10 v10.16.0
