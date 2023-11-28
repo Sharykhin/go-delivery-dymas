@@ -9,7 +9,7 @@ import (
 
 // LocationWorkerPools WorkerLocationPools Add count tasks in courierLocationQueue for handling these tasks and run count workers countWorkers
 // LocationWorkerPools It needs when we have a lot of requests.
-type LocationWorkerPools struct {
+type LocationWorkerPool struct {
 	courierLocationQueue chan *domain.CourierLocation
 	courierService       domain.CourierLocationServiceInterface
 	onceInit             sync.Once
