@@ -18,9 +18,8 @@ type CourierLocationServiceInterface interface {
 }
 
 type WorkerLocation interface {
-	Init(ctx context.Context)
-	AddTask(courierLocation *CourierLocation)
-	handleTasks(ctx context.Context)
+	Init()
+	AddTask(courierLocation CourierLocation)
 }
 
 // CourierLocation provides information about coords courier.
@@ -71,8 +70,8 @@ func (courierLocationService *CourierLocationService) SaveLatestCourierLocation(
 }
 
 // NewCourierLocation creates model currier location with current data.
-func NewCourierLocation(id string, latitude, longitude float64) *CourierLocation {
-	return &CourierLocation{
+func NewCourierLocation(id string, latitude, longitude float64) CourierLocation {
+	return CourierLocation{
 		CourierID: id,
 		Latitude:  latitude,
 		Longitude: longitude,

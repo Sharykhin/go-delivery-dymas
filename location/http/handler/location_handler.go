@@ -50,13 +50,12 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 
 	vars := mux.Vars(r)
 	courierID := vars["courier_id"]
-	ctx := r.Context()
 	courierLocation := domain.NewCourierLocation(
 		courierID,
 		locationPayload.Latitude,
 		locationPayload.Longitude,
 	)
-	h.workerLocation.Init(ctx)
+
 	h.workerLocation.AddTask(courierLocation)
 
 	w.WriteHeader(nethttp.StatusNoContent)
