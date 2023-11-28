@@ -11,6 +11,7 @@ import (
 	"sync"
 	"syscall"
 
+	wp "github.com/Sharykhin/go-delivery-dymas/location/worker/pools"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
@@ -54,15 +55,16 @@ func main() {
 	defer redisClient.Close()
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
 	courierService := domain.NewCourierLocationService(repoRedis, courierLocationPublisher)
+	locationWorkerPools := wp.NewWorkerPools(courierService, 10, 1000000)
 	wg.Add(2)
-	go runHttpServer(ctx, config, &wg, courierService)
+	go runHttpServer(ctx, config, &wg, locationWorkerPools)
 	go runGRPC(ctx, config, &wg, repoPostgres)
 	wg.Wait()
 }
 
-func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierLocationServiceInterface) {
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, locationWorkerPools *domain.WorkerLocation) {
 
-	locationHandler := handler.NewLocationHandler(courierService, pkghttp.NewHandler())
+	locationHandler := handler.NewLocationHandler(locationWorkerPools, pkghttp.NewHandler())
 	var courierLocationURL = fmt.Sprintf(
 		"/courier/{courier_id:%s}/location",
 		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
