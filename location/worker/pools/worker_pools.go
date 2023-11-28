@@ -20,7 +20,7 @@ type LocationWorkerPool struct {
 // Init inits workerPools define count task and count workers.
 func (wl *LocationWorkerPools) Init(ctx context.Context) {
 	wl.onceInit.Do(func() {
-		wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
+		wl.courierLocationQueue = make(chan domain.CourierLocation, wl.countTasks)
 
 		for wl.countWorkers > 0 {
 			go wl.handleTasks(ctx)
