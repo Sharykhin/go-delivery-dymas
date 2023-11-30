@@ -2,7 +2,10 @@ package workerpool
 
 import (
 	"context"
-	"sync"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
@@ -12,7 +15,6 @@ import (
 type LocationPool struct {
 	courierLocationQueue chan domain.CourierLocation
 	courierService       domain.CourierLocationServiceInterface
-	onceInit             sync.Once
 	countTasks           int
 	countWorkers         int
 }
@@ -20,21 +22,30 @@ type LocationPool struct {
 // Init inits workerPools define count task and count workers.
 func (wl *LocationPool) Init() {
 	ctx := context.Background()
-	wl.onceInit.Do(func() {
-		wl.courierLocationQueue = make(chan domain.CourierLocation, wl.countTasks)
-		i := 0
-		for i < wl.countWorkers {
-			go wl.handleTasks(ctx)
-			i++
+	wl.courierLocationQueue = make(chan domain.CourierLocation, wl.countTasks)
+	i := 0
+	for i < wl.countWorkers {
+		go wl.handleTasks(ctx)
+		i++
+		if i == 1 {
+			go wl.gracefulShutdown(ctx)
 		}
-	})
+	}
 }
 
 func (wl *LocationPool) handleTasks(ctx context.Context) {
-	for {
-		courierLocation := <-wl.courierLocationQueue
+	for courierLocation := range wl.courierLocationQueue {
 		wl.courierService.SaveLatestCourierLocation(ctx, &courierLocation)
 	}
+}
+
+func (wl *LocationPool) gracefulShutdown(ctx context.Context) {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	<-ctx.Done()
+	defer stop()
+	close(wl.courierLocationQueue)
+
+	fmt.Println("Stop Worker Pool")
 }
 
 // AddTask adds task in LocationQueue.
