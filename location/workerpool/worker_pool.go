@@ -3,6 +3,7 @@ package workerpool
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -35,7 +36,10 @@ func (wl *LocationPool) Init() {
 
 func (wl *LocationPool) handleTasks(ctx context.Context) {
 	for courierLocation := range wl.courierLocationQueue {
-		wl.courierService.SaveLatestCourierLocation(ctx, &courierLocation)
+		err := wl.courierService.SaveLatestCourierLocation(ctx, &courierLocation)
+		if err != nil {
+			log.Printf("failed to save latest position: %v\n", err)
+		}
 	}
 }
 
