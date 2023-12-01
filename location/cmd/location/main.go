@@ -56,14 +56,14 @@ func main() {
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
 	courierService := domain.NewCourierLocationService(repoRedis, courierLocationPublisher)
 	locationWorkerPool := wp.NewWorkerPools(courierService, 10, 1000000)
-	locationWorkerPool.Init()
 	wg.Add(2)
 	go runHttpServer(ctx, config, &wg, locationWorkerPool)
 	go runGRPC(ctx, config, &wg, repoPostgres)
+	locationWorkerPool.Init()
 	wg.Wait()
 }
 
-func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, locationWorkerPool domain.WorkerLocation) {
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, locationWorkerPool domain.CourierLocationWorkerPool) {
 
 	locationHandler := handler.NewLocationHandler(locationWorkerPool, pkghttp.NewHandler())
 	var courierLocationURL = fmt.Sprintf(

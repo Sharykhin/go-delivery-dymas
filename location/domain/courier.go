@@ -17,9 +17,8 @@ type CourierLocationServiceInterface interface {
 	) error
 }
 
-type WorkerLocation interface {
-	Init()
-	AddTask(courierLocation CourierLocation)
+type CourierLocationWorkerPool interface {
+	AddTask(courierLocation *CourierLocation)
 }
 
 // CourierLocation provides information about coords courier.
@@ -70,8 +69,8 @@ func (courierLocationService *CourierLocationService) SaveLatestCourierLocation(
 }
 
 // NewCourierLocation creates model currier location with current data.
-func NewCourierLocation(id string, latitude, longitude float64) CourierLocation {
-	return CourierLocation{
+func NewCourierLocation(id string, latitude, longitude float64) *CourierLocation {
+	return &CourierLocation{
 		CourierID: id,
 		Latitude:  latitude,
 		Longitude: longitude,

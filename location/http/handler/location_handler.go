@@ -17,18 +17,18 @@ type LocationPayload struct {
 
 // LocationHandler handles request depending on location courier.
 type LocationHandler struct {
-	workerLocation domain.WorkerLocation
-	httpHandler    pkghttp.HandlerInterface
+	courierLocationWorkerPool domain.CourierLocationWorkerPool
+	httpHandler               pkghttp.HandlerInterface
 }
 
 // NewLocationHandler creates location handler.
 func NewLocationHandler(
-	workerLocation domain.WorkerLocation,
+	courierLocationWorkerPool domain.CourierLocationWorkerPool,
 	handler pkghttp.HandlerInterface,
 ) *LocationHandler {
 	return &LocationHandler{
-		workerLocation: workerLocation,
-		httpHandler:    handler,
+		courierLocationWorkerPool: courierLocationWorkerPool,
+		httpHandler:               handler,
 	}
 }
 
@@ -56,7 +56,7 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 		locationPayload.Longitude,
 	)
 
-	h.workerLocation.AddTask(courierLocation)
+	h.courierLocationWorkerPool.AddTask(courierLocation)
 
 	w.WriteHeader(nethttp.StatusNoContent)
 }
