@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
+	"time"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
@@ -22,40 +20,38 @@ type LocationPool struct {
 }
 
 // Init inits workerPools define count task and count workers.
-func (wl *LocationPool) Init() {
+func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
-	var wg sync.WaitGroup
-	wg.Add(wl.countWorkers)
+	var wgWorkerPool sync.WaitGroup
 	for i := 0; i < wl.countWorkers; i++ {
-		go wl.handleTasks(wg)
-		i++
+		go wl.handleTasks()
 	}
 
-	go wl.gracefulShutdown()
-
-	wg.Wait()
-}
-
-func (wl *LocationPool) handleTasks(wg sync.WaitGroup) {
-
-	ctx := context.Background()
-	for courierLocation := range wl.courierLocationQueue {
-		err := wl.courierService.SaveLatestCourierLocation(ctx, courierLocation)
-		if err != nil {
-			log.Printf("failed to save latest position: %v\n", err)
-		}
-	}
-
+	wgWorkerPool.Add(1)
+	go wl.gracefulShutdown(ctx, &wgWorkerPool)
+	wgWorkerPool.Wait()
 	wg.Done()
 }
 
-func (wl *LocationPool) gracefulShutdown() {
+func (wl *LocationPool) handleTasks() {
 	ctx := context.Background()
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	<-ctx.Done()
-	defer stop()
-	close(wl.courierLocationQueue)
+	for courierLocation := range wl.courierLocationQueue {
+		time.Sleep(30 * time.Second)
+		err := wl.courierService.SaveLatestCourierLocation(ctx, courierLocation)
+		if err != nil {
 
+			log.Printf("failed to save latest position: %v\n", err)
+		}
+	}
+}
+
+func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup) {
+	<-ctx.Done()
+	close(wl.courierLocationQueue)
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	<-timeoutCtx.Done()
+	wg.Done()
 	fmt.Println("Stop Worker Pool")
 }
 
@@ -64,8 +60,8 @@ func (wl *LocationPool) AddTask(courierLocation *domain.CourierLocation) {
 	wl.courierLocationQueue <- courierLocation
 }
 
-// NewWorkerPools creates new worker pools.
-func NewWorkerPools(
+// NewLocationPool creates new worker pools.
+func NewLocationPool(
 	courierLocationService domain.CourierLocationServiceInterface,
 	countWorkers int,
 	countTasks int,

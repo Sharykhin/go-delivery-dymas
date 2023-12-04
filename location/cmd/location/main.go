@@ -32,7 +32,6 @@ import (
 func main() {
 	var wg sync.WaitGroup
 	config, err := env.GetConfig()
-	ctx := context.Background()
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
 		return
@@ -55,11 +54,13 @@ func main() {
 	defer redisClient.Close()
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
 	courierService := domain.NewCourierLocationService(repoRedis, courierLocationPublisher)
-	locationWorkerPool := wp.NewWorkerPools(courierService, 10, 1000000)
-	wg.Add(2)
+	locationWorkerPool := wp.NewLocationPool(courierService, config.CourierLocationWorkerPoolCount, config.CourierLocationQueueSizeTasks)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	wg.Add(3)
+	go locationWorkerPool.Init(ctx, &wg)
 	go runHttpServer(ctx, config, &wg, locationWorkerPool)
 	go runGRPC(ctx, config, &wg, repoPostgres)
-	locationWorkerPool.Init()
 	wg.Wait()
 }
 
@@ -94,9 +95,7 @@ func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo do
 			log.Fatalf("failed to serve: %s", err)
 		}
 	}()
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-ctx.Done()
-	stop()
 	courierLocationServer.GracefulStop()
 	wg.Done()
 }
