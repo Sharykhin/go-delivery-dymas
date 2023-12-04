@@ -22,35 +22,42 @@ type LocationPool struct {
 // Init inits workerPools define count task and count workers.
 func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
+	chanTimeout := make(chan int)
 	var wgWorkerPool sync.WaitGroup
 	for i := 0; i < wl.countWorkers; i++ {
-		go wl.handleTasks()
+		go wl.handleTasks(chanTimeout)
 	}
 
 	wgWorkerPool.Add(1)
-	go wl.gracefulShutdown(ctx, &wgWorkerPool)
+	go wl.gracefulShutdown(ctx, &wgWorkerPool, chanTimeout)
 	wgWorkerPool.Wait()
-	wg.Done()
+	defer wg.Done()
 }
 
-func (wl *LocationPool) handleTasks() {
+func (wl *LocationPool) handleTasks(timeoutSignal <-chan int) {
 	ctx := context.Background()
 	for courierLocation := range wl.courierLocationQueue {
-		time.Sleep(30 * time.Second)
-		err := wl.courierService.SaveLatestCourierLocation(ctx, courierLocation)
-		if err != nil {
-
-			log.Printf("failed to save latest position: %v\n", err)
+		time.Sleep(35 * time.Second)
+		select {
+		case <-timeoutSignal:
+			fmt.Println("Worker was stopped")
+			break
+		default:
+			err := wl.courierService.SaveLatestCourierLocation(ctx, courierLocation)
+			if err != nil {
+				log.Printf("failed to save latest position: %v\n", err)
+			}
 		}
 	}
 }
 
-func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup) {
+func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup, timeoutSignal chan int) {
 	<-ctx.Done()
 	close(wl.courierLocationQueue)
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	<-timeoutCtx.Done()
+	close(timeoutSignal)
 	wg.Done()
 	fmt.Println("Stop Worker Pool")
 }
