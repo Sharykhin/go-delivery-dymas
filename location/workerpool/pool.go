@@ -23,7 +23,6 @@ type LocationPool struct {
 func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
 	chanTimeout := make(chan int)
-	emptyQueueSignal := make(chan int)
 	var wgWorkerPool sync.WaitGroup
 	for i := 0; i < wl.countWorkers; i++ {
 		go wl.handleTasks(chanTimeout)
@@ -38,7 +37,7 @@ func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
 func (wl *LocationPool) handleTasks(timeoutSignal <-chan int) {
 	ctx := context.Background()
 	for courierLocation := range wl.courierLocationQueue {
-		time.Sleep(35 * time.Second)
+		time.Sleep(5 * time.Second)
 		select {
 		case <-timeoutSignal:
 			fmt.Println("Worker was stopped")
@@ -55,16 +54,19 @@ func (wl *LocationPool) handleTasks(timeoutSignal <-chan int) {
 func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup, timeoutSignal chan int) {
 	<-ctx.Done()
 	close(wl.courierLocationQueue)
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	for {
+	exitGraceful := true
+	for exitGraceful {
 		select {
 		case <-timeoutCtx.Done():
 			close(timeoutSignal)
-			break
+			exitGraceful = false
+			fmt.Println("Exit with timeout")
 		default:
 			if len(wl.courierLocationQueue) == 0 {
-				break
+				fmt.Println("Exit With empty task", len(wl.courierLocationQueue))
+				exitGraceful = false
 			}
 		}
 	}
