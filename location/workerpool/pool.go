@@ -23,6 +23,7 @@ type LocationPool struct {
 func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
 	chanTimeout := make(chan int)
+	emptyQueueSignal := make(chan int)
 	var wgWorkerPool sync.WaitGroup
 	for i := 0; i < wl.countWorkers; i++ {
 		go wl.handleTasks(chanTimeout)
@@ -56,8 +57,17 @@ func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup
 	close(wl.courierLocationQueue)
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	<-timeoutCtx.Done()
-	close(timeoutSignal)
+	for {
+		select {
+		case <-timeoutCtx.Done():
+			close(timeoutSignal)
+			break
+		default:
+			if len(wl.courierLocationQueue) == 0 {
+				break
+			}
+		}
+	}
 	wg.Done()
 	fmt.Println("Stop Worker Pool")
 }
