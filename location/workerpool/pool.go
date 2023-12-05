@@ -37,7 +37,6 @@ func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
 func (wl *LocationPool) handleTasks(timeoutSignal <-chan int) {
 	ctx := context.Background()
 	for courierLocation := range wl.courierLocationQueue {
-		time.Sleep(5 * time.Second)
 		select {
 		case <-timeoutSignal:
 			fmt.Println("Worker was stopped")
@@ -54,7 +53,7 @@ func (wl *LocationPool) handleTasks(timeoutSignal <-chan int) {
 func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup, timeoutSignal chan int) {
 	<-ctx.Done()
 	close(wl.courierLocationQueue)
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	exitGraceful := true
 	for exitGraceful {
