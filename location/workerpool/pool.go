@@ -21,20 +21,21 @@ type LocationPool struct {
 
 // Init inits workerPools define count task and count workers.
 func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
-	chanTimeout := make(chan int)
+	chanTimeout := make(chan bool)
 	var wgWorkerPool sync.WaitGroup
 	for i := 0; i < wl.countWorkers; i++ {
 		go wl.handleTasks(chanTimeout)
 	}
 
 	wgWorkerPool.Add(1)
-	go wl.gracefulShutdown(ctx, &wgWorkerPool, chanTimeout)
+	go wl.gracefulShutdown(ctx, &wgWorkerPool)
 	wgWorkerPool.Wait()
-	defer wg.Done()
+	close(chanTimeout)
 }
 
-func (wl *LocationPool) handleTasks(timeoutSignal <-chan int) {
+func (wl *LocationPool) handleTasks(timeoutSignal <-chan bool) {
 	ctx := context.Background()
 	for courierLocation := range wl.courierLocationQueue {
 		select {
@@ -50,7 +51,7 @@ func (wl *LocationPool) handleTasks(timeoutSignal <-chan int) {
 	}
 }
 
-func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup, timeoutSignal chan int) {
+func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup) {
 	<-ctx.Done()
 	close(wl.courierLocationQueue)
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -59,7 +60,6 @@ func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup
 	for exitGraceful {
 		select {
 		case <-timeoutCtx.Done():
-			close(timeoutSignal)
 			exitGraceful = false
 			fmt.Println("Exit with timeout")
 		default:
