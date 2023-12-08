@@ -22,7 +22,7 @@ type LocationPool struct {
 }
 
 // Init inits workerPools define count task and count workers.
-func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
+func (wl *LocationPool) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
 	cancelCtx, cancel := context.WithCancel(context.Background())

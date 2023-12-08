@@ -74,7 +74,7 @@ func main() {
 	defer stop()
 
 	wg.Add(3)
-	go locationWorkerPool.Init(ctx, &wg)
+	go locationWorkerPool.Run(ctx, &wg)
 	go runHttpServer(ctx, config, &wg, locationWorkerPool)
 	go runGRPC(ctx, config, &wg, repoPostgres)
 	wg.Wait()
