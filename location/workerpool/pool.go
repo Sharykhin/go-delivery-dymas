@@ -13,35 +13,39 @@ import (
 // LocationPool add count tasks in courierLocationQueue for handling these tasks and run count workers countWorkers
 // It needs when we have a lot of requests.
 type LocationPool struct {
-	courierLocationQueue chan *domain.CourierLocation
-	courierService       domain.CourierLocationServiceInterface
-	countTasks           int
-	countWorkers         int
+	courierLocationQueue    chan *domain.CourierLocation
+	courierService          domain.CourierLocationServiceInterface
+	countTasks              int
+	countWorkers            int
+	timeoutGracefulShutdown time.Duration
 }
 
 // Init inits workerPools define count task and count workers.
-func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
+func (wl *LocationPool) Init(ctxSignalShutdown context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
-	chanTimeout := make(chan bool)
+	cancelCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	fmt.Println(wl.countTasks)
+	fmt.Println("her")
 	var wgWorkerPool sync.WaitGroup
+
 	for i := 0; i < wl.countWorkers; i++ {
-		go wl.handleTasks(chanTimeout)
+		go wl.handleTasks(cancelCtx)
 	}
 
-	wgWorkerPool.Add(1)
-	go wl.gracefulShutdown(ctx, &wgWorkerPool)
-	wgWorkerPool.Wait()
-	close(chanTimeout)
+	<-ctxSignalShutdown.Done()
+
+	close(wl.courierLocationQueue)
+	wl.gracefulShutdown(&wgWorkerPool)
 }
 
-func (wl *LocationPool) handleTasks(timeoutSignal <-chan bool) {
+func (wl *LocationPool) handleTasks(ctxCancel context.Context) {
 	ctx := context.Background()
 	for courierLocation := range wl.courierLocationQueue {
 		select {
-		case <-timeoutSignal:
-			fmt.Println("Worker was stopped")
-			break
+		case <-ctxCancel.Done():
+			return
 		default:
 			err := wl.courierService.SaveLatestCourierLocation(ctx, courierLocation)
 			if err != nil {
@@ -51,31 +55,28 @@ func (wl *LocationPool) handleTasks(timeoutSignal <-chan bool) {
 	}
 }
 
-func (wl *LocationPool) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup) {
-	<-ctx.Done()
-	close(wl.courierLocationQueue)
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func (wl *LocationPool) gracefulShutdown(wg *sync.WaitGroup) {
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), wl.timeoutGracefulShutdown*time.Second)
 	defer cancel()
-	exitGraceful := true
-	for exitGraceful {
+	for {
 		select {
 		case <-timeoutCtx.Done():
-			exitGraceful = false
-			fmt.Println("Exit with timeout")
+			return
 		default:
+
 			if len(wl.courierLocationQueue) == 0 {
-				fmt.Println("Exit With empty task", len(wl.courierLocationQueue))
-				exitGraceful = false
+				return
 			}
+
 		}
 	}
-	wg.Done()
-	fmt.Println("Stop Worker Pool")
 }
 
 // AddTask adds task in LocationQueue.
 func (wl *LocationPool) AddTask(courierLocation *domain.CourierLocation) {
+	fmt.Println("tsak was added")
 	wl.courierLocationQueue <- courierLocation
+	fmt.Println(len(wl.courierLocationQueue))
 }
 
 // NewLocationPool creates new worker pools.
@@ -83,10 +84,13 @@ func NewLocationPool(
 	courierLocationService domain.CourierLocationServiceInterface,
 	countWorkers int,
 	countTasks int,
+	timeoutGracefulShutdown time.Duration,
+
 ) *LocationPool {
 	return &LocationPool{
-		courierService: courierLocationService,
-		countWorkers:   countWorkers,
-		countTasks:     countTasks,
+		courierService:          courierLocationService,
+		countWorkers:            countWorkers,
+		countTasks:              countTasks,
+		timeoutGracefulShutdown: timeoutGracefulShutdown,
 	}
 }

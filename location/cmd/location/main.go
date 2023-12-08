@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	wp "github.com/Sharykhin/go-delivery-dymas/location/workerpool"
 	"github.com/gorilla/mux"
@@ -32,31 +33,46 @@ import (
 func main() {
 	var wg sync.WaitGroup
 	config, err := env.GetConfig()
+
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
 		return
 	}
+
 	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
 	clientPostgres, err := sql.Open("postgres", connPostgres)
+
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
 	}
-	//
+
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
 	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "latest_position_courier")
+
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher)
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
+
 	defer redisClient.Close()
+
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
 	courierService := domain.NewCourierLocationService(repoRedis, courierLocationPublisher)
-	locationWorkerPool := wp.NewLocationPool(courierService, config.CourierLocationWorkerPoolCount, config.CourierLocationQueueSizeTasks)
+
+	locationWorkerPool := wp.NewLocationPool(
+		courierService,
+		config.CourierLocationWorkerPoolCount,
+		config.CourierLocationQueueSizeTasks,
+		time.Duration(config.CourierLocationWorkerTimeoutGracefulShutdown),
+	)
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
 	defer stop()
+
 	wg.Add(3)
 	go locationWorkerPool.Init(ctx, &wg)
 	go runHttpServer(ctx, config, &wg, locationWorkerPool)
