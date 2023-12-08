@@ -2,7 +2,6 @@ package workerpool
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -26,8 +25,6 @@ func (wl *LocationPool) Init(ctxSignalShutdown context.Context, wg *sync.WaitGro
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	fmt.Println(wl.countTasks)
-	fmt.Println("her")
 	var wgWorkerPool sync.WaitGroup
 
 	for i := 0; i < wl.countWorkers; i++ {
@@ -74,9 +71,7 @@ func (wl *LocationPool) gracefulShutdown(wg *sync.WaitGroup) {
 
 // AddTask adds task in LocationQueue.
 func (wl *LocationPool) AddTask(courierLocation *domain.CourierLocation) {
-	fmt.Println("tsak was added")
 	wl.courierLocationQueue <- courierLocation
-	fmt.Println(len(wl.courierLocationQueue))
 }
 
 // NewLocationPool creates new worker pools.
