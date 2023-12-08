@@ -16,32 +16,32 @@ type LocationPool struct {
 	courierService          domain.CourierLocationServiceInterface
 	countTasks              int
 	countWorkers            int
+	isClosed                bool
+	mu                      sync.Mutex
 	timeoutGracefulShutdown time.Duration
 }
 
 // Init inits workerPools define count task and count workers.
-func (wl *LocationPool) Init(ctxSignalShutdown context.Context, wg *sync.WaitGroup) {
+func (wl *LocationPool) Init(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	var wgWorkerPool sync.WaitGroup
 
 	for i := 0; i < wl.countWorkers; i++ {
 		go wl.handleTasks(cancelCtx)
 	}
 
-	<-ctxSignalShutdown.Done()
+	<-ctx.Done()
 
 	close(wl.courierLocationQueue)
-	wl.gracefulShutdown(&wgWorkerPool)
+	wl.gracefulShutdown()
 }
 
-func (wl *LocationPool) handleTasks(ctxCancel context.Context) {
-	ctx := context.Background()
+func (wl *LocationPool) handleTasks(ctx context.Context) {
 	for courierLocation := range wl.courierLocationQueue {
 		select {
-		case <-ctxCancel.Done():
+		case <-ctx.Done():
 			return
 		default:
 			err := wl.courierService.SaveLatestCourierLocation(ctx, courierLocation)
@@ -52,12 +52,11 @@ func (wl *LocationPool) handleTasks(ctxCancel context.Context) {
 	}
 }
 
-func (wl *LocationPool) gracefulShutdown(wg *sync.WaitGroup) {
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), wl.timeoutGracefulShutdown*time.Second)
-	defer cancel()
+func (wl *LocationPool) gracefulShutdown() {
+	timer := time.After(wl.timeoutGracefulShutdown)
 	for {
 		select {
-		case <-timeoutCtx.Done():
+		case <-timer:
 			return
 		default:
 
@@ -71,7 +70,11 @@ func (wl *LocationPool) gracefulShutdown(wg *sync.WaitGroup) {
 
 // AddTask adds task in LocationQueue.
 func (wl *LocationPool) AddTask(courierLocation *domain.CourierLocation) {
-	wl.courierLocationQueue <- courierLocation
+	wl.mu.Lock()
+	defer wl.mu.Unlock()
+	if !wl.isClosed {
+		wl.courierLocationQueue <- courierLocation
+	}
 }
 
 // NewLocationPool creates new worker pools.
