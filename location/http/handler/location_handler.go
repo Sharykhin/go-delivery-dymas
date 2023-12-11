@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	nethttp "net/http"
 
 	"github.com/gorilla/mux"
@@ -10,30 +9,30 @@ import (
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 )
 
-// LocationPayload imagine payload from http query
+// LocationPayload imagine payload from http query.
 type LocationPayload struct {
 	Latitude  float64 `json:"latitude" validate:"required,latitude"`
 	Longitude float64 `json:"longitude" validate:"required,longitude"`
 }
 
-// LocationHandler handles request depending on location courier
+// LocationHandler handles request depending on location courier.
 type LocationHandler struct {
-	courierLocationService domain.CourierLocationServiceInterface
-	httpHandler            pkghttp.HandlerInterface
+	courierLocationWorkerPool domain.CourierLocationWorkerPool
+	httpHandler               pkghttp.HandlerInterface
 }
 
-// NewLocationHandler creates location handler
+// NewLocationHandler creates location handler.
 func NewLocationHandler(
-	courierLocationService domain.CourierLocationServiceInterface,
+	courierLocationWorkerPool domain.CourierLocationWorkerPool,
 	handler pkghttp.HandlerInterface,
 ) *LocationHandler {
 	return &LocationHandler{
-		courierLocationService: courierLocationService,
-		httpHandler:            handler,
+		courierLocationWorkerPool: courierLocationWorkerPool,
+		httpHandler:               handler,
 	}
 }
 
-// HandlerCouriersLocation handles request depending on location courier and validate query have valid payload and save data from payload in storage
+// HandlerCouriersLocation handles request depending on location courier and validate query have valid payload and save data from payload in storage.
 func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var locationPayload LocationPayload
 
@@ -51,22 +50,13 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 
 	vars := mux.Vars(r)
 	courierID := vars["courier_id"]
-	ctx := r.Context()
 	courierLocation := domain.NewCourierLocation(
 		courierID,
 		locationPayload.Latitude,
 		locationPayload.Longitude,
 	)
 
-	err := h.courierLocationService.SaveLatestCourierLocation(ctx, courierLocation)
-
-	if err != nil {
-		log.Printf("failed to store latest courier position: %v", err)
-
-		h.httpHandler.FailResponse(w, err)
-
-		return
-	}
+	h.courierLocationWorkerPool.AddTask(courierLocation)
 
 	w.WriteHeader(nethttp.StatusNoContent)
 }

@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"log"
 	nethttp "net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -27,9 +24,7 @@ func RunServer(ctx context.Context, router *mux.Router, port string) {
 			log.Printf("listen: %s\n", err)
 		}
 	}()
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-ctx.Done()
-	stop()
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(timeoutCtx); err != nil {

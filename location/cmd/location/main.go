@@ -10,7 +10,9 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
+	wp "github.com/Sharykhin/go-delivery-dymas/location/workerpool"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
@@ -31,38 +33,56 @@ import (
 func main() {
 	var wg sync.WaitGroup
 	config, err := env.GetConfig()
-	ctx := context.Background()
+
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
 		return
 	}
+
 	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
 	clientPostgres, err := sql.Open("postgres", connPostgres)
+
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
 	}
-	//
+
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
 	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "latest_position_courier")
+
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher)
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
+
 	defer redisClient.Close()
+
 	repoRedis := redis.NewCourierLocationRepository(redisClient)
 	courierService := domain.NewCourierLocationService(repoRedis, courierLocationPublisher)
-	wg.Add(2)
-	go runHttpServer(ctx, config, &wg, courierService)
+
+	locationWorkerPool := wp.NewLocationPool(
+		courierService,
+		config.CourierLocationWorkerPoolCount,
+		config.CourierLocationQueueSizeTasks,
+		time.Duration(config.CourierLocationWorkerTimeoutGracefulShutdown),
+	)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	defer stop()
+
+	wg.Add(3)
+	go locationWorkerPool.Run(ctx, &wg)
+	go runHttpServer(ctx, config, &wg, locationWorkerPool)
 	go runGRPC(ctx, config, &wg, repoPostgres)
 	wg.Wait()
 }
 
-func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierLocationServiceInterface) {
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, locationWorkerPool domain.CourierLocationWorkerPool) {
 
-	locationHandler := handler.NewLocationHandler(courierService, pkghttp.NewHandler())
+	locationHandler := handler.NewLocationHandler(locationWorkerPool, pkghttp.NewHandler())
 	var courierLocationURL = fmt.Sprintf(
 		"/courier/{courier_id:%s}/location",
 		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
@@ -91,9 +111,7 @@ func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo do
 			log.Fatalf("failed to serve: %s", err)
 		}
 	}()
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-ctx.Done()
-	stop()
 	courierLocationServer.GracefulStop()
 	wg.Done()
 }
