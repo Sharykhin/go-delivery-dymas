@@ -26,6 +26,7 @@ services:
       - GOOSE_VERBOSE=true
     volumes:
       - ./migrations/location:/migrations/location
+      - ./migrations/courier:/migrations/courier
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
