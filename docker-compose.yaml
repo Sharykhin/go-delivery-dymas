@@ -25,7 +25,8 @@ services:
       - GOOSE_DBSTRING=host=postgres port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB}
       - GOOSE_VERBOSE=true
     volumes:
-      - ./migrations/location:/migrations/location
+      - ./location/migrations:/migrations/location
+      - ./courier/migrations:/migrations/courier
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
