@@ -1,0 +1,6 @@
+github.com/Sharykhin/go-delivery-dymas/location v0.0.0-20231218081248-ad94023d9658 h1:EAQXrLmeLrQDxeRAbfXSQHyP2zSpcR7i/K1BoEtOUHM=
+github.com/Sharykhin/go-delivery-dymas/location v0.0.0-20231218081248-ad94023d9658/go.mod h1:dNkzgC6pGXCwiY/RpKqMwBf+SRHnLfThSU9OcEvQ7fY=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231218081248-ad94023d9658 h1:+SdyoBUDpLc6Subf4nuGLCiiRmKyb+C1Hoj22ZxBgIs=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231218081248-ad94023d9658/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
+github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
+github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=

@@ -20,7 +20,6 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/location/grpc"
-	"github.com/Sharykhin/go-delivery-dymas/location/http"
 	"github.com/Sharykhin/go-delivery-dymas/location/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
@@ -93,7 +92,7 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, l
 	},
 	}
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
-	http.RunServer(ctx, router, ":"+config.PortServer)
+	pkghttp.RunServer(ctx, router, ":"+config.PortServer)
 	wg.Done()
 }
 
