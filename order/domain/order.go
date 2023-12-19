@@ -30,7 +30,7 @@ type OrderService struct {
 
 // OrderRepositoryInterface saves and reads courier from storage
 type OrderRepositoryInterface interface {
-	SaveOrder(ctx context.Context, phoneNumber string) (*Order, error)
+	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetStatusByOrderId(ctx context.Context, orderID string) (*Order, error)
 }
 
@@ -41,11 +41,11 @@ type OrderServiceInterface interface {
 }
 
 // CreateOrder  new order in db
-func (s *OrderService) CreateOrder(ctx context.Context, phoneNumber string) (*Order, error) {
+func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, error) {
 
 	order, err := s.orderRepository.SaveOrder(
 		ctx,
-		phoneNumber,
+		order,
 	)
 
 	if err != nil {
@@ -74,5 +74,13 @@ func (s *OrderService) GetStatusByOrderId(ctx context.Context, orderId string) (
 func NewOrderService(repo OrderRepositoryInterface) *OrderService {
 	return &OrderService{
 		orderRepository: repo,
+	}
+}
+
+// NewOrder creates new order for saving in db
+func NewOrder(phoneNumber string) *Order {
+	return &Order{
+		CustomerPhoneNumber: phoneNumber,
+		CreatedAt:           time.Now(),
 	}
 }

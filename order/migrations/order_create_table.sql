@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS orders (
                                           id UUID DEFAULT gen_random_uuid(),
                                           courier_id UUID NULL,
                                           customer_phone_number char(15) NOT NULL,
-                                          status order_status,
+                                          status order_status DEFAULT 'pending',
                                           created_at TIMESTAMPTZ NOT NULL,
                                           PRIMARY KEY (id)
 );

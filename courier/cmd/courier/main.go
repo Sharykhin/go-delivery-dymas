@@ -65,7 +65,5 @@ func main() {
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-	if err := pkghttp.RunServer(ctx, router, ":"+config.PortServerCourier); err != nil {
-		log.Printf("failed to run http server: %v", err)
-	}
+	pkghttp.RunServer(ctx, router, ":"+config.PortServerCourier)
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	nethttp "net/http"
 
@@ -12,7 +13,7 @@ import (
 
 // OrderCreatePayload imagine payload from http query.
 type OrderCreatePayload struct {
-	Phone string `json:"phone" validate:"required,e164"`
+	Phone string `json:"phone_number" validate:"omitempty,e164"`
 }
 
 // OrderStatusResponse imagine response order status from http query.
@@ -56,9 +57,10 @@ func (h *OrderHandler) HandlerOrderCreate(w nethttp.ResponseWriter, r *nethttp.R
 
 	ctx := r.Context()
 
+	order := domain.NewOrder(orderCreatePayload.Phone)
 	order, err := h.orderService.CreateOrder(
 		ctx,
-		orderCreatePayload.Phone,
+		order,
 	)
 
 	if err != nil {
@@ -73,33 +75,18 @@ func (h *OrderHandler) HandlerOrderCreate(w nethttp.ResponseWriter, r *nethttp.R
 
 // HandlerOrderGetStatusByOrderId GetStatusByOrderId handles request and return order id and order status.
 func (h *OrderHandler) HandlerOrderGetStatusByOrderId(w nethttp.ResponseWriter, r *nethttp.Request) {
-	var orderCreatePayload OrderCreatePayload
-
-	if err := h.httpHandler.DecodePayloadFromJson(r, &orderCreatePayload); err != nil {
-		h.httpHandler.FailResponse(w, err)
-
-		return
-	}
-
-	if err := h.httpHandler.ValidatePayload(&orderCreatePayload); err != nil {
-		h.httpHandler.FailResponse(w, err)
-
-		return
-	}
-
 	vars := mux.Vars(r)
 	orderID := vars["order_id"]
-	order, err := h.orderService.CreateOrder(r.Context(), orderID)
+	order, err := h.orderService.GetStatusByOrderId(r.Context(), orderID)
 	orderStatusResponse := OrderStatusResponse{
 		Status: order.Status,
 		ID:     order.ID,
 	}
-
+	fmt.Println(orderStatusResponse)
 	if err != nil {
 		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
 	h.httpHandler.SuccessResponse(w, orderStatusResponse, nethttp.StatusOK)
-	w.WriteHeader(nethttp.StatusAccepted)
 }

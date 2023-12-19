@@ -14,12 +14,14 @@ type OrderRepository struct {
 }
 
 // SaveOrder saves orders in db.
-func (repo *OrderRepository) SaveOrder(ctx context.Context, phoneNumber string) (*domain.Order, error) {
-	query := "insert into orders (phoneNumber) values ($1) ON CONFLICT DO NOTHING RETURNING id, courier_id, customer_phone_number, status, created_at"
+func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
+	query := "insert into orders (customer_phone_number, created_at, status) values ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id, courier_id, customer_phone_number, status, created_at"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
-		phoneNumber,
+		order.CustomerPhoneNumber,
+		order.CreatedAt,
+		order.Status,
 	)
 
 	var orderRow domain.Order
@@ -31,7 +33,7 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, phoneNumber string) 
 
 // GetStatusByOrderId get order status and order id from database by uuid order and return model with order id.
 func (repo *OrderRepository) GetStatusByOrderId(ctx context.Context, orderID string) (*domain.Order, error) {
-	query := "SELECT *  FROM orders WHERE id=$1 FOR SHARE"
+	query := "SELECT id, status FROM orders WHERE id=$1 FOR SHARE"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
