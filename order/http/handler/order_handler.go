@@ -63,6 +63,10 @@ func (h *OrderHandler) HandlerOrderCreate(w nethttp.ResponseWriter, r *nethttp.R
 		order,
 	)
 
+	orderStatusResponse := OrderStatusResponse{
+		Status: order.Status,
+		ID:     order.ID,
+	}
 	if err != nil {
 		log.Printf("Failed to save courier: %v", err)
 		h.httpHandler.FailResponse(w, err)
@@ -70,7 +74,7 @@ func (h *OrderHandler) HandlerOrderCreate(w nethttp.ResponseWriter, r *nethttp.R
 		return
 	}
 
-	h.httpHandler.SuccessResponse(w, order, nethttp.StatusAccepted)
+	h.httpHandler.SuccessResponse(w, orderStatusResponse, nethttp.StatusAccepted)
 }
 
 // HandlerOrderGetStatusByOrderId GetStatusByOrderId handles request and return order id and order status.

@@ -15,7 +15,7 @@ type OrderRepository struct {
 
 // SaveOrder saves orders in db.
 func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
-	query := "insert into orders (customer_phone_number, created_at, status) values ($1, $2, $3) RETURNING id, courier_id, customer_phone_number, status, created_at"
+	query := "insert into orders (customer_phone_number, created_at, status) values ($1, $2, $3) RETURNING id, customer_phone_number, status, created_at"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
@@ -26,7 +26,7 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 
 	var orderRow domain.Order
 
-	err := row.Scan(&orderRow.ID, &orderRow.CourierID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
+	err := row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
 
 	return &orderRow, err
 }

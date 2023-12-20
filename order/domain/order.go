@@ -11,11 +11,11 @@ var ErrOrderNotFound = errors.New("order was not found")
 
 // Order is a model of an order.
 type Order struct {
-	ID                  string    `json:"id"`
-	CourierID           string    `json:"courier_id"`
-	CustomerPhoneNumber string    `json:"customer_phone_number"`
-	Status              string    `json:"status"`
-	CreatedAt           time.Time `json:"created_at"`
+	ID                  string `json:"id"`
+	CourierID           string `json:"courier_id"`
+	CustomerPhoneNumber string `json:"customer_phone_number"`
+	Status              string `json:"status"`
+	CreatedAt           time.Time
 }
 
 // OrderClientInterface save order.
@@ -82,5 +82,6 @@ func NewOrder(phoneNumber string) *Order {
 	return &Order{
 		CustomerPhoneNumber: phoneNumber,
 		CreatedAt:           time.Now(),
+		Status:              "pending",
 	}
 }
