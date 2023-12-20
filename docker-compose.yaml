@@ -27,6 +27,7 @@ services:
     volumes:
       - ./location/migrations:/migrations/location
       - ./courier/migrations:/migrations/courier
+      - ./order/migrations:/migrations/order
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
