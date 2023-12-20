@@ -11,11 +11,16 @@ var ErrOrderNotFound = errors.New("order was not found")
 
 // Order is a model of an order.
 type Order struct {
-	ID                  string `json:"id"`
-	CourierID           string `json:"courier_id"`
-	CustomerPhoneNumber string `json:"customer_phone_number"`
-	Status              string `json:"status"`
-	CreatedAt           time.Time
+	ID                  string    `json:"id"`
+	CourierID           string    `json:"courier_id"`
+	CustomerPhoneNumber string    `json:"customer_phone_number"`
+	Status              string    `json:"status"`
+	CreatedAt           time.Time `json:"created_at"`
+}
+
+// OrderPublisherInterface publish message some systems.
+type OrderPublisherInterface interface {
+	PublishOrder(ctx context.Context, order *Order) error
 }
 
 // OrderClientInterface save order.
@@ -26,6 +31,7 @@ type OrderClientInterface interface {
 // OrderService provides information about order and save order
 type OrderService struct {
 	orderRepository OrderRepositoryInterface
+	orderPublisher  OrderPublisherInterface
 }
 
 // OrderRepositoryInterface saves and reads courier from storage
@@ -47,6 +53,8 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 		ctx,
 		order,
 	)
+
+	s.orderPublisher.PublishOrder(ctx, order)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create order in database: %w", err)
@@ -71,9 +79,10 @@ func (s *OrderService) GetStatusByOrderId(ctx context.Context, orderId string) (
 }
 
 // NewOrderService creates new order service
-func NewOrderService(repo OrderRepositoryInterface) *OrderService {
+func NewOrderService(repo OrderRepositoryInterface, orderPublisher OrderPublisherInterface) *OrderService {
 	return &OrderService{
 		orderRepository: repo,
+		orderPublisher:  orderPublisher,
 	}
 }
 

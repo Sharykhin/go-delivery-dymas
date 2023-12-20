@@ -13,6 +13,9 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
+	"github.com/Sharykhin/go-delivery-dymas/order/kafka"
+	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
+
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 	"github.com/Sharykhin/go-delivery-dymas/order/env"
 	"github.com/Sharykhin/go-delivery-dymas/order/http/handler"
@@ -38,8 +41,13 @@ func main() {
 
 	defer clientPostgres.Close()
 	repoOrderPostgres := postgres.NewOrderRepository(clientPostgres)
-
-	courierService := domain.NewOrderService(repoOrderPostgres)
+	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "orders")
+	if err != nil {
+		log.Printf("failed to create publisher: %v\n", err)
+		return
+	}
+	orderPublisher := kafka.NewOrderPublisher(publisher)
+	courierService := domain.NewOrderService(repoOrderPostgres, orderPublisher)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
