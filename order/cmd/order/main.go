@@ -39,11 +39,6 @@ func main() {
 	defer clientPostgres.Close()
 	repoOrderPostgres := postgres.NewOrderRepository(clientPostgres)
 
-	if err != nil {
-		log.Printf("failed to create publisher: %v\n", err)
-		return
-	}
-
 	courierService := domain.NewOrderService(repoOrderPostgres)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
