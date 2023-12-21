@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const orderNewStatus = "pending"
+
 // ErrOrderNotFound shows type this error, when we don't have courier in db
 var ErrOrderNotFound = errors.New("order was not found")
 
@@ -87,6 +89,6 @@ func NewOrder(phoneNumber string) *Order {
 	return &Order{
 		CustomerPhoneNumber: phoneNumber,
 		CreatedAt:           time.Now(),
-		Status:              "pending",
+		Status:              orderNewStatus,
 	}
 }

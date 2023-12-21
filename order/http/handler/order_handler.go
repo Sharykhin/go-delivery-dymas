@@ -56,7 +56,7 @@ func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Re
 
 	ctx := r.Context()
 
-	order := domain.NewOrder(orderCreatePayload.Phone)
+	order := domain.NewOrder(orderCreatePayload.PhoneNumber)
 	order, err := h.orderService.CreateOrder(
 		ctx,
 		order,
