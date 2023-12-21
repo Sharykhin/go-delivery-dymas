@@ -40,38 +40,40 @@ func main() {
 	}
 
 	defer clientPostgres.Close()
-	repoOrderPostgres := postgres.NewOrderRepository(clientPostgres)
+	orderRepo := postgres.NewOrderRepository(clientPostgres)
 	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "orders")
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 	orderPublisher := kafka.NewOrderPublisher(publisher)
-	courierService := domain.NewOrderService(repoOrderPostgres, orderPublisher)
+	orderService := domain.NewOrderService(orderRepo, orderPublisher)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	defer stop()
 
 	wg.Add(1)
-	go runHttpServer(ctx, config, &wg, courierService)
+	go runHttpServer(ctx, config, &wg, orderService)
 	wg.Wait()
 }
 
 func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, orderService *domain.OrderService) {
+	defer wg.Done()
 
 	orderHandler := handler.NewOrderHandler(orderService, pkghttp.NewHandler())
 	orderURL := fmt.Sprintf(
 		"/orders/{order_id:%s}",
 		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
 	)
+
 	routes := map[string]pkghttp.Route{
 		"/orders": {
-			Handler: orderHandler.HandlerOrderCreate,
+			Handler: orderHandler.HandleOrderCreate,
 			Method:  "POST",
 		},
 		orderURL: {
-			Handler: orderHandler.HandlerOrderGetStatusByOrderId,
+			Handler: orderHandler.HandleOrderGetStatusByOrderId,
 			Method:  "GET",
 		},
 	}

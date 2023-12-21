@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	nethttp "net/http"
 
@@ -39,8 +38,8 @@ func NewOrderHandler(
 	}
 }
 
-// HandlerOrderCreate handles request order and validate query have valid payload and save data from payload in storage.
-func (h *OrderHandler) HandlerOrderCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
+// HandleOrderCreate handles request order and validate query have valid payload and save data from payload in storage.
+func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var orderCreatePayload OrderCreatePayload
 
 	if err := h.httpHandler.DecodePayloadFromJson(r, &orderCreatePayload); err != nil {
@@ -63,10 +62,6 @@ func (h *OrderHandler) HandlerOrderCreate(w nethttp.ResponseWriter, r *nethttp.R
 		order,
 	)
 
-	orderStatusResponse := OrderStatusResponse{
-		Status: order.Status,
-		ID:     order.ID,
-	}
 	if err != nil {
 		log.Printf("Failed to save courier: %v", err)
 		h.httpHandler.FailResponse(w, err)
@@ -74,11 +69,16 @@ func (h *OrderHandler) HandlerOrderCreate(w nethttp.ResponseWriter, r *nethttp.R
 		return
 	}
 
+	orderStatusResponse := OrderStatusResponse{
+		Status: order.Status,
+		ID:     order.ID,
+	}
+
 	h.httpHandler.SuccessResponse(w, orderStatusResponse, nethttp.StatusAccepted)
 }
 
-// HandlerOrderGetStatusByOrderId GetStatusByOrderId handles request and return order id and order status.
-func (h *OrderHandler) HandlerOrderGetStatusByOrderId(w nethttp.ResponseWriter, r *nethttp.Request) {
+// HandleOrderGetStatusByOrderId GetStatusByOrderId handles request and return order id and order status.
+func (h *OrderHandler) HandleOrderGetStatusByOrderId(w nethttp.ResponseWriter, r *nethttp.Request) {
 	vars := mux.Vars(r)
 	orderID := vars["order_id"]
 	order, err := h.orderService.GetStatusByOrderId(r.Context(), orderID)
@@ -86,7 +86,7 @@ func (h *OrderHandler) HandlerOrderGetStatusByOrderId(w nethttp.ResponseWriter, 
 		Status: order.Status,
 		ID:     order.ID,
 	}
-	fmt.Println(orderStatusResponse)
+
 	if err != nil {
 		h.httpHandler.FailResponse(w, err)
 

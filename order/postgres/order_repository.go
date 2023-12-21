@@ -31,8 +31,8 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 	return &orderRow, err
 }
 
-// GetStatusByOrderId get order status and order id from database by uuid order and return model with order id.
-func (repo *OrderRepository) GetStatusByOrderId(ctx context.Context, orderID string) (*domain.Order, error) {
+// GetOrderId gets order status and order id from database by uuid order and return model with order id.
+func (repo *OrderRepository) GetOrderId(ctx context.Context, orderID string) (*domain.Order, error) {
 	query := "SELECT id, status FROM orders WHERE id=$1 FOR SHARE"
 	row := repo.client.QueryRowContext(
 		ctx,

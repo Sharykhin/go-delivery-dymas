@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// ErrCourierNotFound shows type this error, when we don't have courier in db
 var ErrCourierNotFound = errors.New("courier was not found")
 
 // CourierLocationServiceInterface saves courier position in storage.

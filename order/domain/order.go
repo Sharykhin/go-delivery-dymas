@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// ErrOrderNotFound shows type this error, when we don't have courier in db
 var ErrOrderNotFound = errors.New("order was not found")
 
 // Order is a model of an order.
@@ -23,11 +24,6 @@ type OrderPublisherInterface interface {
 	PublishOrder(ctx context.Context, order *Order) error
 }
 
-// OrderClientInterface save order.
-type OrderClientInterface interface {
-	SaveOrder(ctx context.Context, phoneNumber string) (*Order, error)
-}
-
 // OrderService provides information about order and save order
 type OrderService struct {
 	orderRepository OrderRepositoryInterface
@@ -37,7 +33,7 @@ type OrderService struct {
 // OrderRepositoryInterface saves and reads courier from storage
 type OrderRepositoryInterface interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
-	GetStatusByOrderId(ctx context.Context, orderID string) (*Order, error)
+	GetOrderId(ctx context.Context, orderID string) (*Order, error)
 }
 
 // OrderServiceInterface gets information about courier and latest position courier from storage
@@ -54,11 +50,11 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 		order,
 	)
 
-	s.orderPublisher.PublishOrder(ctx, order)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to create order in database: %w", err)
 	}
+
+	s.orderPublisher.PublishOrder(ctx, order)
 
 	return order, nil
 }
@@ -66,7 +62,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 // GetStatusByOrderId returns status and order id data
 func (s *OrderService) GetStatusByOrderId(ctx context.Context, orderId string) (*Order, error) {
 
-	order, err := s.orderRepository.GetStatusByOrderId(
+	order, err := s.orderRepository.GetOrderId(
 		ctx,
 		orderId,
 	)
@@ -79,9 +75,9 @@ func (s *OrderService) GetStatusByOrderId(ctx context.Context, orderId string) (
 }
 
 // NewOrderService creates new order service
-func NewOrderService(repo OrderRepositoryInterface, orderPublisher OrderPublisherInterface) *OrderService {
+func NewOrderService(orderRepo OrderRepositoryInterface, orderPublisher OrderPublisherInterface) *OrderService {
 	return &OrderService{
-		orderRepository: repo,
+		orderRepository: orderRepo,
 		orderPublisher:  orderPublisher,
 	}
 }
