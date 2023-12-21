@@ -12,7 +12,7 @@ import (
 
 // OrderCreatePayload imagine payload from http query.
 type OrderCreatePayload struct {
-	Phone string `json:"phone_number" validate:"omitempty,e164"`
+	PhoneNumber string `json:"phone_number" validate:"omitempty,e164"`
 }
 
 // OrderStatusResponse imagine response order status from http query.
