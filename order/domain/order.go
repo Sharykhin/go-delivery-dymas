@@ -72,7 +72,7 @@ func (s *OrderService) GetStatusByOrderId(ctx context.Context, orderId string) (
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create order in database: %w", err)
+		return nil, fmt.Errorf("failed to retrieve order by id: %w", err)
 	}
 
 	return order, nil
