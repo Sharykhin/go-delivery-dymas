@@ -34,7 +34,7 @@ func (orderPublisher *OrderPublisherCreate) PublishOrder(ctx context.Context, or
 	err = orderPublisher.publisher.PublishMessage(ctx, message)
 
 	if err != nil {
-		return fmt.Errorf("failed to publish courier location: %w", err)
+		return fmt.Errorf("failed to publish order event: %w", err)
 	}
 
 	return nil
