@@ -15,8 +15,8 @@ type OrderCreatePayload struct {
 	PhoneNumber string `json:"phone_number" validate:"omitempty,e164"`
 }
 
-// OrderStatusResponse imagine response order status from http query.
-type OrderStatusResponse struct {
+// OrderCreateResponse imagine response order status from http query.
+type OrderCreateResponse struct {
 	Status string `json:"status"`
 	ID     string `json:"order_id"`
 }
@@ -69,7 +69,7 @@ func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Re
 		return
 	}
 
-	orderStatusResponse := OrderStatusResponse{
+	orderStatusResponse := OrderCreateResponse{
 		Status: order.Status,
 		ID:     order.ID,
 	}
@@ -77,12 +77,12 @@ func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Re
 	h.httpHandler.SuccessResponse(w, orderStatusResponse, nethttp.StatusAccepted)
 }
 
-// HandleOrderGetStatusByOrderId GetStatusByOrderId handles request and return order id and order status.
-func (h *OrderHandler) HandleOrderGetStatusByOrderId(w nethttp.ResponseWriter, r *nethttp.Request) {
+// HandleGetByOrderID GetStatusByOrderId handles request and return order id and order status.
+func (h *OrderHandler) HandleGetByOrderID(w nethttp.ResponseWriter, r *nethttp.Request) {
 	vars := mux.Vars(r)
 	orderID := vars["order_id"]
-	order, err := h.orderService.GetStatusByOrderId(r.Context(), orderID)
-	orderStatusResponse := OrderStatusResponse{
+	order, err := h.orderService.GetOrderByID(r.Context(), orderID)
+	orderStatusResponse := OrderCreateResponse{
 		Status: order.Status,
 		ID:     order.ID,
 	}

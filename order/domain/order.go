@@ -9,7 +9,7 @@ import (
 
 const orderNewStatus = "pending"
 
-// ErrOrderNotFound shows type this error, when we don't have courier in db
+// ErrOrderNotFound shows type this error, when we don't have order in db
 var ErrOrderNotFound = errors.New("order was not found")
 
 // Order is a model of an order.
@@ -21,30 +21,30 @@ type Order struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
-// OrderPublisherInterface publish message some systems.
-type OrderPublisherInterface interface {
+// OrderPublisher publish message some systems.
+type OrderPublisher interface {
 	PublishOrder(ctx context.Context, order *Order) error
 }
 
 // OrderService provides information about order and save order
 type OrderService struct {
-	orderRepository OrderRepositoryInterface
-	orderPublisher  OrderPublisherInterface
+	orderRepository OrderRepository
+	orderPublisher  OrderPublisher
 }
 
-// OrderRepositoryInterface saves and reads courier from storage
-type OrderRepositoryInterface interface {
+// OrderRepository OrderRepositoryInterface saves and reads courier from storage
+type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
-	GetOrderId(ctx context.Context, orderID string) (*Order, error)
+	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
 }
 
 // OrderServiceInterface gets information about courier and latest position courier from storage
 type OrderServiceInterface interface {
 	CreateOrder(ctx context.Context, courierID string) (*Order, error)
-	GetStatusByOrderId(ctx context.Context, orderID string) (*Order, error)
+	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
 }
 
-// CreateOrder  new order in db
+// CreateOrder creates new order and saves it in repository, and then publishes the corresponding event.
 func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, error) {
 
 	order, err := s.orderRepository.SaveOrder(
@@ -58,13 +58,17 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 
 	s.orderPublisher.PublishOrder(ctx, order)
 
+	if err != nil {
+		return nil, fmt.Errorf("failed to publish order: %w", err)
+	}
+
 	return order, nil
 }
 
-// GetStatusByOrderId returns status and order id data
-func (s *OrderService) GetStatusByOrderId(ctx context.Context, orderId string) (*Order, error) {
+// GetOrderByID returns status and order id data
+func (s *OrderService) GetOrderByID(ctx context.Context, orderId string) (*Order, error) {
 
-	order, err := s.orderRepository.GetOrderId(
+	order, err := s.orderRepository.GetOrderByID(
 		ctx,
 		orderId,
 	)
@@ -77,7 +81,7 @@ func (s *OrderService) GetStatusByOrderId(ctx context.Context, orderId string) (
 }
 
 // NewOrderService creates new order service
-func NewOrderService(orderRepo OrderRepositoryInterface, orderPublisher OrderPublisherInterface) *OrderService {
+func NewOrderService(orderRepo OrderRepository, orderPublisher OrderPublisher) *OrderService {
 	return &OrderService{
 		orderRepository: orderRepo,
 		orderPublisher:  orderPublisher,

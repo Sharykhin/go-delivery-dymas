@@ -73,7 +73,7 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 			Method:  "POST",
 		},
 		orderURL: {
-			Handler: orderHandler.HandleOrderGetStatusByOrderId,
+			Handler: orderHandler.HandleGetByOrderID,
 			Method:  "GET",
 		},
 	}
