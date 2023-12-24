@@ -31,6 +31,23 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 	return &orderRow, err
 }
 
+// ApplyCourierToOrder applies courier to order and returns order.
+func (repo *OrderRepository) ApplyCourierToOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
+	query := "update orders SET courier_id = $1 WHERE id=$2 RETURNING id, courier_id, customer_phone_number, status, created_at"
+	row := repo.client.QueryRowContext(
+		ctx,
+		query,
+		order.CourierID,
+		order.ID,
+	)
+
+	var orderRow domain.Order
+
+	err := row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
+
+	return &orderRow, err
+}
+
 // GetOrderByID gets order status and order id from database by uuid order and return model with order id.
 func (repo *OrderRepository) GetOrderByID(ctx context.Context, orderID string) (*domain.Order, error) {
 	query := "SELECT id, status FROM orders WHERE id=$1 FOR SHARE"

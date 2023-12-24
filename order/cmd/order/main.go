@@ -80,5 +80,4 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerOrder)
-	wg.Done()
 }

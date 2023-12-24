@@ -34,7 +34,7 @@ func main() {
 		config.Verbose,
 		config.Oldest,
 		config.Assignor,
-		"latest_position_courier",
+		"orders",
 	)
 
 	if err != nil {

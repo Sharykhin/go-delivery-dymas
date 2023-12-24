@@ -36,6 +36,7 @@ type OrderService struct {
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
+	ApplyCourierToOrder(ctx context.Context, order *Order) (*Order, error)
 }
 
 // OrderServiceInterface gets information about courier and latest position courier from storage
@@ -66,11 +67,11 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 }
 
 // GetOrderByID returns status and order id data
-func (s *OrderService) GetOrderByID(ctx context.Context, orderId string) (*Order, error) {
+func (s *OrderService) GetOrderByID(ctx context.Context, orderID string) (*Order, error) {
 
 	order, err := s.orderRepository.GetOrderByID(
 		ctx,
-		orderId,
+		orderID,
 	)
 
 	if err != nil {

@@ -9,22 +9,22 @@ import (
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
-// OrderPublisherCreate publisher for kafka
-type OrderPublisherCreate struct {
+// OrderPublisher publisher for kafka
+type OrderPublisher struct {
 	publisher *pkgkafka.Publisher
 }
 
 // NewOrderPublisher creates new publisher and init
-func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisherCreate {
-	orderPublisherCreate := OrderPublisherCreate{
+func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisher {
+	orderPublisher := OrderPublisher{
 		publisher: publisher,
 	}
 
-	return &orderPublisherCreate
+	return &orderPublisher
 }
 
 // PublishOrder sends order message in json format in Kafka.
-func (orderPublisher *OrderPublisherCreate) PublishOrder(ctx context.Context, order *domain.Order) error {
+func (orderPublisher *OrderPublisher) PublishOrder(ctx context.Context, order *domain.Order) error {
 	message, err := json.Marshal(order)
 
 	if err != nil {

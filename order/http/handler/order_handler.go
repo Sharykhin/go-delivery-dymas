@@ -21,6 +21,11 @@ type OrderCreateResponse struct {
 	ID     string `json:"order_id"`
 }
 
+// OrderStatusResponse imagine response order status from http query by order id.
+type OrderStatusResponse struct {
+	Status string `json:"status"`
+}
+
 // OrderHandler handles courier request.
 type OrderHandler struct {
 	orderService *domain.OrderService
@@ -82,9 +87,8 @@ func (h *OrderHandler) HandleGetByOrderID(w nethttp.ResponseWriter, r *nethttp.R
 	vars := mux.Vars(r)
 	orderID := vars["order_id"]
 	order, err := h.orderService.GetOrderByID(r.Context(), orderID)
-	orderStatusResponse := OrderCreateResponse{
+	orderStatusResponse := OrderStatusResponse{
 		Status: order.Status,
-		ID:     order.ID,
 	}
 
 	if err != nil {
