@@ -56,7 +56,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 		return nil, fmt.Errorf("failed to create order in database: %w", err)
 	}
 
-	s.orderPublisher.PublishOrder(ctx, order)
+	err = s.orderPublisher.PublishOrder(ctx, order)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to publish order: %w", err)
