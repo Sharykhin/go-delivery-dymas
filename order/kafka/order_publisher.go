@@ -31,7 +31,7 @@ func (orderPublisher *OrderPublisher) PublishOrder(ctx context.Context, order *d
 		return fmt.Errorf("failed to marshal order before sending Kafka event: %w", err)
 	}
 
-	err = orderPublisher.publisher.PublishMessage(ctx, message)
+	err = orderPublisher.publisher.PublishMessage(ctx, message, order.ID)
 
 	if err != nil {
 		return fmt.Errorf("failed to publish order event: %w", err)
