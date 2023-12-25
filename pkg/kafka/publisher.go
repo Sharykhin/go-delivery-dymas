@@ -36,11 +36,18 @@ func (publisher *Publisher) publish(message sarama.ProducerMessage) {
 }
 
 // PublishMessage  Send async message in kafka
-func (publisher *Publisher) PublishMessage(ctx context.Context, message []byte) error {
-	publisher.publish(sarama.ProducerMessage{
+func (publisher *Publisher) PublishMessage(ctx context.Context, message []byte, key []byte) error {
+
+	messageKafka := sarama.ProducerMessage{
 		Topic: publisher.topic,
 		Value: sarama.StringEncoder(message),
-	})
+	}
+
+	if key != nil {
+		messageKafka.Key = sarama.StringEncoder(key)
+	}
+
+	publisher.publish(messageKafka)
 
 	return nil
 }

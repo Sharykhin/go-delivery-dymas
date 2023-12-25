@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -11,7 +15,6 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/courier/grpc"
-	"github.com/Sharykhin/go-delivery-dymas/courier/http"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/courier/postgres"
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
@@ -60,8 +63,7 @@ func main() {
 	}
 
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
-
-	if err := http.RunServer(router, ":"+config.PortServerCourier); err != nil {
-		log.Printf("failed to run http server: %v", err)
-	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	pkghttp.RunServer(ctx, router, ":"+config.PortServerCourier)
 }

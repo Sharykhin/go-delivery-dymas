@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+// ErrCourierNotFound shows type this error, when we don't have courier in db
 var ErrCourierNotFound = errors.New("courier was not found")
 
 // CourierWithLatestPosition is a model of a courier, which provides general information and the latest courier position.
