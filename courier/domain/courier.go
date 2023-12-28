@@ -38,6 +38,7 @@ type CourierService struct {
 type CourierRepositoryInterface interface {
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
+	GetAppliedCourier(ctx context.Context) (*Courier, error)
 }
 
 // CourierServiceInterface gets information about courier and latest position courier from storage

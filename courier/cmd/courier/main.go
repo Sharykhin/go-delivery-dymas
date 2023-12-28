@@ -5,12 +5,16 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
+	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"google.golang.org/grpc"
 
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
@@ -21,6 +25,7 @@ import (
 )
 
 func main() {
+	var wg sync.WaitGroup
 	config, err := env.GetConfig()
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
@@ -46,6 +51,16 @@ func main() {
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	courierClient := couriergrpc.NewCourierClient(courierGRPCConnection)
 	courierService := domain.NewCourierService(courierClient, courierRepository)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	wg.Add(2)
+	go runHttpServer(ctx, config, &wg, courierService)
+	go runGRPC(ctx, config, &wg, repoPostgres)
+	wg.Wait()
+}
+
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierServiceInterface) {
+	defer wg.Done()
 	courierHandler := handler.NewCourierHandler(courierService, pkghttp.NewHandler())
 	courierLatestPositionURL := fmt.Sprintf(
 		"/couriers/{id:%s}",
@@ -61,9 +76,26 @@ func main() {
 			Method:  "GET",
 		},
 	}
-
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerCourier)
+}
+
+func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo domain.CourierRepositoryInterface) {
+	defer wg.Done()
+	lis, err := net.Listen("tcp", config.CourierGrpcAddress)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	courierLocationServer := grpc.NewServer()
+	pb.RegisterCourierServer(courierLocationServer, &couriergrpc.CourierServer{
+		CourierLocationRepository: repo,
+	})
+	go func() {
+		if err := courierLocationServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %s", err)
+		}
+	}()
+	<-ctx.Done()
+	courierLocationServer.GracefulStop()
+	wg.Done()
 }

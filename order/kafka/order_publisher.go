@@ -14,6 +14,11 @@ type OrderPublisher struct {
 	publisher *pkgkafka.Publisher
 }
 
+type OrderMessage struct {
+	domain.Order
+	Event string
+}
+
 // NewOrderPublisher creates new publisher and init
 func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisher {
 	orderPublisher := OrderPublisher{
