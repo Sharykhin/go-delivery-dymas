@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.6.1
-// source: order.proto
+// source: courier.proto
 
 package v1
 
@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Courier_GetAvailableCourier_FullMethodName = "/Courier/GetAvailableCourier"
+	Courier_GetFirstAvailableCourier_FullMethodName = "/Courier/GetFirstAvailableCourier"
 )
 
 // CourierClient is the client API for Courier service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CourierClient interface {
-	GetAvailableCourier(ctx context.Context, in *Null, opts ...grpc.CallOption) (*GetAvailableCourierResponse, error)
+	GetFirstAvailableCourier(ctx context.Context, in *Null, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error)
 }
 
 type courierClient struct {
@@ -37,9 +37,9 @@ func NewCourierClient(cc grpc.ClientConnInterface) CourierClient {
 	return &courierClient{cc}
 }
 
-func (c *courierClient) GetAvailableCourier(ctx context.Context, in *Null, opts ...grpc.CallOption) (*GetAvailableCourierResponse, error) {
-	out := new(GetAvailableCourierResponse)
-	err := c.cc.Invoke(ctx, Courier_GetAvailableCourier_FullMethodName, in, out, opts...)
+func (c *courierClient) GetFirstAvailableCourier(ctx context.Context, in *Null, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error) {
+	out := new(GetFirstAvailableCourierResponse)
+	err := c.cc.Invoke(ctx, Courier_GetFirstAvailableCourier_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (c *courierClient) GetAvailableCourier(ctx context.Context, in *Null, opts 
 // All implementations must embed UnimplementedCourierServer
 // for forward compatibility
 type CourierServer interface {
-	GetAvailableCourier(context.Context, *Null) (*GetAvailableCourierResponse, error)
+	GetFirstAvailableCourier(context.Context, *Null) (*GetFirstAvailableCourierResponse, error)
 	mustEmbedUnimplementedCourierServer()
 }
 
@@ -58,8 +58,8 @@ type CourierServer interface {
 type UnimplementedCourierServer struct {
 }
 
-func (UnimplementedCourierServer) GetAvailableCourier(context.Context, *Null) (*GetAvailableCourierResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAvailableCourier not implemented")
+func (UnimplementedCourierServer) GetFirstAvailableCourier(context.Context, *Null) (*GetFirstAvailableCourierResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFirstAvailableCourier not implemented")
 }
 func (UnimplementedCourierServer) mustEmbedUnimplementedCourierServer() {}
 
@@ -74,20 +74,20 @@ func RegisterCourierServer(s grpc.ServiceRegistrar, srv CourierServer) {
 	s.RegisterService(&Courier_ServiceDesc, srv)
 }
 
-func _Courier_GetAvailableCourier_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Courier_GetFirstAvailableCourier_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Null)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CourierServer).GetAvailableCourier(ctx, in)
+		return srv.(CourierServer).GetFirstAvailableCourier(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Courier_GetAvailableCourier_FullMethodName,
+		FullMethod: Courier_GetFirstAvailableCourier_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CourierServer).GetAvailableCourier(ctx, req.(*Null))
+		return srv.(CourierServer).GetFirstAvailableCourier(ctx, req.(*Null))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,10 +100,10 @@ var Courier_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CourierServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetAvailableCourier",
-			Handler:    _Courier_GetAvailableCourier_Handler,
+			MethodName: "GetFirstAvailableCourier",
+			Handler:    _Courier_GetFirstAvailableCourier_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "order.proto",
+	Metadata: "courier.proto",
 }

@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231228063404-d287757e096e // indirect
 	github.com/caarlos0/env v3.5.0+incompatible // indirect
 	github.com/caarlos0/env/v8 v8.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

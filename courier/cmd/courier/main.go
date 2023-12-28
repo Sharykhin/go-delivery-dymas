@@ -55,7 +55,7 @@ func main() {
 	defer stop()
 	wg.Add(2)
 	go runHttpServer(ctx, config, &wg, courierService)
-	go runGRPC(ctx, config, &wg, repoPostgres)
+	go runGRPC(ctx, config, &wg, courierRepository)
 	wg.Wait()
 }
 

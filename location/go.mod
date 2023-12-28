@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	github.com/IBM/sarama v1.41.3
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231219144035-12e3d18d28b5
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e
 	github.com/Shopify/sarama v1.38.1
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-playground/validator/v10 v10.16.0
@@ -14,7 +14,7 @@ require (
 )
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20230919082710-43541517efe3 // indirect
+	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231228063404-d287757e096e // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
