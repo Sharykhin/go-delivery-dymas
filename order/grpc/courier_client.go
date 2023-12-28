@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
-	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
+	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/order/v1"
 )
 
 // CourierClient provides client for communicate with grpc server
@@ -28,8 +28,8 @@ func NewCourierClient(courierConnection *grpc.ClientConn) *CourierClient {
 }
 
 // GetFirstAvailableCourier gets first courier from courier service
-func (cl *CourierClient) GetFirstAvailableCourier(ctx context.Context, courierID string) (*domain.Order, error) {
-	courierLatestPositionResponse, err := cl.courierClientGRPC.GetFirstAvailableCourier(ctx, &pb.Null)
+func (cl *CourierClient) GetFirstAvailableCourier(ctx context.Context) (*domain.Order, error) {
+	courierLatestPositionResponse, err := cl.courierClientGRPC.GetFirstAvailableCourier(ctx, &pb.Empty)
 	code, ok := status.FromError(err)
 
 	if ok && code.Code() == codes.NotFound {

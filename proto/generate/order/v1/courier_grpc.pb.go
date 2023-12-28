@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CourierClient interface {
-	GetFirstAvailableCourier(ctx context.Context, in *Null, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error)
+	GetFirstAvailableCourier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error)
 }
 
 type courierClient struct {
@@ -37,7 +37,7 @@ func NewCourierClient(cc grpc.ClientConnInterface) CourierClient {
 	return &courierClient{cc}
 }
 
-func (c *courierClient) GetFirstAvailableCourier(ctx context.Context, in *Null, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error) {
+func (c *courierClient) GetFirstAvailableCourier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error) {
 	out := new(GetFirstAvailableCourierResponse)
 	err := c.cc.Invoke(ctx, Courier_GetFirstAvailableCourier_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *courierClient) GetFirstAvailableCourier(ctx context.Context, in *Null, 
 // All implementations must embed UnimplementedCourierServer
 // for forward compatibility
 type CourierServer interface {
-	GetFirstAvailableCourier(context.Context, *Null) (*GetFirstAvailableCourierResponse, error)
+	GetFirstAvailableCourier(context.Context, *Empty) (*GetFirstAvailableCourierResponse, error)
 	mustEmbedUnimplementedCourierServer()
 }
 
@@ -58,7 +58,7 @@ type CourierServer interface {
 type UnimplementedCourierServer struct {
 }
 
-func (UnimplementedCourierServer) GetFirstAvailableCourier(context.Context, *Null) (*GetFirstAvailableCourierResponse, error) {
+func (UnimplementedCourierServer) GetFirstAvailableCourier(context.Context, *Empty) (*GetFirstAvailableCourierResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFirstAvailableCourier not implemented")
 }
 func (UnimplementedCourierServer) mustEmbedUnimplementedCourierServer() {}
@@ -75,7 +75,7 @@ func RegisterCourierServer(s grpc.ServiceRegistrar, srv CourierServer) {
 }
 
 func _Courier_GetFirstAvailableCourier_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Null)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func _Courier_GetFirstAvailableCourier_Handler(srv interface{}, ctx context.Cont
 		FullMethod: Courier_GetFirstAvailableCourier_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CourierServer).GetFirstAvailableCourier(ctx, req.(*Null))
+		return srv.(CourierServer).GetFirstAvailableCourier(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

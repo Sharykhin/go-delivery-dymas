@@ -17,7 +17,7 @@ type CourierServer struct {
 }
 
 // GetFirstAvailableCourier gets first courier available.
-func (courierServer CourierServer) GetFirstAvailableCourier(ctx context.Context, req *pb.Null) (*pb.GetAvailableCourierResponse, error) {
+func (courierServer CourierServer) GetFirstAvailableCourier(ctx context.Context, req *pb.Null) (*pb.GetFirstAvailableCourierResponse, error) {
 	courier, err := courierServer.CourierLocationRepository.GetAppliedCourier(ctx)
 
 	isErrCourierNotFound := err != nil && errors.Is(err, domain.ErrCourierNotFound)
@@ -35,7 +35,7 @@ func (courierServer CourierServer) GetFirstAvailableCourier(ctx context.Context,
 		)
 	}
 
-	return &pb.GetAvailableCourierResponse{
+	return &pb.GetFirstAvailableCourierResponse{
 		CourierId: courier.ID,
 	}, err
 }
