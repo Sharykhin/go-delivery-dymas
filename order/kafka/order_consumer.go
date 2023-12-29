@@ -14,7 +14,8 @@ type OrderConsumer struct {
 	orderRepository domain.OrderRepository
 }
 
-func NewCourierLocationConsumer(
+// NewOrderConsumer create order consumer
+func NewOrderConsumer(
 	orderRepository domain.OrderRepository,
 ) *OrderConsumer {
 	orderConsumer := &OrderConsumer{

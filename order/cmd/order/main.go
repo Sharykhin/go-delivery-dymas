@@ -85,9 +85,9 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 
 func runConsumer(ctx context.Context, orderRepository domain.OrderRepository, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	courierLocationConsumer := kafka.NewCourierLocationConsumer(orderRepository)
+	orderConsumer := kafka.NewOrderConsumer(orderRepository)
 	consumer, err := pkgkafka.NewConsumer(
-		courierLocationConsumer,
+		orderConsumer,
 		config.KafkaAddress,
 		config.Verbose,
 		config.Oldest,

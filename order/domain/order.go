@@ -8,6 +8,8 @@ import (
 )
 
 const orderNewStatus = "pending"
+const messageStatusCreated = "created"
+const messageStatusUpdated = "updated"
 
 // ErrOrderNotFound shows type this error, when we don't have order in db
 var ErrOrderNotFound = errors.New("order was not found")
@@ -22,15 +24,26 @@ type Order struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
+type OrderMessage struct {
+	Payload *Order
+	Event   string
+}
+
 // OrderPublisher publish message some systems.
 type OrderPublisher interface {
-	PublishOrder(ctx context.Context, order *Order) error
+	PublishOrder(ctx context.Context, order *Order, event string) error
+}
+
+// OrderConsumer consume message some systems.
+type OrderConsumer interface {
+	ConsumerOrder(ctx context.Context, orderRepository OrderRepository) error
 }
 
 // OrderService provides information about order and save order
 type OrderService struct {
 	orderRepository OrderRepository
 	orderPublisher  OrderPublisher
+	orderConsumer   OrderConsumer
 }
 
 // OrderRepository OrderRepositoryInterface saves and reads courier from storage
@@ -44,6 +57,7 @@ type OrderRepository interface {
 type OrderServiceInterface interface {
 	CreateOrder(ctx context.Context, courierID string) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
+	ApplyCourierToOrder(ctx context.Context)
 }
 
 // CreateOrder creates new order and saves it in repository, and then publishes the corresponding event.
@@ -58,7 +72,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 		return nil, fmt.Errorf("failed to create order in database: %w", err)
 	}
 
-	err = s.orderPublisher.PublishOrder(ctx, order)
+	err = s.orderPublisher.PublishOrder(ctx, order, messageStatusCreated)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to publish order: %w", err)

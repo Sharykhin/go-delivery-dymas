@@ -13,23 +13,23 @@ import (
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/order/v1"
 )
 
-// CourierClient provides client for communicate with grpc server
-type CourierClient struct {
-	courierClientGRPC pb.CourierClient
+// AssignCourierClient AssignCourier provides client for communicate with grpc server
+type AssignCourierClient struct {
+	assignCourierGRPC pb.AssignCourier
 }
 
-// NewCourierClient creates new courier client for communicate with server by grpc
-func NewCourierClient(courierConnection *grpc.ClientConn) *CourierClient {
-	clientCourier := pb.NewCourierClient(courierConnection)
+// NewAssignCourier creates new assign courier client for communicate with server by grpc
+func NewAssignCourier(assignCourierConnection *grpc.ClientConn) *AssignCourier {
+	clientCourier := pb.NewAssignCourier(assignCourierConnection)
 
-	return &CourierClient{
-		courierClientGRPC: clientCourier,
+	return &AssignCourierClient{
+		assignCourierGRPC: clientCourier,
 	}
 }
 
-// GetFirstAvailableCourier gets first courier from courier service
-func (cl *CourierClient) GetFirstAvailableCourier(ctx context.Context) (*domain.Order, error) {
-	courierLatestPositionResponse, err := cl.courierClientGRPC.GetFirstAvailableCourier(ctx, &pb.Empty)
+// GetAssignCourier gets first courier from courier service
+func (ac *AssignCourierClient) GetAssignCourier(ctx context.Context, order domain.Order) (*domain.Order, error) {
+	courier, err := ac.assignCourierGRPC.GetAssignCourier(ctx, &pb.Empty{})
 	code, ok := status.FromError(err)
 
 	if ok && code.Code() == codes.NotFound {
@@ -42,12 +42,9 @@ func (cl *CourierClient) GetFirstAvailableCourier(ctx context.Context) (*domain.
 		return nil, err
 	}
 
-	locationPosition := domain.Order{
-		Latitude:  courierLatestPositionResponse.Latitude,
-		Longitude: courierLatestPositionResponse.Longitude,
-	}
+	order.CourierID = courier.CourierId
 
-	return &locationPosition, nil
+	return &order, nil
 }
 
 // NewCourierConnection gets courier connection use grpc protocol

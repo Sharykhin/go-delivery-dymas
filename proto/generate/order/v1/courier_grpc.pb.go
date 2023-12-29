@@ -19,89 +19,89 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Courier_GetFirstAvailableCourier_FullMethodName = "/Courier/GetFirstAvailableCourier"
+	AssignCourier_GetAssignCourier_FullMethodName = "/AssignCourier/GetAssignCourier"
 )
 
-// CourierClient is the client API for Courier service.
+// AssignCourierClient is the client API for AssignCourier service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CourierClient interface {
-	GetFirstAvailableCourier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error)
+type AssignCourierClient interface {
+	GetAssignCourier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetAssignCourierResponse, error)
 }
 
-type courierClient struct {
+type assignCourierClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCourierClient(cc grpc.ClientConnInterface) CourierClient {
-	return &courierClient{cc}
+func NewAssignCourierClient(cc grpc.ClientConnInterface) AssignCourierClient {
+	return &assignCourierClient{cc}
 }
 
-func (c *courierClient) GetFirstAvailableCourier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetFirstAvailableCourierResponse, error) {
-	out := new(GetFirstAvailableCourierResponse)
-	err := c.cc.Invoke(ctx, Courier_GetFirstAvailableCourier_FullMethodName, in, out, opts...)
+func (c *assignCourierClient) GetAssignCourier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetAssignCourierResponse, error) {
+	out := new(GetAssignCourierResponse)
+	err := c.cc.Invoke(ctx, AssignCourier_GetAssignCourier_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CourierServer is the server API for Courier service.
-// All implementations must embed UnimplementedCourierServer
+// AssignCourierServer is the server API for AssignCourier service.
+// All implementations must embed UnimplementedAssignCourierServer
 // for forward compatibility
-type CourierServer interface {
-	GetFirstAvailableCourier(context.Context, *Empty) (*GetFirstAvailableCourierResponse, error)
-	mustEmbedUnimplementedCourierServer()
+type AssignCourierServer interface {
+	GetAssignCourier(context.Context, *Empty) (*GetAssignCourierResponse, error)
+	mustEmbedUnimplementedAssignCourierServer()
 }
 
-// UnimplementedCourierServer must be embedded to have forward compatible implementations.
-type UnimplementedCourierServer struct {
+// UnimplementedAssignCourierServer must be embedded to have forward compatible implementations.
+type UnimplementedAssignCourierServer struct {
 }
 
-func (UnimplementedCourierServer) GetFirstAvailableCourier(context.Context, *Empty) (*GetFirstAvailableCourierResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFirstAvailableCourier not implemented")
+func (UnimplementedAssignCourierServer) GetAssignCourier(context.Context, *Empty) (*GetAssignCourierResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAssignCourier not implemented")
 }
-func (UnimplementedCourierServer) mustEmbedUnimplementedCourierServer() {}
+func (UnimplementedAssignCourierServer) mustEmbedUnimplementedAssignCourierServer() {}
 
-// UnsafeCourierServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CourierServer will
+// UnsafeAssignCourierServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AssignCourierServer will
 // result in compilation errors.
-type UnsafeCourierServer interface {
-	mustEmbedUnimplementedCourierServer()
+type UnsafeAssignCourierServer interface {
+	mustEmbedUnimplementedAssignCourierServer()
 }
 
-func RegisterCourierServer(s grpc.ServiceRegistrar, srv CourierServer) {
-	s.RegisterService(&Courier_ServiceDesc, srv)
+func RegisterAssignCourierServer(s grpc.ServiceRegistrar, srv AssignCourierServer) {
+	s.RegisterService(&AssignCourier_ServiceDesc, srv)
 }
 
-func _Courier_GetFirstAvailableCourier_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AssignCourier_GetAssignCourier_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CourierServer).GetFirstAvailableCourier(ctx, in)
+		return srv.(AssignCourierServer).GetAssignCourier(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Courier_GetFirstAvailableCourier_FullMethodName,
+		FullMethod: AssignCourier_GetAssignCourier_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CourierServer).GetFirstAvailableCourier(ctx, req.(*Empty))
+		return srv.(AssignCourierServer).GetAssignCourier(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Courier_ServiceDesc is the grpc.ServiceDesc for Courier service.
+// AssignCourier_ServiceDesc is the grpc.ServiceDesc for AssignCourier service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Courier_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Courier",
-	HandlerType: (*CourierServer)(nil),
+var AssignCourier_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AssignCourier",
+	HandlerType: (*AssignCourierServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetFirstAvailableCourier",
-			Handler:    _Courier_GetFirstAvailableCourier_Handler,
+			MethodName: "GetAssignCourier",
+			Handler:    _AssignCourier_GetAssignCourier_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

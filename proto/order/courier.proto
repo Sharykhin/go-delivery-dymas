@@ -2,14 +2,14 @@ syntax = "proto3";
 
 option go_package = "generate/order/v1";
 
-service Courier {
-  rpc GetFirstAvailableCourier (Empty) returns (GetFirstAvailableCourierResponse) {}
+service AssignCourier {
+  rpc GetAssignCourier (Empty) returns (GetAssignCourierResponse) {}
 }
 
 message Empty {
 
 }
 
-message GetFirstAvailableCourierResponse {
+message GetAssignCourierResponse {
   string courier_id = 1;
 }
