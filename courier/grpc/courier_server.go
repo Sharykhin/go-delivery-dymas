@@ -13,11 +13,11 @@ import (
 
 type CourierServer struct {
 	CourierLocationRepository domain.CourierRepositoryInterface
-	pb.UnsafeCourierServer
+	pb.UnimplementedAssignCourierServer
 }
 
 // GetAssignCourier gets first courier available.
-func (courierServer CourierServer) GetAssignCourier(ctx context.Context, req *pb.Empty) (*pb.GetFirstAvailableCourierResponse, error) {
+func (courierServer CourierServer) GetAssignCourier(ctx context.Context, req *pb.Empty) (*pb.GetAssignCourierResponse, error) {
 	courier, err := courierServer.CourierLocationRepository.GetAppliedCourier(ctx)
 
 	isErrCourierNotFound := err != nil && errors.Is(err, domain.ErrCourierNotFound)

@@ -9,7 +9,7 @@ import (
 
 const orderNewStatus = "pending"
 const messageStatusCreated = "created"
-const messageStatusUpdated = "updated"
+const MessageStatusUpdated = "updated"
 
 // ErrOrderNotFound shows type this error, when we don't have order in db
 var ErrOrderNotFound = errors.New("order was not found")
@@ -26,7 +26,7 @@ type Order struct {
 
 type OrderMessage struct {
 	Payload *Order
-	Event   string
+	Event   string `json:"event"`
 }
 
 // OrderPublisher publish message some systems.
@@ -50,7 +50,7 @@ type OrderService struct {
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ApplyCourierToOrder(ctx context.Context, order *Order) (*Order, error)
+	AssignCourierToOrder(ctx context.Context, order *Order) (*Order, error)
 }
 
 // OrderServiceInterface gets information about courier and latest position courier from storage
