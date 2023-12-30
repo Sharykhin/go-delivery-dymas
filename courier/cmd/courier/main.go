@@ -11,7 +11,7 @@ import (
 	"sync"
 	"syscall"
 
-	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
+	pborder "github.com/Sharykhin/go-delivery-dymas/proto/generate/order/v1"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
@@ -87,9 +87,7 @@ func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo do
 		log.Fatalf("failed to listen: %v", err)
 	}
 	courierLocationServer := grpc.NewServer()
-	pb.RegisterCourierServer(courierLocationServer, &couriergrpc.CourierServer{
-		CourierLocationRepository: repo,
-	})
+	pborder.RegisterAssignCourierServer(courierLocationServer, couriergrpc.NewAssignCourierServer(repo))
 	go func() {
 		if err := courierLocationServer.Serve(lis); err != nil {
 			log.Fatalf("failed to serve: %s", err)
@@ -97,5 +95,4 @@ func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo do
 	}()
 	<-ctx.Done()
 	courierLocationServer.GracefulStop()
-	wg.Done()
 }

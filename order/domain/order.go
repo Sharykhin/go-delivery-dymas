@@ -10,6 +10,7 @@ import (
 const orderNewStatus = "pending"
 const messageStatusCreated = "created"
 const MessageStatusUpdated = "updated"
+const OrderStatusAccepted = "accepted"
 
 // ErrOrderNotFound shows type this error, when we don't have order in db
 var ErrOrderNotFound = errors.New("order was not found")

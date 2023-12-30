@@ -11,14 +11,14 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type CourierServer struct {
+type AssignCourierServer struct {
 	CourierLocationRepository domain.CourierRepositoryInterface
 	pb.UnimplementedAssignCourierServer
 }
 
 // GetAssignCourier gets first courier available.
-func (courierServer CourierServer) GetAssignCourier(ctx context.Context, req *pb.Empty) (*pb.GetAssignCourierResponse, error) {
-	courier, err := courierServer.CourierLocationRepository.GetAppliedCourier(ctx)
+func (assignCourierServer AssignCourierServer) GetAssignCourier(ctx context.Context, req *pb.Empty) (*pb.GetAssignCourierResponse, error) {
+	courier, err := assignCourierServer.CourierLocationRepository.GetAppliedCourier(ctx)
 
 	isErrCourierNotFound := err != nil && errors.Is(err, domain.ErrCourierNotFound)
 	if isErrCourierNotFound {
@@ -38,4 +38,10 @@ func (courierServer CourierServer) GetAssignCourier(ctx context.Context, req *pb
 	return &pb.GetAssignCourierResponse{
 		CourierId: courier.ID,
 	}, err
+}
+
+func NewAssignCourierServer(courierLocationRepository domain.CourierRepositoryInterface) *AssignCourierServer {
+	return &AssignCourierServer{
+		CourierLocationRepository: courierLocationRepository,
+	}
 }

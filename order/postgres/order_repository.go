@@ -33,11 +33,12 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 
 // AssignCourierToOrder ApplyCourierToOrder applies courier to order and returns order.
 func (repo *OrderRepository) AssignCourierToOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
-	query := "update orders SET courier_id = $1 WHERE id=$2 RETURNING id, courier_id, customer_phone_number, status, created_at"
+	query := "update orders SET courier_id = $1, status = $2 WHERE id = $3 RETURNING id, courier_id, customer_phone_number, status, created_at"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
 		order.CourierID,
+		domain.OrderStatusAccepted,
 		order.ID,
 	)
 

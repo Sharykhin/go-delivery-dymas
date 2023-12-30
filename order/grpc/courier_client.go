@@ -15,12 +15,12 @@ import (
 
 // AssignCourierClient AssignCourier provides client for communicate with grpc server
 type AssignCourierClient struct {
-	assignCourierGRPC pb.AssignCourier
+	assignCourierGRPC pb.AssignCourierClient
 }
 
-// NewAssignCourier creates new assign courier client for communicate with server by grpc
-func NewAssignCourier(assignCourierConnection *grpc.ClientConn) *AssignCourier {
-	clientCourier := pb.NewAssignCourier(assignCourierConnection)
+// NewAssignCourierClient creates new assign courier client for communicate with server by grpc
+func NewAssignCourierClient(assignCourierConnection *grpc.ClientConn) *AssignCourierClient {
+	clientCourier := pb.NewAssignCourierClient(assignCourierConnection)
 
 	return &AssignCourierClient{
 		assignCourierGRPC: clientCourier,

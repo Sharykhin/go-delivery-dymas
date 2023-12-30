@@ -38,6 +38,10 @@ func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, messa
 		return nil
 	}
 
+	if orderMessage.Event == domain.MessageStatusUpdated {
+		return nil
+	}
+
 	err, _ := orderConsumer.orderRepository.AssignCourierToOrder(ctx, orderMessage.Payload)
 
 	if err != nil {
