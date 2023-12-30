@@ -85,6 +85,7 @@ func (consumer *Consumer) ConsumeMessage(ctx context.Context) error {
 	waitGroup.Add(1)
 
 	go func() {
+		var ctx = context.Background()
 		defer waitGroup.Done()
 		for {
 			// `Consume` should be called inside an infinite loop, when a
