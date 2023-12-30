@@ -48,6 +48,8 @@ github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231228151517-a7d330af6a57 
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231228151517-a7d330af6a57/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231229235526-b4709eab185c h1:c9nwARJK4Q6tDW1OjnEO8rM9ubX6Ne06VQNHwQAOdTM=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231229235526-b4709eab185c/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
+github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231230090142-6f9856e1edf8 h1:t2Ams9hS7ZCL4NE+f2NW721OxtGM3NsRn6DMzqszj3c=
+github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231230090142-6f9856e1edf8/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
 github.com/caarlos0/env/v8 v8.0.0 h1:POhxHhSpuxrLMIdvTGARuZqR4Jjm8AYmoi/JKlcScs0=
 github.com/caarlos0/env/v8 v8.0.0/go.mod h1:7K4wMY9bH0esiXSSHlfHLX5xKGQMnkH5Fk4TDSSSzfo=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
