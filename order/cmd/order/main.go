@@ -18,6 +18,7 @@ import (
 
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 	"github.com/Sharykhin/go-delivery-dymas/order/env"
+	"github.com/Sharykhin/go-delivery-dymas/order/grpc"
 	"github.com/Sharykhin/go-delivery-dymas/order/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/order/postgres"
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
@@ -85,7 +86,12 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 
 func runConsumer(orderRepository domain.OrderRepository, orderPublisher domain.OrderPublisher, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	orderConsumer := kafka.NewOrderConsumer(orderRepository, orderPublisher)
+	courierConnection, err := grpc.NewCourierConnection(config.OrderGrpcAddress)
+	if err != nil {
+		log.Panicf("Failed to create kafka consumer group: %v\n", err)
+	}
+	courierAssignClient := grpc.NewAssignCourierClient(courierConnection)
+	orderConsumer := kafka.NewOrderConsumer(orderRepository, orderPublisher, courierAssignClient)
 	consumer, err := pkgkafka.NewConsumer(
 		orderConsumer,
 		config.KafkaAddress,

@@ -13,16 +13,19 @@ import (
 type OrderConsumer struct {
 	orderRepository domain.OrderRepository
 	orderPublisher  domain.OrderPublisher
+	orderClient     domain.OrderClient
 }
 
 // NewOrderConsumer create order consumer
 func NewOrderConsumer(
 	orderRepository domain.OrderRepository,
 	orderPublisher domain.OrderPublisher,
+	orderClient domain.OrderClient,
 ) *OrderConsumer {
 	orderConsumer := &OrderConsumer{
 		orderRepository: orderRepository,
 		orderPublisher:  orderPublisher,
+		orderClient:     orderClient,
 	}
 
 	return orderConsumer
@@ -38,11 +41,17 @@ func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, messa
 		return nil
 	}
 
+	order, err := orderConsumer.orderClient.GetAssignCourier(ctx, orderMessage.Payload)
+
+	if err != nil {
+		return fmt.Errorf("failed to get assign courier: %w", err)
+	}
+
 	if orderMessage.Event == domain.MessageStatusUpdated {
 		return nil
 	}
 
-	err, _ := orderConsumer.orderRepository.AssignCourierToOrder(ctx, orderMessage.Payload)
+	_, err = orderConsumer.orderRepository.AssignCourierToOrder(ctx, order)
 
 	if err != nil {
 		return fmt.Errorf("failed to save a order in the repository: %w", err)

@@ -28,7 +28,7 @@ func NewAssignCourierClient(assignCourierConnection *grpc.ClientConn) *AssignCou
 }
 
 // GetAssignCourier gets first courier from courier service
-func (ac *AssignCourierClient) GetAssignCourier(ctx context.Context, order domain.Order) (*domain.Order, error) {
+func (ac *AssignCourierClient) GetAssignCourier(ctx context.Context, order *domain.Order) (*domain.Order, error) {
 	courier, err := ac.assignCourierGRPC.GetAssignCourier(ctx, &pb.Empty{})
 	code, ok := status.FromError(err)
 
@@ -44,7 +44,7 @@ func (ac *AssignCourierClient) GetAssignCourier(ctx context.Context, order domai
 
 	order.CourierID = courier.CourierId
 
-	return &order, nil
+	return order, nil
 }
 
 // NewCourierConnection gets courier connection use grpc protocol

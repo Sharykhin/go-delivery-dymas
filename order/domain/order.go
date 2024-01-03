@@ -35,6 +35,11 @@ type OrderPublisher interface {
 	PublishOrder(ctx context.Context, order *Order, event string) error
 }
 
+// OrderClient get data from server.
+type OrderClient interface {
+	GetAssignCourier(ctx context.Context, order *Order) (*Order, error)
+}
+
 // OrderConsumer consume message some systems.
 type OrderConsumer interface {
 	ConsumerOrder(ctx context.Context, orderRepository OrderRepository) error

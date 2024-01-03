@@ -9,7 +9,7 @@ type Config struct {
 	DBName             string `env:"POSTGRES_DB" envDefault:"courier"`
 	DBPassword         string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
 	DBUser             string `env:"POSTGRES_USER" envDefault:"citizix_user"`
-	PortServerCourier  string `env:"PORT_SERVER_COURIER" envDefault:"8881"`
+	PortServerCourier  string `env:"PORT_SERVER_COURIER" envDefault:"9667"`
 	CourierGrpcAddress string `env:"COURIER_GRPC_ADDRESS" envDefault:":9666"`
 }
 
