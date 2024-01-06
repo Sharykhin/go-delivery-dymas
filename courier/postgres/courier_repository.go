@@ -52,10 +52,10 @@ func (repo *CourierRepository) GetCourierByID(ctx context.Context, courierID str
 	return &courierRow, err
 }
 
-func (repo *CourierRepository) GetAppliedCourier(ctx context.Context) (*domain.Courier, error) {
+func (repo *CourierRepository) GetAssignCourier(ctx context.Context) (*domain.Courier, error) {
 
 	query := "UPDATE courier SET is_available = FALSE " +
-		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE SKIP LOCK) RETURNING id"
+		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE SKIP LOCKED) RETURNING id"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,

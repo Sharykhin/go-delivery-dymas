@@ -11,7 +11,6 @@ import (
 	"sync"
 	"syscall"
 
-	pborder "github.com/Sharykhin/go-delivery-dymas/proto/generate/order/v1"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
@@ -22,6 +21,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/courier/postgres"
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
+	pborder "github.com/Sharykhin/go-delivery-dymas/proto/generate/order/v1"
 )
 
 func main() {
@@ -82,17 +82,17 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, c
 
 func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo domain.CourierRepositoryInterface) {
 	defer wg.Done()
-	lis, err := net.Listen("tcp", config.CourierGrpcAddress)
+	lis, err := net.Listen("tcp", config.CourierAssignerGrpcAddress)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	courierLocationServer := grpc.NewServer()
-	pborder.RegisterAssignCourierServer(courierLocationServer, couriergrpc.NewAssignCourierServer(repo))
+	courierAssignServer := grpc.NewServer()
+	pborder.RegisterAssignCourierServer(courierAssignServer, couriergrpc.NewAssignCourierServer(repo))
 	go func() {
-		if err := courierLocationServer.Serve(lis); err != nil {
+		if err := courierAssignServer.Serve(lis); err != nil {
 			log.Fatalf("failed to serve: %s", err)
 		}
 	}()
 	<-ctx.Done()
-	courierLocationServer.GracefulStop()
+	courierAssignServer.GracefulStop()
 }

@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -47,17 +48,21 @@ func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, messa
 		return fmt.Errorf("failed to get assign courier: %w", err)
 	}
 
+	if errors.Is(err, domain.ErrCourierNotFound) && orderMessage.Event == domain.MessageStatusUpdated {
+		return nil
+	}
+
 	if orderMessage.Event == domain.MessageStatusUpdated {
 		return nil
 	}
 
-	_, err = orderConsumer.orderRepository.AssignCourierToOrder(ctx, order)
+	order, err = orderConsumer.orderRepository.AssignCourierToOrder(ctx, order)
 
 	if err != nil {
 		return fmt.Errorf("failed to save a order in the repository: %w", err)
 	}
 
-	orderConsumer.orderPublisher.PublishOrder(ctx, orderMessage.Payload, domain.MessageStatusUpdated)
+	orderConsumer.orderPublisher.PublishOrder(ctx, order, domain.MessageStatusUpdated)
 
 	return nil
 }

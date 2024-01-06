@@ -56,7 +56,7 @@ func main() {
 
 	wg.Add(2)
 	go runHttpServer(ctx, config, &wg, orderService)
-	go runConsumer(orderRepo, orderPublisher, &wg, config)
+	go runOrderConsumer(orderRepo, orderPublisher, &wg, config)
 	wg.Wait()
 }
 
@@ -84,9 +84,9 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerOrder)
 }
 
-func runConsumer(orderRepository domain.OrderRepository, orderPublisher domain.OrderPublisher, wg *sync.WaitGroup, config env.Config) {
+func runOrderConsumer(orderRepository domain.OrderRepository, orderPublisher domain.OrderPublisher, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	courierConnection, err := grpc.NewCourierConnection(config.OrderGrpcAddress)
+	courierConnection, err := grpc.NewCourierConnection(config.CourierGrpcAddress)
 	if err != nil {
 		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}

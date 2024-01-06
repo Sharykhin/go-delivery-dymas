@@ -44,7 +44,7 @@ func (repo *OrderRepository) AssignCourierToOrder(ctx context.Context, order *do
 
 	var orderRow domain.Order
 
-	err := row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
+	err := row.Scan(&orderRow.ID, &orderRow.CourierID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
 
 	return &orderRow, err
 }

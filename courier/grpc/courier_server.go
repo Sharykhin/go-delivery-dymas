@@ -18,7 +18,7 @@ type AssignCourierServer struct {
 
 // GetAssignCourier gets first courier available.
 func (assignCourierServer AssignCourierServer) GetAssignCourier(ctx context.Context, req *pb.Empty) (*pb.GetAssignCourierResponse, error) {
-	courier, err := assignCourierServer.CourierLocationRepository.GetAppliedCourier(ctx)
+	courier, err := assignCourierServer.CourierLocationRepository.GetAssignCourier(ctx)
 
 	isErrCourierNotFound := err != nil && errors.Is(err, domain.ErrCourierNotFound)
 	if isErrCourierNotFound {
