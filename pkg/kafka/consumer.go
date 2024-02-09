@@ -154,14 +154,16 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	for {
 		select {
 		case message := <-claim.Messages():
-			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-			err := consumer.jsonMessageHandler.HandleJSONMessage(session.Context(), message)
+			if message != nil {
+				log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+				err := consumer.jsonMessageHandler.HandleJSONMessage(session.Context(), message)
 
-			if err != nil {
-				return err
+				if err != nil {
+					return err
+				}
+
+				session.MarkMessage(message, "")
 			}
-
-			session.MarkMessage(message, "")
 		case <-session.Context().Done():
 			return nil
 		}
