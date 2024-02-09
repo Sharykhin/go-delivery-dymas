@@ -6,6 +6,8 @@ github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231218081248-ad94023d9658 h1
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231218081248-ad94023d9658/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231219144035-12e3d18d28b5 h1:T1K38YT5pV4ML7ju7jj8mbEs457DilISpaSzL8Upxzw=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231219144035-12e3d18d28b5/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e h1:rmbfhk9Ee9LR7JU/RLuH3FZct6azDAPutObLE2bhUvE=
+github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228085238-ef1193705371 h1:MwWOl164hlrEUDnsWNl3RA6sVmdhDfHkD1MreabX3jY=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228085238-ef1193705371/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231230165137-8fe88949f08b h1:vzRLwPLm9vt2NoBZn6SCBxEcKqFF3VmswMe+BqRjtFk=

@@ -5,7 +5,7 @@ go 1.21.5
 require (
 	github.com/IBM/sarama v1.41.3
 	github.com/Sharykhin/go-delivery-dymas/location v0.0.0-20231218081248-ad94023d9658
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231230165137-8fe88949f08b
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e
 )
 
 require (
