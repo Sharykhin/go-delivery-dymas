@@ -13,7 +13,7 @@ import (
 // CourierHandler handles courier request.
 type CourierHandler struct {
 	courierRepository domain.CourierRepositoryInterface
-	courierService    domain.CourierServiceInterface
+	courierService    domain.CourierService
 	httpHandler       pkghttp.HandlerInterface
 }
 
@@ -24,7 +24,7 @@ type CourierPayload struct {
 
 // NewCourierHandler  creates courier handler.
 func NewCourierHandler(
-	courierService domain.CourierServiceInterface,
+	courierService domain.CourierService,
 	handler pkghttp.HandlerInterface,
 ) *CourierHandler {
 	return &CourierHandler{

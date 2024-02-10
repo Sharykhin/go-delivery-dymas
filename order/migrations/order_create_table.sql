@@ -10,3 +10,10 @@ CREATE TABLE IF NOT EXISTS orders (
                                           created_at TIMESTAMPTZ NOT NULL,
                                           PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS order_validations (
+    order_id UUID NOT NULL,
+    courier boolean DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (order_id)
+);

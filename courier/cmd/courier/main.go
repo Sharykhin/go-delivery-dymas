@@ -5,23 +5,22 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
-	"google.golang.org/grpc"
-
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	"github.com/Sharykhin/go-delivery-dymas/courier/env"
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/courier/grpc"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
+	"github.com/Sharykhin/go-delivery-dymas/courier/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/courier/postgres"
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
-	pborder "github.com/Sharykhin/go-delivery-dymas/proto/generate/order/v1"
+	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
 func main() {
@@ -50,16 +49,23 @@ func main() {
 
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	courierClient := couriergrpc.NewCourierClient(courierGRPCConnection)
-	courierService := domain.NewCourierService(courierClient, courierRepository)
+	courierServiceManager := domain.NewCourierServiceManager(courierClient, courierRepository)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, kafka.OrderTopicValidation)
+	if err != nil {
+		log.Printf("failed to create publisher: %v\n", err)
+
+		return
+	}
+	orderValidationPublisher := kafka.NewOrderValidationPublisher(publisher)
 	defer stop()
-	wg.Add(2)
-	go runHttpServer(ctx, config, &wg, courierService)
-	go runGRPC(ctx, config, &wg, courierRepository)
+	wg.Add(1)
+	go runHttpServer(ctx, config, &wg, courierServiceManager)
+	go runOrderConsumer(courierRepository, orderValidationPublisher, &wg, config)
 	wg.Wait()
 }
 
-func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierServiceInterface) {
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierService) {
 	defer wg.Done()
 	courierHandler := handler.NewCourierHandler(courierService, pkghttp.NewHandler())
 	courierLatestPositionURL := fmt.Sprintf(
@@ -80,19 +86,27 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, c
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerCourier)
 }
 
-func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo domain.CourierRepositoryInterface) {
+func runOrderConsumer(orderRepository domain.CourierRepositoryInterface, orderValidationPublisher domain.OrderValidationPublisher, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	lis, err := net.Listen("tcp", config.CourierAssignerGrpcAddress)
+	orderConsumer := kafka.NewOrderConsumer(orderRepository, orderValidationPublisher)
+	consumer, err := pkgkafka.NewConsumer(
+		orderConsumer,
+		config.KafkaAddress,
+		config.Verbose,
+		config.Oldest,
+		config.Assignor,
+		kafka.OrderTopic,
+	)
+
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Panicf("Failed to create kafka consumer group: %v\n", err)
 	}
-	courierAssignServer := grpc.NewServer()
-	pborder.RegisterAssignCourierServer(courierAssignServer, couriergrpc.NewAssignCourierServer(repo))
-	go func() {
-		if err := courierAssignServer.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %s", err)
-		}
-	}()
-	<-ctx.Done()
-	courierAssignServer.GracefulStop()
+
+	ctx := context.Background()
+
+	err = consumer.ConsumeMessage(ctx)
+
+	if err != nil {
+		log.Panicf("Failed to consume message: %v\n", err)
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 )
@@ -31,22 +32,74 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 	return &orderRow, err
 }
 
-// AssignCourierToOrder ApplyCourierToOrder applies courier to order and returns order.
-func (repo *OrderRepository) AssignCourierToOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
-	query := "update orders SET courier_id = $1, status = $2 WHERE id = $3 RETURNING id, courier_id, customer_phone_number, status, created_at"
-	row := repo.client.QueryRowContext(
+// ChangeOrderStatusAfterValidation Change order status  when taking validation.
+func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
+	ctx context.Context,
+	courierPayload *domain.CourierPayload,
+	statusValidation bool,
+	orderStatusValidation string,
+	serviceValidation string,
+) (order domain.Order, err error) {
+	tx, err := repo.client.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+	defer func(tx *sql.Tx) (err error) {
+		if err != nil {
+			tx.Rollback()
+
+			return err
+		}
+
+		err = tx.Rollback()
+
+		if errors.Is(err, sql.ErrTxDone) {
+			return nil
+		}
+
+		return err
+	}(tx)
+
+	query := "Update orders SET status = $1 WHERE id = $2 RETURNING id, customer_phone_number, status, created_at"
+	row := tx.QueryRowContext(
 		ctx,
 		query,
-		order.CourierID,
-		domain.OrderStatusAccepted,
-		order.ID,
+		orderStatusValidation,
+		courierPayload.OrderID,
 	)
 
 	var orderRow domain.Order
 
-	err := row.Scan(&orderRow.ID, &orderRow.CourierID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
+	err = row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
 
-	return &orderRow, err
+	if err != nil {
+		return
+	}
+
+	query = fmt.Sprintf(
+		"INSERT INTO order_validations (order_id, %s, created_at) VALUES ($1, $2, $3) ON CONFLICT (order_id) DO UPDATE SET %s = $2",
+		serviceValidation,
+		serviceValidation,
+	)
+
+	_, err = tx.ExecContext(
+		ctx,
+		query,
+		courierPayload.OrderID,
+		statusValidation,
+		courierPayload.CreatedAt,
+	)
+
+	if err != nil {
+		return
+	}
+
+	if err = tx.Commit(); err != nil {
+		return
+	}
+
+	return
 }
 
 // GetOrderByID gets order status and order id from database by uuid order and return model with order id.

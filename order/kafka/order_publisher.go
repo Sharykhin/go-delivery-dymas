@@ -14,6 +14,24 @@ type OrderPublisher struct {
 	publisher *pkgkafka.Publisher
 }
 
+// Customer uses for embedding phone number in order payload
+type Customer struct {
+	PhoneNumber string `json:"phone_number"`
+}
+
+// OrderPayload uses for embedding order id and phone customer
+type OrderPayload struct {
+	OrderID  string   `json:"id"`
+	Customer Customer `json:"customer"`
+}
+
+// OrderMessage will publish, when order create.
+type OrderMessage struct {
+	OrderPayload OrderPayload `json:"payload"`
+
+	Event string `json:"event"`
+}
+
 // NewOrderPublisher creates new publisher and init
 func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisher {
 	orderPublisher := OrderPublisher{
@@ -25,10 +43,16 @@ func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisher {
 
 // PublishOrder sends order message in json format in Kafka.
 func (orderPublisher *OrderPublisher) PublishOrder(ctx context.Context, order *domain.Order, event string) error {
-	messageOrder := domain.OrderMessage{
-		Event:   event,
-		Payload: order,
+	messageOrder := OrderMessage{
+		Event: event,
+		OrderPayload: OrderPayload{
+			OrderID: order.ID,
+			Customer: Customer{
+				PhoneNumber: order.CustomerPhoneNumber,
+			},
+		},
 	}
+
 	message, err := json.Marshal(messageOrder)
 
 	if err != nil {

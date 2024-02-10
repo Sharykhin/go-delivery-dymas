@@ -4,10 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 )
 
 // ErrCourierNotFound shows type this error, when we don't have courier in db
 var ErrCourierNotFound = errors.New("courier was not found")
+
+// OrderValidationPublisher publish message some systems.
+type OrderValidationPublisher interface {
+	PublishOrderValidation(ctx context.Context, courierAssignment *CourierAssignments) error
+}
 
 // CourierWithLatestPosition is a model of a courier, which provides general information and the latest courier position.
 type CourierWithLatestPosition struct {
@@ -15,6 +21,14 @@ type CourierWithLatestPosition struct {
 	FirstName      string
 	ID             string
 	IsAvailable    bool
+}
+
+// OrderMessageValidation sends in third system for service information about order assign.
+type OrderMessageValidation struct {
+	IsSuccessful bool               `json:"isSuccessful"`
+	Payload      CourierAssignments `json:"payload"`
+	ServiceName  string             `json:"serviceName"`
+	event        string             `json:"event"`
 }
 
 // CourierClientInterface gets latest location position courier.
@@ -28,8 +42,8 @@ type LocationPosition struct {
 	Longitude float64
 }
 
-// CourierService provides information about courier and latest position from storage
-type CourierService struct {
+// CourierServiceManager provides information about courier and latest position from storage
+type CourierServiceManager struct {
 	courierClient     CourierClientInterface
 	courierRepository CourierRepositoryInterface
 }
@@ -38,11 +52,18 @@ type CourierService struct {
 type CourierRepositoryInterface interface {
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
-	GetAssignCourier(ctx context.Context) (*Courier, error)
+	AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments CourierAssignments, err error)
 }
 
-// CourierServiceInterface gets information about courier and latest position courier from storage
-type CourierServiceInterface interface {
+// CourierAssignments has order assign courier
+type CourierAssignments struct {
+	OrderID   string    `json:"order_id"`
+	CourierID string    `json:"courier_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// CourierService gets information about courier and latest position courier from storage
+type CourierService interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
 }
 
@@ -54,7 +75,7 @@ type Courier struct {
 }
 
 // GetCourierWithLatestPosition gets latest position from server and storage
-func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
+func (s *CourierServiceManager) GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error) {
 
 	courier, err := s.courierRepository.GetCourierByID(
 		ctx,
@@ -90,9 +111,9 @@ func (s *CourierService) GetCourierWithLatestPosition(ctx context.Context, couri
 	return &courierResponse, nil
 }
 
-// NewCourierService creates new courier service
-func NewCourierService(courierClient CourierClientInterface, repo CourierRepositoryInterface) *CourierService {
-	return &CourierService{
+// NewCourierServiceManager creates new courier service manager
+func NewCourierServiceManager(courierClient CourierClientInterface, repo CourierRepositoryInterface) *CourierServiceManager {
+	return &CourierServiceManager{
 		courierClient:     courierClient,
 		courierRepository: repo,
 	}

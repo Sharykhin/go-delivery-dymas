@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 )
@@ -52,28 +53,69 @@ func (repo *CourierRepository) GetCourierByID(ctx context.Context, courierID str
 	return &courierRow, err
 }
 
-func (repo *CourierRepository) GetAssignCourier(ctx context.Context) (*domain.Courier, error) {
+// AssignOrderToCourier a free courier to order
+func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments domain.CourierAssignments, err error) {
+	tx, err := repo.client.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+	defer func(tx *sql.Tx) (err error) {
+		if err != nil {
+			tx.Rollback()
+
+			return err
+		}
+
+		err = tx.Rollback()
+
+		if errors.Is(err, sql.ErrTxDone) {
+			return nil
+		}
+
+		return err
+	}(tx)
 
 	query := "UPDATE courier SET is_available = FALSE " +
-		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE SKIP LOCKED) RETURNING id"
-	row := repo.client.QueryRowContext(
+		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE) RETURNING id"
+	row := tx.QueryRowContext(
 		ctx,
 		query,
 	)
 
-	var courierRow domain.Courier
+	var courierID string
 
-	err := row.Scan(&courierRow.ID)
+	err = row.Scan(&courierID)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, domain.ErrCourierNotFound
+		return
 	}
 
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	return &courierRow, nil
+	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING" +
+		" RETURNING courier_id, order_id, created_at"
+
+	row = tx.QueryRowContext(
+		ctx,
+		query,
+		orderID,
+		courierID,
+		time.Now(),
+	)
+
+	err = row.Scan(&courierAssignments.CourierID, &courierAssignments.OrderID, &courierAssignments.CreatedAt)
+	if err != nil {
+		return
+	}
+
+	if err = tx.Commit(); err != nil {
+		return
+	}
+
+	return
 }
 
 // NewCourierRepository creates new courier repository
