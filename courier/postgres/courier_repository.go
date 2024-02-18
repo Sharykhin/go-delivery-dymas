@@ -64,16 +64,18 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		if err != nil {
 			tx.Rollback()
 
-			return err
+			return
 		}
 
 		err = tx.Rollback()
 
 		if errors.Is(err, sql.ErrTxDone) {
-			return nil
+			err = nil
+		} else {
+			err = domain.ErrCourierNotFound
 		}
 
-		return err
+		return
 	}(tx)
 
 	query := "UPDATE courier SET is_available = FALSE " +
