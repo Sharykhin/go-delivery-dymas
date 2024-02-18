@@ -62,17 +62,13 @@ func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx co
 			return fmt.Errorf("failed to save a order in the repository: %w", err)
 		}
 
-		return orderConsumerValidation.publishOrderMessage(ctx, order)
-	}
+		err = orderConsumerValidation.orderPublisher.PublishOrder(ctx, order, domain.EventOrderUpdated)
 
-	return nil
-}
+		if err != nil {
+			return fmt.Errorf("failed to publish a order in the kafka: %w", err)
+		}
 
-func (orderConsumerValidation *OrderConsumerValidation) publishOrderMessage(ctx context.Context, order *domain.Order) error {
-	err := orderConsumerValidation.orderPublisher.PublishOrder(ctx, order, domain.EventOrderUpdated)
-
-	if err != nil {
-		return fmt.Errorf("failed to publish a order in the kafka: %w", err)
+		return nil
 	}
 
 	return nil
