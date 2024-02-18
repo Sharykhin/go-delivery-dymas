@@ -53,7 +53,7 @@ func (repo *CourierRepository) GetCourierByID(ctx context.Context, courierID str
 	return &courierRow, err
 }
 
-// AssignOrderToCourier a free courier to order
+// AssignOrderToCourier assigns a free courier to order. It runs a transaction and after finding an available courier it inserts a record into order_assignments table. In case of concurrent request and having a conflict it just does nothing and returns already assigned courier
 func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments domain.CourierAssignments, err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
