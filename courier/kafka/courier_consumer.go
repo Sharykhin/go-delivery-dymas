@@ -53,27 +53,24 @@ func NewOrderConsumer(
 func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
 	var orderMessage OrderMessage
 	if err := json.Unmarshal(message.Value, &orderMessage); err != nil {
-		log.Printf("failed to unmarshal Kafka message into courier location struct: %v\n", err)
+		log.Printf("failed to unmarshal Kafka message into courier order message struct: %v\n", err)
 
 		return nil
 	}
 
 	if orderMessage.Event == "updated" {
-		log.Printf("Order assign success")
-
 		return nil
 	}
 
 	courierAssigment, err := orderConsumer.courierRepository.AssignOrderToCourier(ctx, orderMessage.OrderPayload.OrderID)
-	fmt.Println(err)
 	if err != nil {
 		return fmt.Errorf("failed to save a courier assigments in the repository: %w", err)
 	}
 
-	err = orderConsumer.orderValidationPublisher.PublishOrderValidation(ctx, &courierAssigment)
+	err = orderConsumer.orderValidationPublisher.PublishValidationResult(ctx, &courierAssigment)
 
 	if err != nil {
-		return fmt.Errorf("failed to publish a order message in kafka: %w", err)
+		return fmt.Errorf("failed to publish a order message validation in kafka: %w", err)
 	}
 
 	return nil

@@ -25,8 +25,8 @@ func NewOrderValidationPublisher(publisher *pkgkafka.Publisher) *OrderValidation
 	return &orderValidationPublisher
 }
 
-// PublishOrderValidation sends order message in json format in Kafka.
-func (orderPublisher *OrderValidationPublisher) PublishOrderValidation(ctx context.Context, courierAssigment *domain.CourierAssignments) error {
+// PublishValidationResult sends order message in json format in Kafka.
+func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx context.Context, courierAssigment *domain.CourierAssignments) error {
 	messageOrder := domain.OrderMessageValidation{
 		IsSuccessful: true,
 		ServiceName:  "courier",

@@ -10,9 +10,9 @@ import (
 // ErrCourierNotFound shows type this error, when we don't have courier in db
 var ErrCourierNotFound = errors.New("courier was not found")
 
-// OrderValidationPublisher publish message some systems.
+// OrderValidationPublisher publish order validation message in queue for order service.
 type OrderValidationPublisher interface {
-	PublishOrderValidation(ctx context.Context, courierAssignment *CourierAssignments) error
+	PublishValidationResult(ctx context.Context, courierAssignment *CourierAssignments) error
 }
 
 // CourierWithLatestPosition is a model of a courier, which provides general information and the latest courier position.
@@ -112,9 +112,8 @@ func (s *CourierServiceManager) GetCourierWithLatestPosition(ctx context.Context
 }
 
 // NewCourierServiceManager creates new courier service manager
-func NewCourierServiceManager(courierClient CourierClientInterface, repo CourierRepositoryInterface) *CourierServiceManager {
+func NewCourierServiceManager(courierRepository CourierRepositoryInterface) *CourierServiceManager {
 	return &CourierServiceManager{
-		courierClient:     courierClient,
-		courierRepository: repo,
+		courierRepository: courierRepository,
 	}
 }

@@ -39,7 +39,7 @@ func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
 	statusValidation bool,
 	orderStatusValidation string,
 	serviceValidation string,
-) (order domain.Order, err error) {
+) (order *domain.Order, err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
 		return

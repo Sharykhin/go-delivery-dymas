@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const orderNewStatus = "pending"
+const OrderNewStatus = "pending"
 const EventOrderCreated = "created"
 const EventOrderUpdated = "updated"
 const OrderStatusAccepted = "accepted"
@@ -59,7 +59,7 @@ type OrderRepository interface {
 		statusValidation bool,
 		orderStatusValidation string,
 		serviceValidation string,
-	) (order Order, err error)
+	) (order *Order, err error)
 }
 
 // OrderServiceInterface gets information about courier and latest position courier from storage
@@ -118,6 +118,6 @@ func NewOrder(phoneNumber string) *Order {
 	return &Order{
 		CustomerPhoneNumber: phoneNumber,
 		CreatedAt:           time.Now(),
-		Status:              orderNewStatus,
+		Status:              OrderNewStatus,
 	}
 }
