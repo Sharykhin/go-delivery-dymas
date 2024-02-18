@@ -27,7 +27,7 @@ func NewOrderValidationPublisher(publisher *pkgkafka.Publisher) *OrderValidation
 
 // PublishValidationResult sends order message in json format in Kafka.
 func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx context.Context, courierAssigment *domain.CourierAssignments) error {
-	messageOrder := domain.OrderMessageValidation{
+	messageOrderValidation := domain.OrderMessageValidation{
 		IsSuccessful: true,
 		ServiceName:  "courier",
 		Payload: domain.CourierAssignments{
@@ -36,10 +36,10 @@ func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx cont
 		},
 	}
 
-	message, err := json.Marshal(messageOrder)
+	message, err := json.Marshal(messageOrderValidation)
 
 	if err != nil {
-		return fmt.Errorf("failed to marshal order before sending Kafka event: %w", err)
+		return fmt.Errorf("failed to marshal order message validation before sending Kafka event: %w", err)
 	}
 
 	err = orderPublisher.publisher.PublishMessage(ctx, message, []byte(courierAssigment.OrderID))
