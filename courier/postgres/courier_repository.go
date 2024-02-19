@@ -71,8 +71,6 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 
 		if errors.Is(err, sql.ErrTxDone) {
 			err = nil
-		} else {
-			err = domain.ErrCourierNotFound
 		}
 
 		return
