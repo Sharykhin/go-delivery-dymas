@@ -39,7 +39,7 @@ func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
 	statusValidation bool,
 	orderStatusValidation string,
 	serviceValidation string,
-) (order *domain.Order, err error) {
+) (orderRow *domain.Order, err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
 		return
@@ -49,19 +49,19 @@ func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
 		if err != nil {
 			tx.Rollback()
 
-			return err
+			return
 		}
 
 		err = tx.Rollback()
 
 		if errors.Is(err, sql.ErrTxDone) {
-			return nil
+			err = nil
 		}
-
-		return err
+		return
 	}(tx)
 
 	query := "Update orders SET status = $1 WHERE id = $2 RETURNING id, customer_phone_number, status, created_at"
+
 	row := tx.QueryRowContext(
 		ctx,
 		query,
@@ -69,7 +69,7 @@ func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
 		courierPayload.OrderID,
 	)
 
-	var orderRow domain.Order
+	orderRow = &domain.Order{}
 
 	err = row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
 

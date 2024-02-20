@@ -95,7 +95,24 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		return
 	}
 
-	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING" +
+	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", courierAssignments.Hash(orderID))
+	if err != nil {
+		return
+	}
+
+	query = "SELECT courier_id, order_id, created_at FROM order_assignments WHERE order_id=$1"
+	row = tx.QueryRowContext(
+		ctx,
+		query,
+		courierID,
+	)
+
+	err = row.Scan(&courierAssignments.CourierID, &courierAssignments.OrderID, &courierAssignments.CreatedAt)
+	if !errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+
+	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3)" +
 		" RETURNING courier_id, order_id, created_at"
 
 	row = tx.QueryRowContext(
