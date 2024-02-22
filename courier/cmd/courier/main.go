@@ -48,9 +48,6 @@ func main() {
 	defer courierGRPCConnection.Close()
 
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	courierServiceManager := domain.NewCourierServiceManager(courierRepository)
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, kafka.OrderTopicValidation)
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
@@ -58,9 +55,12 @@ func main() {
 		return
 	}
 	orderValidationPublisher := kafka.NewOrderValidationPublisher(publisher)
+	courierServiceManager := domain.NewCourierServiceManager(courierRepository, orderValidationPublisher)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 	wg.Add(2)
 	go runHttpServer(ctx, config, &wg, courierServiceManager)
-	go runOrderConsumer(ctx, courierRepository, orderValidationPublisher, &wg, config)
+	go runOrderConsumer(ctx, courierServiceManager, &wg, config)
 	wg.Wait()
 }
 
@@ -85,9 +85,9 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, c
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerCourier)
 }
 
-func runOrderConsumer(ctx context.Context, courierRepository domain.CourierRepositoryInterface, orderValidationPublisher domain.OrderValidationPublisher, wg *sync.WaitGroup, config env.Config) {
+func runOrderConsumer(ctx context.Context, courierService domain.CourierService, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	orderConsumer := kafka.NewOrderConsumer(courierRepository, orderValidationPublisher)
+	orderConsumer := kafka.NewOrderConsumer(courierService)
 	consumer, err := pkgkafka.NewConsumer(
 		orderConsumer,
 		config.KafkaAddress,

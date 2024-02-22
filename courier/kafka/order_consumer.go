@@ -15,7 +15,7 @@ const OrderTopic = "orders"
 
 // OrderConsumer gets order from kafka and apply order to courier and send order message validations
 type OrderConsumer struct {
-	courierRepository        domain.CourierRepositoryInterface
+	courierService           domain.CourierService
 	orderValidationPublisher domain.OrderValidationPublisher
 }
 
@@ -38,12 +38,10 @@ type OrderMessage struct {
 
 // NewOrderConsumer creates and init order consumer this consumer consume message from kafka
 func NewOrderConsumer(
-	courierRepository domain.CourierRepositoryInterface,
-	orderValidationPublisher domain.OrderValidationPublisher,
+	courierService domain.CourierService,
 ) *OrderConsumer {
 	courierConsumer := &OrderConsumer{
-		courierRepository:        courierRepository,
-		orderValidationPublisher: orderValidationPublisher,
+		courierService: courierService,
 	}
 
 	return courierConsumer
@@ -62,15 +60,9 @@ func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, messa
 		return nil
 	}
 
-	courierAssigment, err := orderConsumer.courierRepository.AssignOrderToCourier(ctx, orderMessage.OrderPayload.OrderID)
+	err := orderConsumer.courierService.AssignOrderToCourier(ctx, orderMessage.OrderPayload.OrderID)
 	if err != nil {
-		return fmt.Errorf("failed to save a courier assigments in the repository: %w", err)
-	}
-
-	err = orderConsumer.orderValidationPublisher.PublishValidationResult(ctx, courierAssigment)
-
-	if err != nil {
-		return fmt.Errorf("failed to publish a order message validation in kafka: %w", err)
+		return fmt.Errorf("can not assign order to courier: %w", err)
 	}
 
 	return nil

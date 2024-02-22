@@ -36,8 +36,9 @@ type LocationPosition struct {
 
 // CourierServiceManager provides information about courier and latest position from storage
 type CourierServiceManager struct {
-	courierClient     CourierClientInterface
-	courierRepository CourierRepositoryInterface
+	courierClient            CourierClientInterface
+	courierRepository        CourierRepositoryInterface
+	orderValidationPublisher OrderValidationPublisher
 }
 
 // CourierRepositoryInterface saves and reads courier from storage
@@ -54,9 +55,27 @@ type CourierAssignments struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Customer needs for order message
+type Customer struct {
+	PhoneNumber string `json:"phone_number"`
+}
+
+// OrderPayload  needs for order message
+type OrderPayload struct {
+	OrderID  string   `json:"id"`
+	Customer Customer `json:"customer"`
+}
+
+// OrderMessage will consume, when order create and publish in queue.
+type OrderMessage struct {
+	OrderPayload OrderPayload `json:"payload"`
+	Event        string       `json:"event"`
+}
+
 // CourierService gets information about courier and latest position courier from storage
 type CourierService interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
+	AssignOrderToCourier(ctx context.Context, orderID string) (err error)
 }
 
 // Courier provides information about courier
@@ -64,6 +83,23 @@ type Courier struct {
 	ID          string
 	FirstName   string
 	IsAvailable bool
+}
+
+// AssignOrderToCourier assign order to courier and send message in queue
+func (s *CourierServiceManager) AssignOrderToCourier(ctx context.Context, courierID string) error {
+
+	courierAssigment, err := s.courierRepository.AssignOrderToCourier(ctx, courierID)
+	if err != nil {
+		return fmt.Errorf("failed to save a courier assigments in the repository: %w", err)
+	}
+
+	err = s.orderValidationPublisher.PublishValidationResult(ctx, courierAssigment)
+
+	if err != nil {
+		return fmt.Errorf("failed to publish a order message validation in kafka: %w", err)
+	}
+
+	return nil
 }
 
 // GetCourierWithLatestPosition gets latest position from server and storage
@@ -104,8 +140,9 @@ func (s *CourierServiceManager) GetCourierWithLatestPosition(ctx context.Context
 }
 
 // NewCourierServiceManager creates new courier service manager
-func NewCourierServiceManager(courierRepository CourierRepositoryInterface) *CourierServiceManager {
+func NewCourierServiceManager(courierRepository CourierRepositoryInterface, orderValidationPublisher OrderValidationPublisher) *CourierServiceManager {
 	return &CourierServiceManager{
-		courierRepository: courierRepository,
+		courierRepository:        courierRepository,
+		orderValidationPublisher: orderValidationPublisher,
 	}
 }

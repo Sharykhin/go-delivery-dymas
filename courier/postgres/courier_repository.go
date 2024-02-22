@@ -113,6 +113,7 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		courierID,
 	)
 
+	courierAssignments = &domain.CourierAssignments{}
 	err = row.Scan(&courierAssignments.CourierID, &courierAssignments.OrderID, &courierAssignments.CreatedAt)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
