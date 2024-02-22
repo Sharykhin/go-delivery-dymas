@@ -122,15 +122,17 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3)" +
 		" RETURNING courier_id, order_id, created_at"
 
-	row = tx.QueryRowContext(
+	courierAssignments.CourierID = courierID
+	courierAssignments.OrderID = orderID
+	courierAssignments.CreatedAt = time.Now()
+	_, err = tx.ExecContext(
 		ctx,
 		query,
-		orderID,
-		courierID,
-		time.Now(),
+		courierAssignments.OrderID,
+		courierAssignments.CourierID,
+		courierAssignments.CreatedAt,
 	)
 
-	err = row.Scan(&courierAssignments.CourierID, &courierAssignments.OrderID, &courierAssignments.CreatedAt)
 	if err != nil {
 		return
 	}

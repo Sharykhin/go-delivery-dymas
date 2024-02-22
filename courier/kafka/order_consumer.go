@@ -67,7 +67,7 @@ func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, messa
 		return fmt.Errorf("failed to save a courier assigments in the repository: %w", err)
 	}
 
-	err = orderConsumer.orderValidationPublisher.PublishValidationResult(ctx, &courierAssigment)
+	err = orderConsumer.orderValidationPublisher.PublishValidationResult(ctx, courierAssigment)
 
 	if err != nil {
 		return fmt.Errorf("failed to publish a order message validation in kafka: %w", err)
