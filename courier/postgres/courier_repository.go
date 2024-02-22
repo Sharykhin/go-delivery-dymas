@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"hash/fnv"
+	"log"
 	"time"
 
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
@@ -54,13 +56,13 @@ func (repo *CourierRepository) GetCourierByID(ctx context.Context, courierID str
 }
 
 // AssignOrderToCourier assigns a free courier to order. It runs a transaction and after finding an available courier it inserts a record into order_assignments table. In case of concurrent request and having a conflict it just does nothing and returns already assigned courier
-func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments domain.CourierAssignments, err error) {
+func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments *domain.CourierAssignments, err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
 
-	defer func(tx *sql.Tx) (err error) {
+	defer func(tx *sql.Tx) {
 		if err != nil {
 			tx.Rollback()
 
@@ -71,11 +73,19 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 
 		if errors.Is(err, sql.ErrTxDone) {
 			err = nil
+
+			return
 		}
+
+		log.Printf("failed to rolback transaction: %v\n", err)
 
 		return
 	}(tx)
 
+	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
+	if err != nil {
+		return
+	}
 	query := "UPDATE courier SET is_available = FALSE " +
 		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE) RETURNING id"
 	row := tx.QueryRowContext(
@@ -88,14 +98,10 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	err = row.Scan(&courierID)
 
 	if errors.Is(err, sql.ErrNoRows) {
+		err = domain.ErrCourierNotFound
 		return
 	}
 
-	if err != nil {
-		return
-	}
-
-	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", courierAssignments.Hash(orderID))
 	if err != nil {
 		return
 	}
@@ -108,7 +114,8 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	)
 
 	err = row.Scan(&courierAssignments.CourierID, &courierAssignments.OrderID, &courierAssignments.CreatedAt)
-	if !errors.Is(err, sql.ErrNoRows) {
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	}
 
@@ -133,6 +140,12 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	}
 
 	return
+}
+
+func (repo *CourierRepository) hashOrderID(orderID string) int64 {
+	h := fnv.New64a()
+	h.Write([]byte(orderID))
+	return int64(h.Sum64())
 }
 
 // NewCourierRepository creates new courier repository

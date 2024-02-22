@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"time"
 )
 
@@ -22,14 +21,6 @@ type CourierWithLatestPosition struct {
 	FirstName      string
 	ID             string
 	IsAvailable    bool
-}
-
-// OrderMessageValidation sends in third system for service information about order assign.
-type OrderMessageValidation struct {
-	IsSuccessful bool               `json:"isSuccessful"`
-	Payload      CourierAssignments `json:"payload"`
-	ServiceName  string             `json:"serviceName"`
-	event        string             `json:"event"`
 }
 
 // CourierClientInterface gets latest location position courier.
@@ -53,7 +44,7 @@ type CourierServiceManager struct {
 type CourierRepositoryInterface interface {
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
-	AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments CourierAssignments, err error)
+	AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments *CourierAssignments, err error)
 }
 
 // CourierAssignments has order assign courier
@@ -66,12 +57,6 @@ type CourierAssignments struct {
 // CourierService gets information about courier and latest position courier from storage
 type CourierService interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
-}
-
-func (courierAssignments *CourierAssignments) Hash(s string) int64 {
-	h := fnv.New64a()
-	h.Write([]byte(s))
-	return int64(h.Sum64())
 }
 
 // Courier provides information about courier
