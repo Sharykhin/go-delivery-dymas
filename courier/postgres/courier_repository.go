@@ -64,7 +64,10 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 
 	defer func(tx *sql.Tx) {
 		if err != nil {
-			tx.Rollback()
+			errRolBack := tx.Rollback()
+			if errRolBack != nil {
+				log.Printf("failed to rolback transaction: %v\n", errRolBack)
+			}
 
 			return
 		}
@@ -120,8 +123,11 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		return
 	}
 
-	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3)" +
-		" RETURNING courier_id, order_id, created_at"
+	if err == nil {
+		return
+	}
+
+	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3)"
 
 	courierAssignments.CourierID = courierID
 	courierAssignments.OrderID = orderID
