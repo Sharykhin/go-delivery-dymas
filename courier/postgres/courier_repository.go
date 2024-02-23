@@ -56,7 +56,7 @@ func (repo *CourierRepository) GetCourierByID(ctx context.Context, courierID str
 }
 
 // AssignOrderToCourier assigns a free courier to order. It runs a transaction and after finding an available courier it inserts a record into order_assignments table. In case of concurrent request and having a conflict it just does nothing and returns already assigned courier
-func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments *domain.CourierAssignments, err error) {
+func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (CourierAssignment *domain.CourierAssignment, err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
 		return
@@ -116,8 +116,8 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		courierID,
 	)
 
-	courierAssignments = &domain.CourierAssignments{}
-	err = row.Scan(&courierAssignments.CourierID, &courierAssignments.OrderID, &courierAssignments.CreatedAt)
+	CourierAssignment = &domain.CourierAssignment{}
+	err = row.Scan(&CourierAssignment.CourierID, &CourierAssignment.OrderID, &CourierAssignment.CreatedAt)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
@@ -129,15 +129,15 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 
 	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3)"
 
-	courierAssignments.CourierID = courierID
-	courierAssignments.OrderID = orderID
-	courierAssignments.CreatedAt = time.Now()
+	CourierAssignment.CourierID = courierID
+	CourierAssignment.OrderID = orderID
+	CourierAssignment.CreatedAt = time.Now()
 	_, err = tx.ExecContext(
 		ctx,
 		query,
-		courierAssignments.OrderID,
-		courierAssignments.CourierID,
-		courierAssignments.CreatedAt,
+		CourierAssignment.OrderID,
+		CourierAssignment.CourierID,
+		CourierAssignment.CreatedAt,
 	)
 
 	if err != nil {

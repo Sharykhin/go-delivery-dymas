@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/IBM/sarama"
+
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 )
 

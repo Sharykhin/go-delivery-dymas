@@ -18,10 +18,10 @@ type OrderValidationPublisher struct {
 
 // OrderMessageValidation sends in third system for service information about order assign.
 type OrderMessageValidation struct {
-	IsSuccessful bool                      `json:"isSuccessful"`
-	Payload      domain.CourierAssignments `json:"payload"`
-	ServiceName  string                    `json:"serviceName"`
-	event        string                    `json:"event"`
+	IsSuccessful bool                     `json:"isSuccessful"`
+	Payload      domain.CourierAssignment `json:"payload"`
+	ServiceName  string                   `json:"serviceName"`
+	event        string                   `json:"event"`
 }
 
 // NewOrderValidationPublisher creates new publisher and init
@@ -34,11 +34,11 @@ func NewOrderValidationPublisher(publisher *pkgkafka.Publisher) *OrderValidation
 }
 
 // PublishValidationResult sends order message in json format in Kafka.
-func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx context.Context, courierAssigment *domain.CourierAssignments) error {
+func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx context.Context, courierAssigment *domain.CourierAssignment) error {
 	messageOrderValidation := OrderMessageValidation{
 		IsSuccessful: true,
 		ServiceName:  "courier",
-		Payload: domain.CourierAssignments{
+		Payload: domain.CourierAssignment{
 			OrderID:   courierAssigment.OrderID,
 			CourierID: courierAssigment.CourierID,
 		},

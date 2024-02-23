@@ -12,7 +12,7 @@ var ErrCourierNotFound = errors.New("courier was not found")
 
 // OrderValidationPublisher publish order validation message in queue for order service.
 type OrderValidationPublisher interface {
-	PublishValidationResult(ctx context.Context, courierAssignment *CourierAssignments) error
+	PublishValidationResult(ctx context.Context, courierAssignment *CourierAssignment) error
 }
 
 // CourierWithLatestPosition is a model of a courier, which provides general information and the latest courier position.
@@ -45,11 +45,11 @@ type CourierServiceManager struct {
 type CourierRepositoryInterface interface {
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
-	AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignments *CourierAssignments, err error)
+	AssignOrderToCourier(ctx context.Context, orderID string) (CourierAssignment *CourierAssignment, err error)
 }
 
-// CourierAssignments has order assign courier
-type CourierAssignments struct {
+// CourierAssignment has order assign courier
+type CourierAssignment struct {
 	OrderID   string    `json:"order_id"`
 	CourierID string    `json:"courier_id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -140,7 +140,10 @@ func (s *CourierServiceManager) GetCourierWithLatestPosition(ctx context.Context
 }
 
 // NewCourierServiceManager creates new courier service manager
-func NewCourierServiceManager(courierRepository CourierRepositoryInterface, orderValidationPublisher OrderValidationPublisher) *CourierServiceManager {
+func NewCourierServiceManager(
+	courierRepository CourierRepositoryInterface,
+	orderValidationPublisher OrderValidationPublisher,
+) *CourierServiceManager {
 	return &CourierServiceManager{
 		courierRepository:        courierRepository,
 		orderValidationPublisher: orderValidationPublisher,
