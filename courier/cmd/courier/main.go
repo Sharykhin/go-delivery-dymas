@@ -10,11 +10,11 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
-	"github.com/Sharykhin/go-delivery-dymas/courier/env"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
+	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
+	"github.com/Sharykhin/go-delivery-dymas/courier/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/courier/grpc"
 	"github.com/Sharykhin/go-delivery-dymas/courier/http/handler"
 	"github.com/Sharykhin/go-delivery-dymas/courier/kafka"
