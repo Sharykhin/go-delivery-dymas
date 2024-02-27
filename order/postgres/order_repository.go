@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
+	"hash/fnv"
+	"time"
 
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 )
@@ -35,10 +36,8 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 // ChangeOrderStatusAfterValidation Change order status  when taking validation.
 func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
 	ctx context.Context,
-	courierPayload *domain.CourierPayload,
-	statusValidation bool,
-	orderStatusValidation string,
-	serviceValidation string,
+	orderID string,
+	orderValidation domain.OrderValidation,
 ) (orderRow *domain.Order, err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
@@ -59,14 +58,57 @@ func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
 		}
 		return
 	}(tx)
+	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
+	if err != nil {
+		return
+	}
 
-	query := "Update orders SET status = $1 WHERE id = $2 RETURNING id, customer_phone_number, status, created_at"
+	query := "SELECT courier, courier_error FROM order_validations WHERE order_id=$1"
 
 	row := tx.QueryRowContext(
 		ctx,
 		query,
-		orderStatusValidation,
-		courierPayload.OrderID,
+		orderID,
+	)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+
+	err = row.Scan(&orderValidation.Courier, &orderValidation.CourierError)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+
+	query = "INSERT INTO order_validations (order_id, courier, courier_error, created_at) VALUES ($1, $2, $3, $4) ON CONFLICT (order_id)" +
+		" DO UPDATE SET courier = $2 "
+	_, err = tx.ExecContext(
+		ctx,
+		query,
+		orderID,
+		orderValidation.Courier,
+		orderValidation.CourierError,
+		time.Now(),
+	)
+
+	if !orderValidation.CheckValidation() && err == nil {
+		err = tx.Commit()
+
+		return
+	}
+
+	if err != nil {
+		return
+	}
+
+	query = "Update orders SET status = $1 WHERE id = $2 RETURNING id, customer_phone_number, status, created_at"
+
+	row = tx.QueryRowContext(
+		ctx,
+		query,
+		domain.OrderStatusAccepted,
+		orderID,
 	)
 
 	orderRow = &domain.Order{}
@@ -77,29 +119,17 @@ func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
 		return
 	}
 
-	query = fmt.Sprintf(
-		"INSERT INTO order_validations (order_id, %s, created_at) VALUES ($1, $2, $3) ON CONFLICT (order_id) DO UPDATE SET %s = $2",
-		serviceValidation,
-		serviceValidation,
-	)
-
-	_, err = tx.ExecContext(
-		ctx,
-		query,
-		courierPayload.OrderID,
-		statusValidation,
-		courierPayload.CreatedAt,
-	)
-
-	if err != nil {
-		return
-	}
-
 	if err = tx.Commit(); err != nil {
 		return
 	}
 
 	return
+}
+
+func (repo *OrderRepository) hashOrderID(orderID string) int64 {
+	h := fnv.New64a()
+	h.Write([]byte(orderID))
+	return int64(h.Sum64())
 }
 
 // GetOrderByID gets order status and order id from database by uuid order and return model with order id.

@@ -13,8 +13,13 @@ import (
 
 // OrderConsumerValidation consumes message order validation from kafka
 type OrderConsumerValidation struct {
-	orderRepository domain.OrderRepository
-	orderPublisher  domain.OrderPublisher
+	orderService domain.OrderServiceInterface
+}
+
+// CourierPayload imagines contract how view courier payload from third system
+type CourierPayload struct {
+	CourierID string `json:"courier_id"`
+	CreatedAt string `json:"created_at"`
 }
 
 // OrderMessageValidation sends in third system for service information about order assign.
@@ -22,16 +27,15 @@ type OrderMessageValidation struct {
 	IsSuccessful bool            `json:"isSuccessful"`
 	Payload      json.RawMessage `json:"payload"`
 	ServiceName  string          `json:"serviceName"`
+	OrderID      string          `json:"order_id"`
 }
 
 // NewOrderConsumerValidation creates order validation consumer
 func NewOrderConsumerValidation(
-	orderRepository domain.OrderRepository,
-	orderPublisher domain.OrderPublisher,
+	orderService domain.OrderServiceInterface,
 ) *OrderConsumerValidation {
 	orderConsumer := &OrderConsumerValidation{
-		orderRepository: orderRepository,
-		orderPublisher:  orderPublisher,
+		orderService: orderService,
 	}
 
 	return orderConsumer
@@ -40,37 +44,24 @@ func NewOrderConsumerValidation(
 // HandleJSONMessage Handle kafka message in json format
 func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
 	var orderMessageValidation OrderMessageValidation
-
 	if err := json.Unmarshal(message.Value, &orderMessageValidation); err != nil {
 		log.Printf("failed to unmarshal Kafka message into order struct: %v\n", err)
 
 		return nil
 	}
 
-	switch orderMessageValidation.ServiceName {
-	case "courier":
-		var courierPayload domain.CourierPayload
-		json.Unmarshal(orderMessageValidation.Payload, &courierPayload)
-		order, err := orderConsumerValidation.orderRepository.ChangeOrderStatusAfterValidation(
-			ctx,
-			&courierPayload,
-			orderMessageValidation.IsSuccessful,
-			domain.OrderStatusAccepted,
-			"courier",
-		)
+	err := orderConsumerValidation.orderService.ChangeOrderStatusAfterValidation(
+		ctx,
+		orderMessageValidation.ServiceName,
+		orderMessageValidation.IsSuccessful,
+		orderMessageValidation.OrderID,
+	)
 
-		if err != nil {
-			return fmt.Errorf("failed to save a order in the repository: %w", err)
-		}
-
-		err = orderConsumerValidation.orderPublisher.PublishOrder(ctx, order, domain.EventOrderUpdated)
-
-		if err != nil {
-			return fmt.Errorf("failed to publish a order in the kafka: %w", err)
-		}
-
-		return nil
+	if err != nil {
+		return fmt.Errorf("failed to save a order in the repository: %w", err)
 	}
+
+	return nil
 
 	return nil
 }

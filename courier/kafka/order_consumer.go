@@ -20,6 +20,17 @@ type OrderConsumer struct {
 	orderValidationPublisher domain.OrderValidationPublisher
 }
 
+// OrderPayload  needs for order message
+type OrderPayload struct {
+	OrderID string `json:"id"`
+}
+
+// OrderMessage will consume, when order create and publish in queue.
+type OrderMessage struct {
+	OrderPayload OrderPayload `json:"payload"`
+	Event        string       `json:"event"`
+}
+
 // NewOrderConsumer creates and init order consumer this consumer consume message from kafka
 func NewOrderConsumer(
 	courierService domain.CourierService,
@@ -33,7 +44,7 @@ func NewOrderConsumer(
 
 // HandleJSONMessage Handle kafka message in json format
 func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
-	var orderMessage domain.OrderMessage
+	var orderMessage OrderMessage
 	if err := json.Unmarshal(message.Value, &orderMessage); err != nil {
 		log.Printf("failed to unmarshal Kafka message into courier order message struct: %v\n", err)
 

@@ -55,7 +55,7 @@ func main() {
 
 	wg.Add(2)
 	go runHttpServer(ctx, config, &wg, orderService)
-	go runOrderConsumer(orderRepo, orderPublisher, &wg, config)
+	go runOrderConsumer(orderService, &wg, config)
 	wg.Wait()
 }
 
@@ -83,9 +83,9 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerOrder)
 }
 
-func runOrderConsumer(orderRepository domain.OrderRepository, orderPublisher domain.OrderPublisher, wg *sync.WaitGroup, config env.Config) {
+func runOrderConsumer(orderService domain.OrderServiceInterface, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	orderConsumer := kafka.NewOrderConsumerValidation(orderRepository, orderPublisher)
+	orderConsumer := kafka.NewOrderConsumerValidation(orderService)
 	consumer, err := pkgkafka.NewConsumer(
 		orderConsumer,
 		config.KafkaAddress,

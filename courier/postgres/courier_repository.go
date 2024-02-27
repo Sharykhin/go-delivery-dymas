@@ -56,7 +56,7 @@ func (repo *CourierRepository) GetCourierByID(ctx context.Context, courierID str
 }
 
 // AssignOrderToCourier assigns a free courier to order. It runs a transaction and after finding an available courier it inserts a record into order_assignments table. In case of concurrent request and having a conflict it just does nothing and returns already assigned courier
-func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (CourierAssignment *domain.CourierAssignment, err error) {
+func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID string) (courierAssignment *domain.CourierAssignment, err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
 		return
@@ -64,9 +64,9 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 
 	defer func(tx *sql.Tx) {
 		if err != nil {
-			errRolBack := tx.Rollback()
-			if errRolBack != nil {
-				log.Printf("failed to rolback transaction: %v\n", errRolBack)
+			errRollBack := tx.Rollback()
+			if errRollBack != nil {
+				log.Printf("failed to rolback transaction: %v\n", errRollBack)
 			}
 
 			return
@@ -89,9 +89,27 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	if err != nil {
 		return
 	}
-	query := "UPDATE courier SET is_available = FALSE " +
-		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE) RETURNING id"
+	query := "SELECT courier_id, order_id, created_at FROM order_assignments WHERE order_id=$1"
 	row := tx.QueryRowContext(
+		ctx,
+		query,
+		orderID,
+	)
+
+	courierAssignment = &domain.CourierAssignment{}
+	err = row.Scan(&courierAssignment.CourierID, &courierAssignment.OrderID, &courierAssignment.CreatedAt)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+
+	if err == nil {
+		return
+	}
+
+	query = "UPDATE courier SET is_available = FALSE " +
+		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE) RETURNING id"
+	row = tx.QueryRowContext(
 		ctx,
 		query,
 	)
@@ -109,35 +127,17 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		return
 	}
 
-	query = "SELECT courier_id, order_id, created_at FROM order_assignments WHERE order_id=$1"
-	row = tx.QueryRowContext(
-		ctx,
-		query,
-		courierID,
-	)
-
-	CourierAssignment = &domain.CourierAssignment{}
-	err = row.Scan(&CourierAssignment.CourierID, &CourierAssignment.OrderID, &CourierAssignment.CreatedAt)
-
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return
-	}
-
-	if err == nil {
-		return
-	}
-
 	query = "INSERT INTO order_assignments (order_id, courier_id, created_at) VALUES ($1, $2, $3)"
 
-	CourierAssignment.CourierID = courierID
-	CourierAssignment.OrderID = orderID
-	CourierAssignment.CreatedAt = time.Now()
+	courierAssignment.CourierID = courierID
+	courierAssignment.OrderID = orderID
+	courierAssignment.CreatedAt = time.Now()
 	_, err = tx.ExecContext(
 		ctx,
 		query,
-		CourierAssignment.OrderID,
-		CourierAssignment.CourierID,
-		CourierAssignment.CreatedAt,
+		courierAssignment.OrderID,
+		courierAssignment.CourierID,
+		courierAssignment.CreatedAt,
 	)
 
 	if err != nil {

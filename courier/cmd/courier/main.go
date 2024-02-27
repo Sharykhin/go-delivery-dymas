@@ -50,7 +50,7 @@ func main() {
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, kafka.OrderTopicValidation)
 	if err != nil {
-		log.Printf("failed to create publisher: %v\n", err)
+		log.Panicf("failed to create publisher: %v\n", err)
 
 		return
 	}

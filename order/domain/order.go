@@ -24,11 +24,13 @@ type Order struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
-// OrderValidation needs for receiving order validation message and embedding in order message struct
+// OrderValidation imagine entity for order validation for saving in db
 type OrderValidation struct {
-	ServiceName  string
-	IsSuccessful bool
-	Payload      any
+	orderID                 string
+	Courier                 time.Time
+	CourierError            string
+	serviceName             string
+	serviceStatusValidation bool
 }
 
 // OrderPublisher publish message some systems.
@@ -42,31 +44,44 @@ type OrderService struct {
 	orderPublisher  OrderPublisher
 }
 
-// CourierPayload imagines contract how view courier payload from third system
-type CourierPayload struct {
-	OrderID   string `json:"order_id"`
-	CourierID string `json:"courier_id"`
-	CreatedAt string `json:"created_at"`
-}
-
 // OrderRepository OrderRepositoryInterface saves and reads courier from storage
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
 	ChangeOrderStatusAfterValidation(
 		ctx context.Context,
-		courierPayload *CourierPayload,
-		statusValidation bool,
-		orderStatusValidation string,
-		serviceValidation string,
+		orderID string,
+		orderValidation OrderValidation,
 	) (order *Order, err error)
 }
 
 // OrderServiceInterface gets information about courier and latest position courier from storage
 type OrderServiceInterface interface {
-	CreateOrder(ctx context.Context, courierID string) (*Order, error)
+	CreateOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ApplyCourierToOrder(ctx context.Context)
+	ChangeOrderStatusAfterValidation(ctx context.Context, serviceName string, isValidOrder bool, orderID string) error
+}
+
+func (orderValidation *OrderValidation) CheckValidation() bool {
+
+	switch orderValidation.serviceName {
+	case "courier":
+		if orderValidation.serviceStatusValidation {
+			orderValidation.Courier = time.Now()
+
+			return true
+
+		} else {
+			orderValidation.CourierError = "Can not apply courier to order"
+		}
+	}
+
+	return true
+}
+
+func (orderValidation *OrderValidation) ApplyServiceStatus(serviceName string, serviceStatusValidation bool) {
+	orderValidation.serviceStatusValidation = serviceStatusValidation
+	orderValidation.serviceName = serviceName
 }
 
 // CreateOrder creates new order and saves it in repository, and then publishes the corresponding event.
@@ -88,6 +103,33 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 	}
 
 	return order, nil
+}
+
+func (s *OrderService) ChangeOrderStatusAfterValidation(ctx context.Context, serviceName string, isValidOrder bool, orderID string) error {
+	var orderValidation OrderValidation
+
+	orderValidation.ApplyServiceStatus(serviceName, isValidOrder)
+	order, err := s.orderRepository.ChangeOrderStatusAfterValidation(
+		ctx,
+		orderID,
+		orderValidation,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to save a order in the repository: %w", err)
+	}
+
+	if order == nil {
+		return nil
+	}
+
+	err = s.orderPublisher.PublishOrder(ctx, order, EventOrderUpdated)
+
+	if err != nil {
+		return fmt.Errorf("failed to publish a order in the kafka: %w", err)
+	}
+
+	return nil
 }
 
 // GetOrderByID returns status and order id data

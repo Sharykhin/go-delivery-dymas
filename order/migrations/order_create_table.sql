@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS orders (
 
 CREATE TABLE IF NOT EXISTS order_validations (
     order_id UUID NOT NULL,
-    courier boolean DEFAULT FALSE,
+    courier TIMESTAMPTZ,
+    courier_error VARCHAR(256),
     created_at TIMESTAMPTZ NOT NULL,
     PRIMARY KEY (order_id)
 );

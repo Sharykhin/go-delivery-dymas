@@ -55,23 +55,6 @@ type CourierAssignment struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Customer needs for order message
-type Customer struct {
-	PhoneNumber string `json:"phone_number"`
-}
-
-// OrderPayload  needs for order message
-type OrderPayload struct {
-	OrderID  string   `json:"id"`
-	Customer Customer `json:"customer"`
-}
-
-// OrderMessage will consume, when order create and publish in queue.
-type OrderMessage struct {
-	OrderPayload OrderPayload `json:"payload"`
-	Event        string       `json:"event"`
-}
-
 // CourierService gets information about courier and latest position courier from storage
 type CourierService interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
