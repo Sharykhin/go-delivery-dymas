@@ -16,8 +16,7 @@ const OrderTopic = "orders"
 
 // OrderConsumer gets order from kafka and apply order to courier and send order message validations
 type OrderConsumer struct {
-	courierService           domain.CourierService
-	orderValidationPublisher domain.OrderValidationPublisher
+	courierService domain.CourierService
 }
 
 // OrderPayload  needs for order message

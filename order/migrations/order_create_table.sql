@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 CREATE TABLE IF NOT EXISTS order_validations (
-    order_id UUID NOT NULL,
-    courier TIMESTAMPTZ,
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    courier_validated_at TIMESTAMPTZ,
     courier_error VARCHAR(256),
     created_at TIMESTAMPTZ NOT NULL,
     PRIMARY KEY (order_id)

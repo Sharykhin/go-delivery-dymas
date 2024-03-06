@@ -69,9 +69,9 @@ type Courier struct {
 }
 
 // AssignOrderToCourier assign order to courier and send message in queue
-func (s *CourierServiceManager) AssignOrderToCourier(ctx context.Context, courierID string) error {
+func (s *CourierServiceManager) AssignOrderToCourier(ctx context.Context, orderID string) error {
 
-	courierAssigment, err := s.courierRepository.AssignOrderToCourier(ctx, courierID)
+	courierAssigment, err := s.courierRepository.AssignOrderToCourier(ctx, orderID)
 	if err != nil {
 		return fmt.Errorf("failed to save a courier assigments in the repository: %w", err)
 	}
