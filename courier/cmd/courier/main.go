@@ -40,22 +40,21 @@ func main() {
 
 	defer clientPostgres.Close()
 
-	courierGRPCConnection, err := couriergrpc.NewCourierConnection(config.CourierGrpcAddress)
+	courierLocationGRPCConnection, err := couriergrpc.NewCourierLocationConnection(config.CourierGrpcAddress)
 
 	if err != nil {
 		log.Panicf("error courier gRPC client connection: %v\n", err)
 	}
-	defer courierGRPCConnection.Close()
+	defer courierLocationGRPCConnection.Close()
 
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
 	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, kafka.OrderTopicValidation)
 	if err != nil {
 		log.Panicf("failed to create publisher: %v\n", err)
-
-		return
 	}
 	orderValidationPublisher := kafka.NewOrderValidationPublisher(publisher)
-	courierServiceManager := domain.NewCourierServiceManager(courierRepository, orderValidationPublisher)
+	courierLocationClient := couriergrpc.NewCourierLocationClient(courierLocationGRPCConnection)
+	courierServiceManager := domain.NewCourierServiceManager(courierRepository, orderValidationPublisher, courierLocationClient)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	wg.Add(2)

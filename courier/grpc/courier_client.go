@@ -15,11 +15,11 @@ import (
 
 // CourierLocationPositionClient provides client for communicate with grpc server
 type CourierLocationPositionClient struct {
-	courierClientGRPC pb.CourierClient
+	courierClientGRPC pb.CourierLocationClient
 }
 
-// NewCourierClient creates new courier client for communicate with server by grpc
-func NewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
+// NewCourierLocationClient creates new courier client for communicate with server by grpc
+func NewCourierLocationClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
 	clientCourier := pb.NewCourierClient(locationConnection)
 
 	return &CourierLocationPositionClient{
@@ -49,8 +49,8 @@ func (cl *CourierLocationPositionClient) GetLatestPosition(ctx context.Context, 
 	return &locationPosition, nil
 }
 
-// NewCourierConnection gets courier connection use grpc protocol
-func NewCourierConnection(courierGrpcAddress string) (*grpc.ClientConn, error) {
+// NewCourierLocationConnection gets courier connection use grpc protocol
+func NewCourierLocationConnection(courierGrpcAddress string) (*grpc.ClientConn, error) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}

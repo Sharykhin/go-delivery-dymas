@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "generate/location/v1";
 
-service Courier {
+service CourierLocation {
   rpc GetCourierLatestPosition (GetCourierLatestPositionRequest) returns (GetCourierLatestPositionResponse) {}
 }
 

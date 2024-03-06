@@ -23,8 +23,8 @@ type CourierWithLatestPosition struct {
 	IsAvailable    bool
 }
 
-// CourierClientInterface gets latest location position courier.
-type CourierClientInterface interface {
+// CourierLocationClient gets latest location position courier.
+type CourierLocationClient interface {
 	GetLatestPosition(ctx context.Context, courierID string) (*LocationPosition, error)
 }
 
@@ -36,7 +36,7 @@ type LocationPosition struct {
 
 // CourierServiceManager provides information about courier and latest position from storage
 type CourierServiceManager struct {
-	courierClient            CourierClientInterface
+	courierLocationClient    CourierLocationClient
 	courierRepository        CourierRepositoryInterface
 	orderValidationPublisher OrderValidationPublisher
 }
@@ -96,7 +96,7 @@ func (s *CourierServiceManager) GetCourierWithLatestPosition(ctx context.Context
 		return nil, fmt.Errorf("failed to get courier from the repository: %w", err)
 	}
 
-	courierLatestPositionResponse, err := s.courierClient.GetLatestPosition(ctx, courierID)
+	courierLatestPositionResponse, err := s.courierLocationClient.GetLatestPosition(ctx, courierID)
 	isErrCourierNotFound := errors.Is(err, ErrCourierNotFound)
 
 	if err != nil && !isErrCourierNotFound {
@@ -126,9 +126,11 @@ func (s *CourierServiceManager) GetCourierWithLatestPosition(ctx context.Context
 func NewCourierServiceManager(
 	courierRepository CourierRepositoryInterface,
 	orderValidationPublisher OrderValidationPublisher,
+	courierLocationClient CourierLocationClient,
 ) *CourierServiceManager {
 	return &CourierServiceManager{
 		courierRepository:        courierRepository,
 		orderValidationPublisher: orderValidationPublisher,
+		courierLocationClient:    courierLocationClient,
 	}
 }
