@@ -64,6 +64,8 @@ github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231229235526-b4709eab185c 
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231229235526-b4709eab185c/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231230090142-6f9856e1edf8 h1:t2Ams9hS7ZCL4NE+f2NW721OxtGM3NsRn6DMzqszj3c=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20231230090142-6f9856e1edf8/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
+github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240306150628-884e48f65422 h1:LgwvoN6OPYE83fTD6jReYy6bWmwI83qWq3sY9B74kXs=
+github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240306150628-884e48f65422/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
 github.com/Shopify/sarama v1.38.1 h1:lqqPUPQZ7zPqYlWpTh+LQ9bhYNu2xJL6k1SJN4WVe2A=
 github.com/Shopify/sarama v1.38.1/go.mod h1:iwv9a67Ha8VNa+TifujYoWGxWnu2kNVAQdSdZ4X2o5g=
 github.com/Shopify/toxiproxy/v2 v2.5.0 h1:i4LPT+qrSlKNtQf5QliVjdP08GyAH8+BUIc9gT0eahc=
