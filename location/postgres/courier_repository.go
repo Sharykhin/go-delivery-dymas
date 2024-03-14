@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 )
@@ -27,10 +26,7 @@ func (repo *CourierLocationRepository) SaveLatestCourierGeoPosition(ctx context.
 	)
 
 	if err != nil {
-		fmt.Println(err)
-		if errors.Is(err, sql.ErrConnDone) {
-			return err
-		}
+		return err
 	}
 
 	return nil
