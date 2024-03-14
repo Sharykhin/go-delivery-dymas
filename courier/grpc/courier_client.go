@@ -15,7 +15,7 @@ import (
 
 // CourierLocationPositionClient provides client for communicate with grpc server
 type CourierLocationPositionClient struct {
-	courierLocationClientGRPC pb.CourierLocationClient
+	courierLocationPositionClientGRPC pb.CourierLocationPositionClient
 }
 
 // NewCourierLocationPositionClient creates new courier client for communicate with server by grpc
@@ -23,13 +23,13 @@ func NewCourierLocationPositionClient(locationConnection *grpc.ClientConn) *Cour
 	courierLocationClient := pb.NewCourierLocationPositionClient(locationConnection)
 
 	return &CourierLocationPositionClient{
-		courierLocationClientGRPC: courierLocationClient,
+		courierLocationPositionClientGRPC: courierLocationClient,
 	}
 }
 
 // GetLatestPosition gets latest position from courier server
 func (cl *CourierLocationPositionClient) GetLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
-	courierLatestPositionResponse, err := cl.courierLocationClientGRPC.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
+	courierLatestPositionResponse, err := cl.courierLocationPositionClientGRPC.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
 	code, ok := status.FromError(err)
 
 	if ok && code.Code() == codes.NotFound {
@@ -49,8 +49,8 @@ func (cl *CourierLocationPositionClient) GetLatestPosition(ctx context.Context, 
 	return &locationPosition, nil
 }
 
-// NewCourierLocationConnection gets courier connection use grpc protocol
-func NewCourierLocationConnection(courierGrpcAddress string) (*grpc.ClientConn, error) {
+// NewCourierLocationPositionConnection gets courier connection use grpc protocol
+func NewCourierLocationPositionConnection(courierGrpcAddress string) (*grpc.ClientConn, error) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}

@@ -40,7 +40,7 @@ func main() {
 
 	defer clientPostgres.Close()
 
-	courierLocationGRPCConnection, err := couriergrpc.NewCourierLocationConnection(config.CourierGrpcAddress)
+	courierLocationGRPCConnection, err := couriergrpc.NewCourierLocationPositionConnection(config.CourierGrpcAddress)
 
 	if err != nil {
 		log.Panicf("error courier gRPC client connection: %v\n", err)

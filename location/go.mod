@@ -14,7 +14,7 @@ require (
 )
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190104-21c3f1b869b4 // indirect
+	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
