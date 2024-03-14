@@ -53,7 +53,7 @@ func main() {
 		log.Panicf("failed to create publisher: %v\n", err)
 	}
 	orderValidationPublisher := kafka.NewOrderValidationPublisher(publisher)
-	courierLocationClient := couriergrpc.NewCourierLocationClient(courierLocationGRPCConnection)
+	courierLocationClient := couriergrpc.NewCourierLocationPositionClient(courierLocationGRPCConnection)
 	courierServiceManager := domain.NewCourierServiceManager(courierRepository, orderValidationPublisher, courierLocationClient)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

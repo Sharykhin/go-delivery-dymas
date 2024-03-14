@@ -18,9 +18,9 @@ type CourierLocationPositionClient struct {
 	courierLocationClientGRPC pb.CourierLocationClient
 }
 
-// NewCourierLocationClient creates new courier client for communicate with server by grpc
-func NewCourierLocationClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
-	courierLocationClient := pb.NewCourierLocationClient(locationConnection)
+// NewCourierLocationPositionClient creates new courier client for communicate with server by grpc
+func NewCourierLocationPositionClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
+	courierLocationClient := pb.NewCourierLocationPositionClient(locationConnection)
 
 	return &CourierLocationPositionClient{
 		courierLocationClientGRPC: courierLocationClient,
