@@ -53,8 +53,8 @@ func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx co
 	err := orderConsumerValidation.orderService.ChangeOrderStatusAfterValidation(
 		ctx,
 		orderMessageValidation.ServiceName,
-		orderMessageValidation.IsSuccessful,
 		orderMessageValidation.OrderID,
+		orderMessageValidation.Payload,
 	)
 
 	if err != nil {

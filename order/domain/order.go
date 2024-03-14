@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -14,6 +15,7 @@ const OrderStatusAccepted = "accepted"
 
 // ErrOrderNotFound shows type this error, when we don't have order in db
 var ErrOrderNotFound = errors.New("order was not found")
+var ErrOrderValidationNotFound = errors.New("order validation was not found")
 
 // Order is a model of an order.
 type Order struct {
@@ -24,13 +26,18 @@ type Order struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
+type CourierPayload struct {
+	CourierID string    `json:"courier_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // OrderValidation imagine entity for order validation for saving in db
 type OrderValidation struct {
-	orderID                 string
-	Courier                 time.Time
-	CourierError            string
-	serviceName             string
-	serviceStatusValidation bool
+	orderID           string
+	CourierValidateAt time.Time
+	UpdatedAt         time.Time
+	CourierError      string
+	serviceName       string
 }
 
 // OrderPublisher publish message some systems.
@@ -48,40 +55,34 @@ type OrderService struct {
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ChangeOrderStatusAfterValidation(
+	SaveOrderValidation(
 		ctx context.Context,
 		orderID string,
-		orderValidation OrderValidation,
-	) (order *Order, err error)
+		orderValidation *OrderValidation,
+	) error
+	UpdateOrder(ctx context.Context, order *Order) (*Order, error)
+	GetOrderValidationValidationById(ctx context.Context, orderID string) (*OrderValidation, error)
+	UpdateOrderValidation(
+		ctx context.Context,
+		orderID string,
+		orderValidation *OrderValidation,
+	) (err error)
 }
 
 // OrderServiceInterface gets information about courier and latest position courier from storage
 type OrderServiceInterface interface {
 	CreateOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ChangeOrderStatusAfterValidation(ctx context.Context, serviceName string, isValidOrder bool, orderID string) error
+	ChangeOrderStatusAfterValidation(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error
 }
 
 func (orderValidation *OrderValidation) CheckValidation() bool {
 
-	switch orderValidation.serviceName {
-	case "courier":
-		if orderValidation.serviceStatusValidation {
-			orderValidation.Courier = time.Now()
-
-			return true
-
-		} else {
-			orderValidation.CourierError = "Can not apply courier to order"
-		}
+	if orderValidation.CourierError != "" {
+		return false
 	}
 
 	return true
-}
-
-func (orderValidation *OrderValidation) ApplyServiceStatus(serviceName string, serviceStatusValidation bool) {
-	orderValidation.serviceStatusValidation = serviceStatusValidation
-	orderValidation.serviceName = serviceName
 }
 
 // CreateOrder creates new order and saves it in repository, and then publishes the corresponding event.
@@ -105,22 +106,63 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 	return order, nil
 }
 
-func (s *OrderService) ChangeOrderStatusAfterValidation(ctx context.Context, serviceName string, isValidOrder bool, orderID string) error {
-	var orderValidation OrderValidation
+// ChangeOrderStatusAfterValidation updates order status and creates or saves order validation
+func (s *OrderService) ChangeOrderStatusAfterValidation(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error {
+	var orderValidation *OrderValidation
+	var order = &Order{}
 
-	orderValidation.ApplyServiceStatus(serviceName, isValidOrder)
-	order, err := s.orderRepository.ChangeOrderStatusAfterValidation(
-		ctx,
-		orderID,
-		orderValidation,
-	)
+	var courierPayload CourierPayload
 
-	if err != nil {
-		return fmt.Errorf("failed to save a order in the repository: %w", err)
+	orderValidation, err := s.orderRepository.GetOrderValidationValidationById(ctx, orderID)
+
+	switch serviceName {
+	case "courier":
+
+		if err != nil && !errors.Is(err, ErrOrderValidationNotFound) {
+			return fmt.Errorf("failed to get order validation: %v\n", err)
+		}
+
+		if err := json.Unmarshal(validationInfo, &courierPayload); err != nil {
+			return fmt.Errorf("failed to unmarshal Kafka message into order struct: %v\n", err)
+		}
+
+		order.ID = orderID
+		order.CourierID = courierPayload.CourierID
 	}
 
-	if order == nil {
-		return nil
+	if errors.Is(err, ErrOrderValidationNotFound) {
+		orderValidation = &OrderValidation{}
+		err = s.orderRepository.SaveOrderValidation(
+			ctx,
+			orderID,
+			orderValidation,
+		)
+	} else {
+		err = s.orderRepository.UpdateOrderValidation(
+			ctx,
+			orderID,
+			orderValidation,
+		)
+	}
+
+	if err != nil && !errors.Is(err, ErrOrderValidationNotFound) {
+		return err
+	}
+
+	order.ID = orderID
+	if orderValidation.CheckValidation() {
+		order.Status = OrderStatusAccepted
+		order, err = s.orderRepository.UpdateOrder(ctx, order)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		order, err = s.orderRepository.UpdateOrder(ctx, order)
+
+		if err != nil {
+			return fmt.Errorf("failed to save a order in the repository: %w", err)
+		}
 	}
 
 	err = s.orderPublisher.PublishOrder(ctx, order, EventOrderUpdated)

@@ -59,6 +59,7 @@ type CourierAssignment struct {
 type CourierService interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
 	AssignOrderToCourier(ctx context.Context, orderID string) (err error)
+	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 }
 
 // Courier provides information about courier
@@ -120,6 +121,11 @@ func (s *CourierServiceManager) GetCourierWithLatestPosition(ctx context.Context
 	}
 
 	return &courierResponse, nil
+}
+
+func (s *CourierServiceManager) SaveCourier(ctx context.Context, courier *Courier) (*Courier, error) {
+
+	return s.courierRepository.SaveCourier(ctx, courier)
 }
 
 // NewCourierServiceManager creates new courier service manager

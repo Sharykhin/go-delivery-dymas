@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"hash/fnv"
 	"time"
 
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
@@ -33,103 +32,91 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 	return &orderRow, err
 }
 
-// ChangeOrderStatusAfterValidation Change order status  when taking validation.
-func (repo *OrderRepository) ChangeOrderStatusAfterValidation(
+// UpdateOrder update order in db after get data from services.
+func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
+	query := "UPDATE orders SET status=$1, courier_id=$2 WHERE id = $3 RETURNING id, customer_phone_number, status, created_at, courier_id"
+	row := repo.client.QueryRowContext(
+		ctx,
+		query,
+		order.Status,
+		order.CourierID,
+		order.ID,
+	)
+
+	var orderRow domain.Order
+
+	err := row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt, &orderRow.CourierID)
+
+	return &orderRow, err
+}
+
+// GetOrderValidationValidationById gets order validation by id from db
+func (repo *OrderRepository) GetOrderValidationValidationById(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
+	query := "SELECT courier_validated_at, courier_error, updated_at FROM order_validations WHERE order_id=$1"
+
+	row := repo.client.QueryRowContext(
+		ctx,
+		query,
+		orderID,
+	)
+
+	var orderValidation domain.OrderValidation
+
+	err := row.Scan(&orderValidation.CourierValidateAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
+
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrOrderValidationNotFound
+	}
+
+	return &orderValidation, nil
+}
+
+// SaveOrderValidation creates or updates order validation
+func (repo *OrderRepository) SaveOrderValidation(
 	ctx context.Context,
 	orderID string,
-	orderValidation domain.OrderValidation,
-) (orderRow *domain.Order, err error) {
-	tx, err := repo.client.BeginTx(ctx, nil)
-	if err != nil {
-		return
-	}
+	orderValidation *domain.OrderValidation,
+) (err error) {
 
-	defer func(tx *sql.Tx) (err error) {
-		if err != nil {
-			tx.Rollback()
-
-			return
-		}
-
-		err = tx.Rollback()
-
-		if errors.Is(err, sql.ErrTxDone) {
-			err = nil
-		}
-		return
-	}(tx)
-	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
-	if err != nil {
-		return
-	}
-
-	query := "SELECT courier, courier_error FROM order_validations WHERE order_id=$1"
-
-	row := tx.QueryRowContext(
+	query := "INSERT INTO order_validations(order_id, courier_validated_at, courier_error) VALUES ($1, $2, $3)"
+	row := repo.client.QueryRowContext(
 		ctx,
 		query,
 		orderID,
-	)
-
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return
-	}
-
-	err = row.Scan(&orderValidation.Courier, &orderValidation.CourierError)
-
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return
-	}
-
-	query = "INSERT INTO order_validations (order_id, courier, courier_error, created_at) VALUES ($1, $2, $3, $4) ON CONFLICT (order_id)" +
-		" DO UPDATE SET courier = $2 "
-	_, err = tx.ExecContext(
-		ctx,
-		query,
-		orderID,
-		orderValidation.Courier,
+		orderValidation.CourierValidateAt,
 		orderValidation.CourierError,
-		time.Now(),
 	)
 
-	if !orderValidation.CheckValidation() && err == nil {
-		err = tx.Commit()
-
-		return
-	}
-
-	if err != nil {
-		return
-	}
-
-	query = "Update orders SET status = $1 WHERE id = $2 RETURNING id, customer_phone_number, status, created_at"
-
-	row = tx.QueryRowContext(
-		ctx,
-		query,
-		domain.OrderStatusAccepted,
-		orderID,
-	)
-
-	orderRow = &domain.Order{}
-
-	err = row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt)
-
-	if err != nil {
-		return
-	}
-
-	if err = tx.Commit(); err != nil {
-		return
-	}
+	err = row.Scan(&orderValidation.CourierValidateAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	return
 }
 
-func (repo *OrderRepository) hashOrderID(orderID string) int64 {
-	h := fnv.New64a()
-	h.Write([]byte(orderID))
-	return int64(h.Sum64())
+// UpdateOrderValidation updates order validation when order validation was added
+func (repo *OrderRepository) UpdateOrderValidation(
+	ctx context.Context,
+	orderID string,
+	orderValidation *domain.OrderValidation,
+) (err error) {
+
+	query := "UPDATE  order_validations SET order_id = $1, courier_validated_at = $2, courier_error = $3, updated_at = $4 WHERE updated_at=$5"
+	row := repo.client.QueryRowContext(
+		ctx,
+		query,
+		orderID,
+		orderValidation.CourierValidateAt,
+		orderValidation.CourierError,
+		time.Now(),
+		orderValidation.UpdatedAt,
+	)
+
+	err = row.Scan(&orderValidation.CourierValidateAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.ErrOrderValidationNotFound
+	}
+
+	return
 }
 
 // GetOrderByID gets order status and order id from database by uuid order and return model with order id.

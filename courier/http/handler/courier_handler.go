@@ -12,9 +12,8 @@ import (
 
 // CourierHandler handles courier request.
 type CourierHandler struct {
-	courierRepository domain.CourierRepositoryInterface
-	courierService    domain.CourierService
-	httpHandler       pkghttp.HandlerInterface
+	courierService domain.CourierService
+	httpHandler    pkghttp.HandlerInterface
 }
 
 // CourierPayload passes payload in courier create request.
@@ -51,7 +50,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	}
 
 	ctx := r.Context()
-	courier, err := h.courierRepository.SaveCourier(
+	courier, err := h.courierService.SaveCourier(
 		ctx,
 		&domain.Courier{
 			FirstName:   courierPayload.FirstName,
