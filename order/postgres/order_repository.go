@@ -52,7 +52,7 @@ func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Orde
 
 // GetOrderValidationById GetOrderValidationValidationById gets order validation by id from db
 func (repo *OrderRepository) GetOrderValidationById(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
-	query := "SELECT courier_validated_at, courier_error, updated_at FROM order_validations WHERE order_id=$1"
+	query := "SELECT order_id, courier_validated_at, courier_error, updated_at FROM order_validations WHERE order_id=$1"
 
 	row := repo.client.QueryRowContext(
 		ctx,
@@ -62,7 +62,7 @@ func (repo *OrderRepository) GetOrderValidationById(ctx context.Context, orderID
 
 	var orderValidation domain.OrderValidation
 
-	err := row.Scan(&orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
+	err := row.Scan(&orderValidation.OrderID, &orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return &orderValidation, domain.ErrOrderValidationNotFound

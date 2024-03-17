@@ -112,9 +112,9 @@ func (s *OrderServiceManager) ChangeOrderStatusAfterValidateOrder(ctx context.Co
 	}
 	var courierPayload CourierPayload
 
-	orderValidation, err := s.orderRepository.GetOrderValidationById(ctx, orderID)
+	orderValidation, errOrderValidation := s.orderRepository.GetOrderValidationById(ctx, orderID)
 
-	if err != nil && !errors.Is(err, ErrOrderValidationNotFound) {
+	if errOrderValidation != nil && !errors.Is(errOrderValidation, ErrOrderValidationNotFound) {
 		return fmt.Errorf("failed to get order validation: %v\n", err)
 	}
 
@@ -133,7 +133,7 @@ func (s *OrderServiceManager) ChangeOrderStatusAfterValidateOrder(ctx context.Co
 		}
 	}
 
-	if errors.Is(err, ErrOrderValidationNotFound) {
+	if errors.Is(errOrderValidation, ErrOrderValidationNotFound) {
 		orderValidation.OrderID = orderID
 		err = s.orderRepository.SaveOrderValidation(
 			ctx,

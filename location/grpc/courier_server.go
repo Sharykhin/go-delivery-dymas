@@ -13,7 +13,7 @@ import (
 
 type CourierServer struct {
 	CourierLocationRepository domain.CourierRepositoryInterface
-	pb.UnsafeCourierLocationServer
+	pb.UnsafeCourierLocationPositionServer
 }
 
 // GetCourierLatestPosition gets courier latest position.

@@ -102,7 +102,7 @@ func runGRPC(ctx context.Context, config env.Config, wg *sync.WaitGroup, repo do
 		log.Fatalf("failed to listen: %v", err)
 	}
 	courierLocationServer := grpc.NewServer()
-	pb.RegisterCourierLocationServer(courierLocationServer, &couriergrpc.CourierServer{
+	pb.RegisterCourierLocationPositionServer(courierLocationServer, &couriergrpc.CourierServer{
 		CourierLocationRepository: repo,
 	})
 	go func() {
