@@ -125,6 +125,12 @@ func (s *OrderServiceManager) ChangeOrderStatusAfterValidateOrder(ctx context.Co
 		}
 
 		order.CourierID = courierPayload.CourierID
+
+		order, err = s.orderRepository.UpdateOrder(ctx, order)
+
+		if err != nil {
+			return fmt.Errorf("failed to save a order in the repository: %w", err)
+		}
 	}
 
 	if errors.Is(err, ErrOrderValidationNotFound) {
@@ -150,12 +156,6 @@ func (s *OrderServiceManager) ChangeOrderStatusAfterValidateOrder(ctx context.Co
 
 		if err != nil {
 			return err
-		}
-	} else {
-		order, err = s.orderRepository.UpdateOrder(ctx, order)
-
-		if err != nil {
-			return fmt.Errorf("failed to save a order in the repository: %w", err)
 		}
 	}
 
