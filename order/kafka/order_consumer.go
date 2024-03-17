@@ -62,6 +62,4 @@ func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx co
 	}
 
 	return nil
-
-	return nil
 }
