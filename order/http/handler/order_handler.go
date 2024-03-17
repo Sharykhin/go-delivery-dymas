@@ -28,13 +28,13 @@ type OrderStatusResponse struct {
 
 // OrderHandler handles courier request.
 type OrderHandler struct {
-	orderService *domain.OrderService
+	orderService domain.OrderService
 	httpHandler  pkghttp.HandlerInterface
 }
 
 // NewOrderHandler creates order handler.
 func NewOrderHandler(
-	orderService *domain.OrderService,
+	orderService domain.OrderService,
 	handler pkghttp.HandlerInterface,
 ) *OrderHandler {
 	return &OrderHandler{

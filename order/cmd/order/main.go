@@ -47,19 +47,19 @@ func main() {
 		return
 	}
 	orderPublisher := kafka.NewOrderPublisher(publisher)
-	orderService := domain.NewOrderService(orderRepo, orderPublisher)
+	orderServiceManager := domain.NewOrderServiceManager(orderRepo, orderPublisher)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	defer stop()
 
 	wg.Add(2)
-	go runHttpServer(ctx, config, &wg, orderService)
-	go runOrderConsumer(ctx, orderService, &wg, config)
+	go runHttpServer(ctx, config, &wg, orderServiceManager)
+	go runOrderConsumer(ctx, orderServiceManager, &wg, config)
 	wg.Wait()
 }
 
-func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, orderService *domain.OrderService) {
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, orderService domain.OrderService) {
 	defer wg.Done()
 
 	orderHandler := handler.NewOrderHandler(orderService, pkghttp.NewHandler())
@@ -83,7 +83,7 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerOrder)
 }
 
-func runOrderConsumer(ctx context.Context, orderService domain.OrderServiceInterface, wg *sync.WaitGroup, config env.Config) {
+func runOrderConsumer(ctx context.Context, orderService domain.OrderService, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
 	orderConsumer := kafka.NewOrderConsumerValidation(orderService)
 	consumer, err := pkgkafka.NewConsumer(

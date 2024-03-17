@@ -13,7 +13,7 @@ import (
 
 // OrderConsumerValidation consumes message order validation from kafka
 type OrderConsumerValidation struct {
-	orderService domain.OrderServiceInterface
+	orderService domain.OrderService
 }
 
 // CourierPayload imagines contract how view courier payload from third system
@@ -32,7 +32,7 @@ type OrderMessageValidation struct {
 
 // NewOrderConsumerValidation creates order validation consumer
 func NewOrderConsumerValidation(
-	orderService domain.OrderServiceInterface,
+	orderService domain.OrderService,
 ) *OrderConsumerValidation {
 	orderConsumer := &OrderConsumerValidation{
 		orderService: orderService,
@@ -45,12 +45,12 @@ func NewOrderConsumerValidation(
 func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
 	var orderMessageValidation OrderMessageValidation
 	if err := json.Unmarshal(message.Value, &orderMessageValidation); err != nil {
-		log.Printf("failed to unmarshal Kafka message into order struct: %v\n", err)
+		log.Printf("failed to unmarshal Kafka message into order validation struct: %v\n", err)
 
 		return nil
 	}
 
-	err := orderConsumerValidation.orderService.ChangeOrderStatusAfterValidation(
+	err := orderConsumerValidation.orderService.ChangeOrderStatusAfterValidateOrder(
 		ctx,
 		orderMessageValidation.ServiceName,
 		orderMessageValidation.OrderID,
@@ -58,7 +58,7 @@ func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx co
 	)
 
 	if err != nil {
-		return fmt.Errorf("failed to save a order in the repository: %w", err)
+		return fmt.Errorf("failed to validate order: %w", err)
 	}
 
 	return nil

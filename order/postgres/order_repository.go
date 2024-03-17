@@ -50,8 +50,8 @@ func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Orde
 	return &orderRow, err
 }
 
-// GetOrderValidationValidationById gets order validation by id from db
-func (repo *OrderRepository) GetOrderValidationValidationById(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
+// GetOrderValidationById GetOrderValidationValidationById gets order validation by id from db
+func (repo *OrderRepository) GetOrderValidationById(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
 	query := "SELECT courier_validated_at, courier_error, updated_at FROM order_validations WHERE order_id=$1"
 
 	row := repo.client.QueryRowContext(
@@ -62,10 +62,10 @@ func (repo *OrderRepository) GetOrderValidationValidationById(ctx context.Contex
 
 	var orderValidation domain.OrderValidation
 
-	err := row.Scan(&orderValidation.CourierValidateAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
+	err := row.Scan(&orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return nil, domain.ErrOrderValidationNotFound
+		return &orderValidation, domain.ErrOrderValidationNotFound
 	}
 
 	return &orderValidation, nil
@@ -74,49 +74,46 @@ func (repo *OrderRepository) GetOrderValidationValidationById(ctx context.Contex
 // SaveOrderValidation creates or updates order validation
 func (repo *OrderRepository) SaveOrderValidation(
 	ctx context.Context,
-	orderID string,
 	orderValidation *domain.OrderValidation,
-) (err error) {
-
+) error {
 	query := "INSERT INTO order_validations(order_id, courier_validated_at, courier_error) VALUES ($1, $2, $3)"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
-		orderID,
-		orderValidation.CourierValidateAt,
+		orderValidation.OrderID,
+		orderValidation.CourierValidatedAt,
 		orderValidation.CourierError,
 	)
 
-	err = row.Scan(&orderValidation.CourierValidateAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
+	err := row.Scan(&orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
-	return
+	return err
 }
 
 // UpdateOrderValidation updates order validation when order validation was added
 func (repo *OrderRepository) UpdateOrderValidation(
 	ctx context.Context,
-	orderID string,
 	orderValidation *domain.OrderValidation,
-) (err error) {
+) (*domain.OrderValidation, error) {
 
-	query := "UPDATE  order_validations SET order_id = $1, courier_validated_at = $2, courier_error = $3, updated_at = $4 WHERE updated_at=$5"
+	query := "UPDATE  order_validations SET courier_validated_at = $2, courier_error = $3, updated_at = $4 WHERE updated_at=$5 AND order_id=$1"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
-		orderID,
-		orderValidation.CourierValidateAt,
+		orderValidation.OrderID,
+		orderValidation.CourierValidatedAt,
 		orderValidation.CourierError,
 		time.Now(),
 		orderValidation.UpdatedAt,
 	)
 
-	err = row.Scan(&orderValidation.CourierValidateAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
+	err := row.Scan(&orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return domain.ErrOrderValidationNotFound
+		return orderValidation, domain.ErrOrderValidationNotFound
 	}
 
-	return
+	return orderValidation, err
 }
 
 // GetOrderByID gets order status and order id from database by uuid order and return model with order id.
