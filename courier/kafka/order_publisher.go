@@ -47,7 +47,8 @@ func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx cont
 		ServiceName:  "courier",
 		OrderID:      courierAssigment.OrderID,
 		Payload: CourierPayload{
-			CourierID: courierAssigment.CourierID,
+			CourierID:          courierAssigment.CourierID,
+			CourierValidatedAt: time.Now(),
 		},
 	}
 
