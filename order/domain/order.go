@@ -26,9 +26,9 @@ type Order struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
+// CourierPayload gets from service courier data and need for unmarshal from payload object that have payloads field any
 type CourierPayload struct {
-	CourierID          string    `json:"courier_id"`
-	CourierValidatedAt time.Time `json:"courier_validated_at"`
+	CourierID string `json:"courier_id"`
 }
 
 // OrderValidation imagine entity for order validation for saving in db
@@ -101,9 +101,6 @@ func (s *OrderServiceManager) CreateOrder(ctx context.Context, order *Order) (*O
 // ValidateOrderForService updates order status and creates or saves order validation
 func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error {
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
-
-	var isCourierUpdateInOrder bool
-
 	if err != nil {
 		return fmt.Errorf("failed to get order: %w", err)
 	}
@@ -117,8 +114,11 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 	}
 
 	if orderValidation == nil {
+		orderValidation.OrderID = orderID
 		orderValidation = &OrderValidation{}
 	}
+
+	var isCourierUpdateInOrder bool
 
 	switch serviceName {
 	case "courier":
@@ -128,9 +128,8 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 		}
 
 		order.CourierID = courierPayload.CourierID
-		orderValidation.CourierValidatedAt = courierPayload.CourierValidatedAt
+		orderValidation.CourierValidatedAt = time.Now()
 		isCourierUpdateInOrder = true
-		err = s.orderRepository.UpdateOrder(ctx, order)
 
 		if err != nil {
 			return fmt.Errorf("failed to save a order in the repository: %w", err)
@@ -138,7 +137,6 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 	}
 
 	if createNewOrderValidation {
-		orderValidation.OrderID = orderID
 		err = s.orderRepository.SaveOrderValidation(
 			ctx,
 			orderValidation,
@@ -166,14 +164,14 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 			return err
 		}
 
-	} else {
-		return nil
 	}
 
-	err = s.orderPublisher.PublishOrder(ctx, order, EventOrderUpdated)
+	if isOrderValidated {
+		err = s.orderPublisher.PublishOrder(ctx, order, EventOrderUpdated)
 
-	if err != nil {
-		return fmt.Errorf("failed to publish a order in the kafka: %w", err)
+		if err != nil {
+			return fmt.Errorf("failed to publish a order in the kafka: %w", err)
+		}
 	}
 
 	return nil

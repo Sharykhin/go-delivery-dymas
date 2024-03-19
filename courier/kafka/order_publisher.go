@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/Sharykhin/go-delivery-dymas/courier/domain"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
@@ -18,8 +17,7 @@ type OrderValidationPublisher struct {
 }
 
 type CourierPayload struct {
-	CourierID          string    `json:"courier_id"`
-	CourierValidatedAt time.Time `json:"courier_validated_at"`
+	CourierID string `json:"courier_id"`
 }
 
 // OrderMessageValidation sends in third system for service information about order assign.
@@ -28,7 +26,6 @@ type OrderMessageValidation struct {
 	Payload      CourierPayload `json:"payload"`
 	OrderID      string         `json:"order_id"`
 	ServiceName  string         `json:"serviceName"`
-	event        string         `json:"event"`
 }
 
 // NewOrderValidationPublisher creates new publisher and init
@@ -47,8 +44,7 @@ func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx cont
 		ServiceName:  "courier",
 		OrderID:      courierAssigment.OrderID,
 		Payload: CourierPayload{
-			CourierID:          courierAssigment.CourierID,
-			CourierValidatedAt: time.Now(),
+			CourierID: courierAssigment.CourierID,
 		},
 	}
 
