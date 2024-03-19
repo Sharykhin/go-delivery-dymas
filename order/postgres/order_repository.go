@@ -73,15 +73,13 @@ func (repo *OrderRepository) SaveOrderValidation(
 	orderValidation *domain.OrderValidation,
 ) error {
 	query := "INSERT INTO order_validations(order_id, courier_validated_at, courier_error) VALUES ($1, $2, $3)"
-	row := repo.client.QueryRowContext(
+	_, err := repo.client.ExecContext(
 		ctx,
 		query,
 		orderValidation.OrderID,
 		orderValidation.CourierValidatedAt,
 		orderValidation.CourierError,
 	)
-
-	err := row.Scan(&orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	return err
 }
