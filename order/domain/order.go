@@ -56,7 +56,7 @@ type OrderRepository interface {
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
 	SaveOrderValidation(ctx context.Context, orderValidation *OrderValidation) error
 	UpdateOrder(ctx context.Context, order *Order) error
-	GetOrderValidationById(ctx context.Context, orderID string) (*OrderValidation, error)
+	GetOrderValidationByID(ctx context.Context, orderID string) (*OrderValidation, error)
 	UpdateOrderValidation(ctx context.Context, orderValidation *OrderValidation) error
 }
 
@@ -106,7 +106,7 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 		return fmt.Errorf("failed to get order: %v\n", err)
 	}
 
-	orderValidation, err := s.orderRepository.GetOrderValidationById(ctx, orderID)
+	orderValidation, err := s.orderRepository.GetOrderValidationByID(ctx, orderID)
 
 	createNewOrderValidation := errors.Is(err, ErrOrderValidationNotFound)
 

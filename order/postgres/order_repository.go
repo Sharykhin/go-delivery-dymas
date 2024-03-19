@@ -46,8 +46,8 @@ func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Orde
 	return err
 }
 
-// GetOrderValidationById GetOrderValidationValidationById gets order validation by id from db
-func (repo *OrderRepository) GetOrderValidationById(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
+// GetOrderValidationByID GetOrderValidationValidationById gets order validation by id from db
+func (repo *OrderRepository) GetOrderValidationByID(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
 	query := "SELECT order_id, courier_validated_at, courier_error, updated_at FROM order_validations WHERE order_id=$1"
 
 	row := repo.client.QueryRowContext(
