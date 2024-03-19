@@ -27,8 +27,8 @@ type Order struct {
 }
 
 type CourierPayload struct {
-	CourierID string    `json:"courier_id"`
-	CreatedAt time.Time `json:"created_at"`
+	CourierID          string    `json:"courier_id"`
+	CourierValidatedAt time.Time `json:"courier_validated_at"`
 }
 
 // OrderValidation imagine entity for order validation for saving in db
@@ -101,7 +101,9 @@ func (s *OrderServiceManager) CreateOrder(ctx context.Context, order *Order) (*O
 // ValidateOrderForService updates order status and creates or saves order validation
 func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error {
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
+
 	var isCourierUpdateInOrder bool
+
 	if err != nil {
 		return fmt.Errorf("failed to get order: %w", err)
 	}
@@ -126,6 +128,7 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 		}
 
 		order.CourierID = courierPayload.CourierID
+		orderValidation.CourierValidatedAt = courierPayload.CourierValidatedAt
 		isCourierUpdateInOrder = true
 		err = s.orderRepository.UpdateOrder(ctx, order)
 

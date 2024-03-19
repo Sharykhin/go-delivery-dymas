@@ -18,8 +18,8 @@ type OrderValidationPublisher struct {
 }
 
 type CourierPayload struct {
-	CourierID string    `json:"courier_id"`
-	CreatedAt time.Time `json:"created_at"`
+	CourierID          string    `json:"courier_id"`
+	CourierValidatedAt time.Time `json:"courier_validated_at"`
 }
 
 // OrderMessageValidation sends in third system for service information about order assign.
