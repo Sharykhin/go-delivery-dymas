@@ -93,7 +93,7 @@ func (repo *OrderRepository) UpdateOrderValidation(
 ) error {
 
 	query := "UPDATE  order_validations SET courier_validated_at = $2, courier_error = $3, updated_at = $4 WHERE updated_at=$5 AND order_id=$1"
-	row := repo.client.QueryRowContext(
+	_, err := repo.client.ExecContext(
 		ctx,
 		query,
 		orderValidation.OrderID,
@@ -102,8 +102,6 @@ func (repo *OrderRepository) UpdateOrderValidation(
 		time.Now(),
 		orderValidation.UpdatedAt,
 	)
-
-	err := row.Scan(&orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	if errors.Is(err, sql.ErrNoRows) {
 		return domain.ErrOrderValidationNotFound
