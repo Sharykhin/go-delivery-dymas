@@ -16,11 +16,6 @@ type OrderConsumerValidation struct {
 	orderService domain.OrderService
 }
 
-// CourierPayload imagines contract how view courier payload from third system
-type CourierPayload struct {
-	CourierID string `json:"courier_id"`
-}
-
 // OrderMessageValidation sends in third system for service information about order assign.
 type OrderMessageValidation struct {
 	IsSuccessful bool            `json:"isSuccessful"`
