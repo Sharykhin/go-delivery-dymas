@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/IBM/sarama"
 
@@ -19,8 +18,7 @@ type OrderConsumerValidation struct {
 
 // CourierPayload imagines contract how view courier payload from third system
 type CourierPayload struct {
-	CourierID          string    `json:"courier_id"`
-	CourierValidatedAt time.Time `json:"courier_validated_at"`
+	CourierID string `json:"courier_id"`
 }
 
 // OrderMessageValidation sends in third system for service information about order assign.
