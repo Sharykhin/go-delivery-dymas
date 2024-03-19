@@ -103,7 +103,7 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
 	var isCourierUpdateInOrder bool
 	if err != nil {
-		return fmt.Errorf("failed to get order: %v\n", err)
+		return fmt.Errorf("failed to get order: %w", err)
 	}
 
 	orderValidation, err := s.orderRepository.GetOrderValidationByID(ctx, orderID)
