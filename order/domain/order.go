@@ -54,25 +54,20 @@ type OrderServiceManager struct {
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	SaveOrderValidation(
-		ctx context.Context,
-		orderValidation *OrderValidation,
-	) error
-	UpdateOrder(ctx context.Context, order *Order) (*Order, error)
+	SaveOrderValidation(ctx context.Context, orderValidation *OrderValidation) error
+	UpdateOrder(ctx context.Context, order *Order) error
 	GetOrderValidationById(ctx context.Context, orderID string) (*OrderValidation, error)
-	UpdateOrderValidation(
-		ctx context.Context,
-		orderValidation *OrderValidation,
-	) (*OrderValidation, error)
+	UpdateOrderValidation(ctx context.Context, orderValidation *OrderValidation) error
 }
 
 // OrderService gets information about courier and latest position courier from storage
 type OrderService interface {
 	CreateOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ChangeOrderStatusAfterValidateOrder(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error
+	ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error
 }
 
+// CheckValidation checks validation for all services after that we change status order if order pass validation
 func (orderValidation *OrderValidation) CheckValidation() bool {
 
 	if orderValidation.CourierError != "" {
@@ -103,60 +98,73 @@ func (s *OrderServiceManager) CreateOrder(ctx context.Context, order *Order) (*O
 	return order, nil
 }
 
-// ChangeOrderStatusAfterValidateOrder updates order status and creates or saves order validation
-func (s *OrderServiceManager) ChangeOrderStatusAfterValidateOrder(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error {
-
+// ValidateOrderForService updates order status and creates or saves order validation
+func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error {
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
+	var isCourierUpdateInOrder bool
 	if err != nil {
 		return fmt.Errorf("failed to get order: %v\n", err)
 	}
-	var courierPayload CourierPayload
 
-	orderValidation, errOrderValidation := s.orderRepository.GetOrderValidationById(ctx, orderID)
+	orderValidation, err := s.orderRepository.GetOrderValidationById(ctx, orderID)
 
-	if errOrderValidation != nil && !errors.Is(errOrderValidation, ErrOrderValidationNotFound) {
-		return fmt.Errorf("failed to get order validation: %v\n", err)
+	createNewOrderValidation := errors.Is(err, ErrOrderValidationNotFound)
+
+	if err != nil && !createNewOrderValidation {
+		return fmt.Errorf("failed to get order validation: %w", err)
+	}
+
+	if orderValidation == nil {
+		orderValidation = &OrderValidation{}
 	}
 
 	switch serviceName {
 	case "courier":
+		var courierPayload CourierPayload
 		if err := json.Unmarshal(validationInfo, &courierPayload); err != nil {
-			return fmt.Errorf("failed to unmarshal courier payload: %v\n", err)
+			return fmt.Errorf("failed to unmarshal courier payload: %w", err)
 		}
 
 		order.CourierID = courierPayload.CourierID
-
-		order, err = s.orderRepository.UpdateOrder(ctx, order)
+		isCourierUpdateInOrder = true
+		err = s.orderRepository.UpdateOrder(ctx, order)
 
 		if err != nil {
 			return fmt.Errorf("failed to save a order in the repository: %w", err)
 		}
 	}
 
-	if errors.Is(errOrderValidation, ErrOrderValidationNotFound) {
+	if createNewOrderValidation {
 		orderValidation.OrderID = orderID
 		err = s.orderRepository.SaveOrderValidation(
 			ctx,
 			orderValidation,
 		)
 	} else {
-		orderValidation, err = s.orderRepository.UpdateOrderValidation(
+		err = s.orderRepository.UpdateOrderValidation(
 			ctx,
 			orderValidation,
 		)
 	}
 
-	if err != nil && !errors.Is(err, ErrOrderValidationNotFound) {
+	if err != nil {
 		return err
 	}
 
-	if orderValidation.CheckValidation() {
+	isOrderValidated := orderValidation.CheckValidation()
+	if isOrderValidated {
 		order.Status = OrderStatusAccepted
-		order, err = s.orderRepository.UpdateOrder(ctx, order)
+	}
+
+	if isCourierUpdateInOrder || isOrderValidated {
+		err = s.orderRepository.UpdateOrder(ctx, order)
 
 		if err != nil {
 			return err
 		}
+
+	} else {
+		return nil
 	}
 
 	err = s.orderPublisher.PublishOrder(ctx, order, EventOrderUpdated)

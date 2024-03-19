@@ -50,7 +50,7 @@ func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx co
 		return nil
 	}
 
-	err := orderConsumerValidation.orderService.ChangeOrderStatusAfterValidateOrder(
+	err := orderConsumerValidation.orderService.ValidateOrderForService(
 		ctx,
 		orderMessageValidation.ServiceName,
 		orderMessageValidation.OrderID,

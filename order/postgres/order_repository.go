@@ -33,9 +33,9 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 }
 
 // UpdateOrder update order in db after get data from services.
-func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
+func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Order) error {
 	query := "UPDATE orders SET status=$1, courier_id=$2 WHERE id = $3 RETURNING id, customer_phone_number, status, created_at, courier_id"
-	row := repo.client.QueryRowContext(
+	_, err := repo.client.ExecContext(
 		ctx,
 		query,
 		order.Status,
@@ -43,11 +43,7 @@ func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Orde
 		order.ID,
 	)
 
-	var orderRow domain.Order
-
-	err := row.Scan(&orderRow.ID, &orderRow.CustomerPhoneNumber, &orderRow.Status, &orderRow.CreatedAt, &orderRow.CourierID)
-
-	return &orderRow, err
+	return err
 }
 
 // GetOrderValidationById GetOrderValidationValidationById gets order validation by id from db
@@ -65,7 +61,7 @@ func (repo *OrderRepository) GetOrderValidationById(ctx context.Context, orderID
 	err := row.Scan(&orderValidation.OrderID, &orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return &orderValidation, domain.ErrOrderValidationNotFound
+		return nil, domain.ErrOrderValidationNotFound
 	}
 
 	return &orderValidation, nil
@@ -94,7 +90,7 @@ func (repo *OrderRepository) SaveOrderValidation(
 func (repo *OrderRepository) UpdateOrderValidation(
 	ctx context.Context,
 	orderValidation *domain.OrderValidation,
-) (*domain.OrderValidation, error) {
+) error {
 
 	query := "UPDATE  order_validations SET courier_validated_at = $2, courier_error = $3, updated_at = $4 WHERE updated_at=$5 AND order_id=$1"
 	row := repo.client.QueryRowContext(
@@ -110,10 +106,10 @@ func (repo *OrderRepository) UpdateOrderValidation(
 	err := row.Scan(&orderValidation.CourierValidatedAt, &orderValidation.CourierError, &orderValidation.UpdatedAt)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return orderValidation, domain.ErrOrderValidationNotFound
+		return domain.ErrOrderValidationNotFound
 	}
 
-	return orderValidation, err
+	return nil
 }
 
 // GetOrderByID gets order status and order id from database by uuid order and return model with order id.
