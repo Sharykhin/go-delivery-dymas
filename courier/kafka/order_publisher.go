@@ -22,10 +22,10 @@ type CourierPayload struct {
 
 // OrderMessageValidation sends in third system for service information about order assign.
 type OrderMessageValidation struct {
-	IsSuccessful bool           `json:"isSuccessful"`
+	IsSuccessful bool           `json:"is_successful"`
 	Payload      CourierPayload `json:"payload"`
 	OrderID      string         `json:"order_id"`
-	ServiceName  string         `json:"serviceName"`
+	ServiceName  string         `json:"service_name"`
 }
 
 // NewOrderValidationPublisher creates new publisher and init

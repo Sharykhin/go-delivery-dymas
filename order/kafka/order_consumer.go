@@ -18,9 +18,9 @@ type OrderConsumerValidation struct {
 
 // OrderMessageValidation sends in third system for service information about order assign.
 type OrderMessageValidation struct {
-	IsSuccessful bool            `json:"isSuccessful"`
+	IsSuccessful bool            `json:"is_successful"`
 	Payload      json.RawMessage `json:"payload"`
-	ServiceName  string          `json:"serviceName"`
+	ServiceName  string          `json:"service_name"`
 	OrderID      string          `json:"order_id"`
 }
 
