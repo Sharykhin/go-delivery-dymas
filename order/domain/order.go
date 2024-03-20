@@ -114,8 +114,8 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 	}
 
 	if orderValidation == nil {
-		orderValidation.OrderID = orderID
 		orderValidation = &OrderValidation{}
+		orderValidation.OrderID = orderID
 	}
 
 	var isCourierUpdateInOrder bool
