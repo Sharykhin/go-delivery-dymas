@@ -130,10 +130,6 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 		order.CourierID = courierPayload.CourierID
 		orderValidation.CourierValidatedAt = time.Now()
 		isCourierUpdateInOrder = true
-
-		if err != nil {
-			return fmt.Errorf("failed to save a order in the repository: %w", err)
-		}
 	}
 
 	if createNewOrderValidation {

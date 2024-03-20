@@ -16,6 +16,7 @@ type OrderValidationPublisher struct {
 	publisher *pkgkafka.Publisher
 }
 
+// CourierPayload need for send order message validation in kafka
 type CourierPayload struct {
 	CourierID string `json:"courier_id"`
 }
