@@ -145,7 +145,7 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 	}
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to save order in database during validation: %w", err)
 	}
 
 	isOrderValidated := orderValidation.CheckValidation()
@@ -157,7 +157,7 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 		err = s.orderRepository.UpdateOrder(ctx, order)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to order order in database during validation: %w", err)
 		}
 
 	}
