@@ -10,3 +10,12 @@ CREATE TABLE IF NOT EXISTS orders (
                                           created_at TIMESTAMPTZ NOT NULL,
                                           PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS order_validations (
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    courier_validated_at TIMESTAMPTZ,
+    courier_error VARCHAR(256),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (order_id)
+);

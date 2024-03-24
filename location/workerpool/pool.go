@@ -21,7 +21,7 @@ type LocationPool struct {
 	timeoutGracefulShutdown time.Duration
 }
 
-// Init inits workerPools define count task and count workers.
+// Run runs workerPools define count task and count workers.
 func (wl *LocationPool) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	wl.courierLocationQueue = make(chan *domain.CourierLocation, wl.countTasks)

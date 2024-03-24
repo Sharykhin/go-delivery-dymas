@@ -15,21 +15,21 @@ import (
 
 // CourierLocationPositionClient provides client for communicate with grpc server
 type CourierLocationPositionClient struct {
-	courierClientGRPC pb.CourierClient
+	courierLocationPositionClientGRPC pb.CourierLocationPositionClient
 }
 
-// NewCourierClient creates new courier client for communicate with server by grpc
-func NewCourierClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
-	clientCourier := pb.NewCourierClient(locationConnection)
+// NewCourierLocationPositionClient creates new courier client for communicate with server by grpc
+func NewCourierLocationPositionClient(locationConnection *grpc.ClientConn) *CourierLocationPositionClient {
+	courierLocationClient := pb.NewCourierLocationPositionClient(locationConnection)
 
 	return &CourierLocationPositionClient{
-		courierClientGRPC: clientCourier,
+		courierLocationPositionClientGRPC: courierLocationClient,
 	}
 }
 
 // GetLatestPosition gets latest position from courier server
 func (cl *CourierLocationPositionClient) GetLatestPosition(ctx context.Context, courierID string) (*domain.LocationPosition, error) {
-	courierLatestPositionResponse, err := cl.courierClientGRPC.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
+	courierLatestPositionResponse, err := cl.courierLocationPositionClientGRPC.GetCourierLatestPosition(ctx, &pb.GetCourierLatestPositionRequest{CourierId: courierID})
 	code, ok := status.FromError(err)
 
 	if ok && code.Code() == codes.NotFound {
@@ -49,8 +49,8 @@ func (cl *CourierLocationPositionClient) GetLatestPosition(ctx context.Context, 
 	return &locationPosition, nil
 }
 
-// NewCourierConnection gets courier connection use grpc protocol
-func NewCourierConnection(courierGrpcAddress string) (*grpc.ClientConn, error) {
+// NewCourierLocationPositionConnection gets courier connection use grpc protocol
+func NewCourierLocationPositionConnection(courierGrpcAddress string) (*grpc.ClientConn, error) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}

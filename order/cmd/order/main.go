@@ -47,18 +47,19 @@ func main() {
 		return
 	}
 	orderPublisher := kafka.NewOrderPublisher(publisher)
-	orderService := domain.NewOrderService(orderRepo, orderPublisher)
+	orderServiceManager := domain.NewOrderServiceManager(orderRepo, orderPublisher)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	defer stop()
 
-	wg.Add(1)
-	go runHttpServer(ctx, config, &wg, orderService)
+	wg.Add(2)
+	go runHttpServer(ctx, config, &wg, orderServiceManager)
+	go runOrderConsumer(ctx, orderServiceManager, &wg, config)
 	wg.Wait()
 }
 
-func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, orderService *domain.OrderService) {
+func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, orderService domain.OrderService) {
 	defer wg.Done()
 
 	orderHandler := handler.NewOrderHandler(orderService, pkghttp.NewHandler())
@@ -80,4 +81,27 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerOrder)
+}
+
+func runOrderConsumer(ctx context.Context, orderService domain.OrderService, wg *sync.WaitGroup, config env.Config) {
+	defer wg.Done()
+	orderConsumer := kafka.NewOrderConsumerValidation(orderService)
+	consumer, err := pkgkafka.NewConsumer(
+		orderConsumer,
+		config.KafkaAddress,
+		config.Verbose,
+		config.Oldest,
+		config.Assignor,
+		"order_validations",
+	)
+
+	if err != nil {
+		log.Panicf("Failed to create kafka consumer group: %v\n", err)
+	}
+
+	err = consumer.ConsumeMessage(ctx)
+
+	if err != nil {
+		log.Panicf("Failed to consume message: %v\n", err)
+	}
 }

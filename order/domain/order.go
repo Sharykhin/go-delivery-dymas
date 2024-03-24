@@ -2,15 +2,20 @@ package domain
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 )
 
-const orderNewStatus = "pending"
+const OrderNewStatus = "pending"
+const EventOrderCreated = "created"
+const EventOrderUpdated = "updated"
+const OrderStatusAccepted = "accepted"
 
 // ErrOrderNotFound shows type this error, when we don't have order in db
 var ErrOrderNotFound = errors.New("order was not found")
+var ErrOrderValidationNotFound = errors.New("order validation was not found")
 
 // Order is a model of an order.
 type Order struct {
@@ -21,13 +26,26 @@ type Order struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
-// OrderPublisher publish message some systems.
-type OrderPublisher interface {
-	PublishOrder(ctx context.Context, order *Order) error
+// CourierPayload gets from service courier data and need for unmarshal from payload object that have payloads field any
+type CourierPayload struct {
+	CourierID string `json:"courier_id"`
 }
 
-// OrderService provides information about order and save order
-type OrderService struct {
+// OrderValidation imagine entity for order validation for saving in db
+type OrderValidation struct {
+	OrderID            string
+	CourierValidatedAt time.Time
+	UpdatedAt          time.Time
+	CourierError       string
+}
+
+// OrderPublisher publish message some systems.
+type OrderPublisher interface {
+	PublishOrder(ctx context.Context, order *Order, event string) error
+}
+
+// OrderServiceManager provides information about order and save order
+type OrderServiceManager struct {
 	orderRepository OrderRepository
 	orderPublisher  OrderPublisher
 }
@@ -36,17 +54,31 @@ type OrderService struct {
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ApplyCourierToOrder(ctx context.Context, order *Order) (*Order, error)
+	SaveOrderValidation(ctx context.Context, orderValidation *OrderValidation) error
+	UpdateOrder(ctx context.Context, order *Order) error
+	GetOrderValidationByID(ctx context.Context, orderID string) (*OrderValidation, error)
+	UpdateOrderValidation(ctx context.Context, orderValidation *OrderValidation) error
 }
 
-// OrderServiceInterface gets information about courier and latest position courier from storage
-type OrderServiceInterface interface {
-	CreateOrder(ctx context.Context, courierID string) (*Order, error)
+// OrderService gets information about courier and latest position courier from storage
+type OrderService interface {
+	CreateOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
+	ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error
+}
+
+// CheckValidation checks validation for all services after that we change status order if order pass validation
+func (orderValidation *OrderValidation) CheckValidation() bool {
+
+	if orderValidation.CourierError != "" {
+		return false
+	}
+
+	return true
 }
 
 // CreateOrder creates new order and saves it in repository, and then publishes the corresponding event.
-func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, error) {
+func (s *OrderServiceManager) CreateOrder(ctx context.Context, order *Order) (*Order, error) {
 
 	order, err := s.orderRepository.SaveOrder(
 		ctx,
@@ -57,7 +89,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 		return nil, fmt.Errorf("failed to create order in database: %w", err)
 	}
 
-	err = s.orderPublisher.PublishOrder(ctx, order)
+	err = s.orderPublisher.PublishOrder(ctx, order, EventOrderCreated)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to publish order: %w", err)
@@ -66,8 +98,83 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) (*Order, e
 	return order, nil
 }
 
+// ValidateOrderForService updates order status and creates or saves order validation
+func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error {
+	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
+	if err != nil {
+		return fmt.Errorf("failed to get order: %w", err)
+	}
+
+	orderValidation, err := s.orderRepository.GetOrderValidationByID(ctx, orderID)
+
+	createNewOrderValidation := errors.Is(err, ErrOrderValidationNotFound)
+
+	if err != nil && !createNewOrderValidation {
+		return fmt.Errorf("failed to get order validation: %w", err)
+	}
+
+	if orderValidation == nil {
+		orderValidation = &OrderValidation{}
+		orderValidation.OrderID = orderID
+	}
+
+	var isCourierUpdateInOrder bool
+
+	switch serviceName {
+	case "courier":
+		var courierPayload CourierPayload
+		if err := json.Unmarshal(validationInfo, &courierPayload); err != nil {
+			return fmt.Errorf("failed to unmarshal courier payload: %w", err)
+		}
+
+		order.CourierID = courierPayload.CourierID
+		orderValidation.CourierValidatedAt = time.Now()
+		isCourierUpdateInOrder = true
+	}
+
+	if createNewOrderValidation {
+		err = s.orderRepository.SaveOrderValidation(
+			ctx,
+			orderValidation,
+		)
+	} else {
+		err = s.orderRepository.UpdateOrderValidation(
+			ctx,
+			orderValidation,
+		)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to save order in database during validation: %w", err)
+	}
+
+	isOrderValidated := orderValidation.CheckValidation()
+	if isOrderValidated {
+		order.Status = OrderStatusAccepted
+	}
+
+	if isCourierUpdateInOrder || isOrderValidated {
+		err = s.orderRepository.UpdateOrder(ctx, order)
+
+		if err != nil {
+			return fmt.Errorf("failed to order order in database during validation: %w", err)
+		}
+
+	}
+
+	if isOrderValidated {
+		err = s.orderPublisher.PublishOrder(ctx, order, EventOrderUpdated)
+
+		if err != nil {
+			return fmt.Errorf("failed to publish a order in the kafka: %w", err)
+		}
+	}
+
+	return nil
+}
+
 // GetOrderByID returns status and order id data
-func (s *OrderService) GetOrderByID(ctx context.Context, orderID string) (*Order, error) {
+func (s *OrderServiceManager) GetOrderByID(ctx context.Context, orderID string) (*Order, error) {
 
 	order, err := s.orderRepository.GetOrderByID(
 		ctx,
@@ -81,9 +188,9 @@ func (s *OrderService) GetOrderByID(ctx context.Context, orderID string) (*Order
 	return order, nil
 }
 
-// NewOrderService creates new order service
-func NewOrderService(orderRepo OrderRepository, orderPublisher OrderPublisher) *OrderService {
-	return &OrderService{
+// NewOrderServiceManager creates new order service
+func NewOrderServiceManager(orderRepo OrderRepository, orderPublisher OrderPublisher) *OrderServiceManager {
+	return &OrderServiceManager{
 		orderRepository: orderRepo,
 		orderPublisher:  orderPublisher,
 	}
@@ -94,6 +201,6 @@ func NewOrder(phoneNumber string) *Order {
 	return &Order{
 		CustomerPhoneNumber: phoneNumber,
 		CreatedAt:           time.Now(),
-		Status:              orderNewStatus,
+		Status:              OrderNewStatus,
 	}
 }
