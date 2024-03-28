@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS courier_latest_cord (
                longitude double precision NOT NULL ,
                created_at TIMESTAMPTZ NOT NULL,
                PRIMARY KEY (courier_id, created_at)
+    )
+
 -- +goose StatementEnd
 
 -- +goose Down
