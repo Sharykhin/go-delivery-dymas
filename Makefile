@@ -6,7 +6,7 @@ DB_NAME ?= $(shell bash -c 'read  -p "Enter Db Name: " dbName; echo $$dbName')
 
 install:
 	docker-compose build
-	go install goose
+	go install github.com/pressly/goose/v3/cmd/goose@latest
 
 
 create-migration:
