@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE DATABASE IF NOT EXISTS courier_location;
 GRANT ALL PRIVILEGES ON DATABASE courier_location TO citizix_user;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -8,3 +9,5 @@ CREATE TABLE IF NOT EXISTS courier_latest_cord (
                                           created_at TIMESTAMPTZ NOT NULL,
                                           PRIMARY KEY (courier_id, created_at)
 );
+-- +goose Down
+DROP TABLE courier_latest_cord
