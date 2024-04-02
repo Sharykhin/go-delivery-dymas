@@ -18,7 +18,7 @@ type CourierRepository struct {
 
 // SaveCourier saves courier in db
 func (repo *CourierRepository) SaveCourier(ctx context.Context, courier *domain.Courier) (*domain.Courier, error) {
-	query := "insert into courier (first_name, is_available) values ($1,$2) RETURNING id, first_name, is_available"
+	query := "insert into couriers (first_name, is_available) values ($1,$2) RETURNING id, first_name, is_available"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
@@ -34,7 +34,7 @@ func (repo *CourierRepository) SaveCourier(ctx context.Context, courier *domain.
 
 // GetCourierByID gets courier by id from db
 func (repo *CourierRepository) GetCourierByID(ctx context.Context, courierID string) (*domain.Courier, error) {
-	query := "SELECT id,first_name,is_available  FROM courier WHERE id=$1"
+	query := "SELECT id,first_name,is_available  FROM couriers WHERE id=$1"
 	row := repo.client.QueryRowContext(
 		ctx,
 		query,
@@ -107,8 +107,8 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		return
 	}
 
-	query = "UPDATE courier SET is_available = FALSE " +
-		"where id = (SELECT id FROM courier WHERE is_available = TRUE LIMIT 1 FOR UPDATE) RETURNING id"
+	query = "UPDATE couriers SET is_available = FALSE " +
+		"where id = (SELECT id FROM couriers WHERE is_available = TRUE LIMIT 1 FOR UPDATE) RETURNING id"
 	row = tx.QueryRowContext(
 		ctx,
 		query,

@@ -21,6 +21,6 @@ CREATE TABLE IF NOT EXISTS order_validations (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP DATABASE orders;
-DROP DATABASE order_validations;
+DROP TABLE orders;
+DROP TABLE order_validations;
 -- +goose StatementEnd

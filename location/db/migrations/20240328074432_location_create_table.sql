@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS courier_latest_cord (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP DATABASE courier_latest_cord;
+DROP TABLE courier_latest_cord;
 -- +goose StatementEnd

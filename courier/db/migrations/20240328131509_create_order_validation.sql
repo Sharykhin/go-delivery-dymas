@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS courier (
+CREATE TABLE IF NOT EXISTS couriers (
                                        id UUID DEFAULT gen_random_uuid(),
     first_name char(30) NOT NULL,
     is_available BOOLEAN DEFAULT TRUE,
@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS order_assignments (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP DATABASE courier;
-DROP DATABASE order_assignments;
+DROP TABLE courier;
+DROP TABLE order_assignments;
 -- +goose StatementEnd
