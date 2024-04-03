@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS order_assignments (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE courier;
+DROP TABLE couriers;
 DROP TABLE order_assignments;
 -- +goose StatementEnd
