@@ -6,7 +6,7 @@ import (
 
 // Config provides values env
 type Config struct {
-	DBName             string `env:"POSTGRES_DB" envDefault:"orders"`
+	DBName             string `env:"POSTGRES_DB" envDefault:"order"`
 	DBPassword         string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
 	DBUser             string `env:"POSTGRES_USER" envDefault:"citizix_user"`
 	PortServerOrder    string `env:"PORT_SERVER_ORDER" envDefault:"6661"`
