@@ -13,7 +13,7 @@ import (
 	lm "github.com/Sharykhin/go-delivery-dymas/location/location_mocks"
 )
 
-type TestKeysSaveLatestCourierLocation struct {
+type TestKeySaveLatestCourierLocation struct {
 	context             context.Context
 	courier             CourierLocation
 	resultRepository    error
@@ -22,8 +22,8 @@ type TestKeysSaveLatestCourierLocation struct {
 	descriptionTestCase string
 }
 
-var testKeys = []TestKeysSaveLatestCourierLocation{
-	TestKeysSaveLatestCourierLocation{
+var testKeys = []TestKeySaveLatestCourierLocation{
+	TestKeySaveLatestCourierLocation{
 		context: minimock.AnyContext,
 		courier: CourierLocation{
 			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad425",
@@ -35,7 +35,7 @@ var testKeys = []TestKeysSaveLatestCourierLocation{
 		resultPublisher:     nil,
 		resultServices:      nil,
 		descriptionTestCase: "success scenarios save latest geo position",
-	}, TestKeysSaveLatestCourierLocation{
+	}, TestKeySaveLatestCourierLocation{
 		context: minimock.AnyContext,
 		courier: CourierLocation{
 			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad477",
@@ -48,7 +48,7 @@ var testKeys = []TestKeysSaveLatestCourierLocation{
 		resultPublisher:     nil,
 		descriptionTestCase: "fail scenarios save latest geo position",
 	},
-	TestKeysSaveLatestCourierLocation{
+	TestKeySaveLatestCourierLocation{
 		context: minimock.AnyContext,
 		courier: CourierLocation{
 			CourierID: "23906828-0744-4a48-a2ca-data89ad477",
