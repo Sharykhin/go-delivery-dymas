@@ -22,7 +22,7 @@ type TestKeySaveLatestCourierLocation struct {
 	descriptionTestCase string
 }
 
-var testKeys = []TestKeySaveLatestCourierLocation{
+var testKeysSaveLatestCourierLocation = []TestKeySaveLatestCourierLocation{
 	TestKeySaveLatestCourierLocation{
 		context: minimock.AnyContext,
 		courier: CourierLocation{
@@ -66,7 +66,7 @@ var testKeys = []TestKeySaveLatestCourierLocation{
 func TestSaveLatestCourierLocation(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
-	for _, testKey := range testKeys {
+	for _, testKey := range testKeysSaveLatestCourierLocation {
 		courierLocationRepositoryMock := lm.NewCourierLocationRepositoryInterfaceMock(mc)
 		courierLocationRepositoryMock.SaveLatestCourierGeoPositionMock.
 			When(minimock.AnyContext, &testKey.courier).Then(testKey.resultRepository)
