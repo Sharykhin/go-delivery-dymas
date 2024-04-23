@@ -32,7 +32,7 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 			When(minimock.AnyContext, &courier).Then(nil)
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 		err := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
-		c.Assert(err, qt.ErrorIs, nil)
+		c.Assert(err, qt.IsNil)
 	})
 	t.Run("fail scenarios save latest geo position", func(t *testing.T) {
 		courier := domain.CourierLocation{
