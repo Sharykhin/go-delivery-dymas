@@ -49,7 +49,7 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 		err = fmt.Errorf("failed to store latest courier location in the repository: %w", err)
 		errResult := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
-		c.Assert(err.Error(), qt.Equals, errResult.Error())
+		c.Assert(err, qt.ErrorMatches, errResult.Error())
 	})
 
 	t.Run("fail scenarios publish latest geo position in third system", func(t *testing.T) {
@@ -69,6 +69,6 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 		err = fmt.Errorf("failed to publish latest courier location: %w", err)
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 		errResult := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
-		c.Assert(err.Error(), qt.Equals, errResult.Error())
+		c.Assert(err, qt.ErrorMatches, errResult.Error())
 	})
 }
