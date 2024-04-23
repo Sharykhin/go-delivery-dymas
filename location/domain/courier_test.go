@@ -15,7 +15,8 @@ import (
 
 // TestSaveLatestCourierLocation test three scenario success save and fail save in db and fail publish in third system
 func TestSaveLatestCourierLocation(t *testing.T) {
-	mc := minimock.NewController(t)
+        c := qt.New(t)
+	mc := minimock.NewController(c)
 	c := qt.New(t)
 	t.Run("success scenarios save latest geo position", func(t *testing.T) {
 		courier := domain.CourierLocation{
