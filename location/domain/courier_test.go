@@ -15,9 +15,9 @@ import (
 
 // TestSaveLatestCourierLocation test three scenario success save and fail save in db and fail publish in third system
 func TestSaveLatestCourierLocation(t *testing.T) {
-        c := qt.New(t)
-	mc := minimock.NewController(c)
 	c := qt.New(t)
+	mc := minimock.NewController(c)
+
 	c.Run("success scenarios save latest geo position", func(c *qt.C) {
 		courier := domain.CourierLocation{
 			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad425",
@@ -25,12 +25,17 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 			Longitude: 27.606307389240364,
 			CreatedAt: time.Now(),
 		}
+
 		courierLocationRepositoryMock := lm.NewCourierLocationRepositoryInterfaceMock(mc)
+
 		courierLocationRepositoryMock.SaveLatestCourierGeoPositionMock.
 			Expect(minimock.AnyContext, &courier).Return(nil)
+
 		publisherLocationMock := lm.NewCourierLocationPublisherInterfaceMock(mc)
+
 		publisherLocationMock.PublishLatestCourierLocationMock.
-			When(minimock.AnyContext, &courier).Then(nil)
+			Expect(minimock.AnyContext, &courier).Return(nil)
+
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 		err := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
 		c.Assert(err, qt.IsNil)
@@ -43,12 +48,14 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 			CreatedAt: time.Now(),
 		}
 		err := errors.New("repository error")
+
 		courierLocationRepositoryMock := lm.NewCourierLocationRepositoryInterfaceMock(mc)
+
 		courierLocationRepositoryMock.SaveLatestCourierGeoPositionMock.
-			When(minimock.AnyContext, &courier).Then(err)
+			Expect(minimock.AnyContext, &courier).Return(err)
+
 		publisherLocationMock := lm.NewCourierLocationPublisherInterfaceMock(mc)
-                 publisherLocationMock := lm.NewCourierLocationPublisherInterfaceMock(mc)
-                 
+
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 		err = fmt.Errorf("failed to store latest courier location in the repository: %w", err)
 		errResult := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
@@ -63,12 +70,15 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 			CreatedAt: time.Now(),
 		}
 		courierLocationRepositoryMock := lm.NewCourierLocationRepositoryInterfaceMock(mc)
+
 		courierLocationRepositoryMock.SaveLatestCourierGeoPositionMock.
-			When(minimock.AnyContext, &courier).Then(nil)
+			Expect(minimock.AnyContext, &courier).Return(nil)
+
 		publisherLocationMock := lm.NewCourierLocationPublisherInterfaceMock(mc)
+
 		err := errors.New("publisher error")
 		publisherLocationMock.PublishLatestCourierLocationMock.
-			When(minimock.AnyContext, &courier).Then(err)
+			Expect(minimock.AnyContext, &courier).Return(err)
 		err = fmt.Errorf("failed to publish latest courier location: %w", err)
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 		errResult := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
