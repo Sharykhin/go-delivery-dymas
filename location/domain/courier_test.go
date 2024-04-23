@@ -40,7 +40,8 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 		err := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
 		c.Assert(err, qt.IsNil)
 	})
-	t.Run("fail scenarios save latest geo position", func(t *testing.T) {
+
+	c.Run("fail scenarios save latest geo position", func(c *qt.C) {
 		courier := domain.CourierLocation{
 			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad477",
 			Latitude:  53.92,
@@ -62,7 +63,7 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 		c.Assert(err, qt.ErrorMatches, errResult.Error())
 	})
 
-	t.Run("fail scenarios publish latest geo position in third system", func(t *testing.T) {
+	c.Run("fail scenarios publish latest geo position in third system", func(c *qt.C) {
 		courier := domain.CourierLocation{
 			CourierID: "23906828-0744-4a48-a2ca-data89ad477",
 			Latitude:  53.42,

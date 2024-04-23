@@ -9,9 +9,6 @@ install:
 	docker-compose build
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 	go install github.com/gojuno/minimock/v3/cmd/minimock@latest
-	cd courier && go get github.com/frankban/quicktest@latest
-	cd order && go get github.com/frankban/quicktest@latest
-	cd location && go get github.com/frankban/quicktest@latest
 
 create-migration:
 	goose -dir "./$(SERVICE_NAME)/db/migrations"  create $(MIGRATION_NAME) sql
