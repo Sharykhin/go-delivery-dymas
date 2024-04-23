@@ -26,7 +26,7 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 		}
 		courierLocationRepositoryMock := lm.NewCourierLocationRepositoryInterfaceMock(mc)
 		courierLocationRepositoryMock.SaveLatestCourierGeoPositionMock.
-			When(minimock.AnyContext, &courier).Then(nil)
+			Expect(minimock.AnyContext, &courier).Return(nil)
 		publisherLocationMock := lm.NewCourierLocationPublisherInterfaceMock(mc)
 		publisherLocationMock.PublishLatestCourierLocationMock.
 			When(minimock.AnyContext, &courier).Then(nil)
