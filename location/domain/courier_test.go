@@ -46,6 +46,8 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 		courierLocationRepositoryMock.SaveLatestCourierGeoPositionMock.
 			When(minimock.AnyContext, &courier).Then(err)
 		publisherLocationMock := lm.NewCourierLocationPublisherInterfaceMock(mc)
+                 publisherLocationMock := lm.NewCourierLocationPublisherInterfaceMock(mc)
+                 
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 		err = fmt.Errorf("failed to store latest courier location in the repository: %w", err)
 		errResult := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
