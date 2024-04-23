@@ -18,7 +18,7 @@ func TestSaveLatestCourierLocation(t *testing.T) {
         c := qt.New(t)
 	mc := minimock.NewController(c)
 	c := qt.New(t)
-	t.Run("success scenarios save latest geo position", func(t *testing.T) {
+	c.Run("success scenarios save latest geo position", func(c *qt.C) {
 		courier := domain.CourierLocation{
 			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad425",
 			Latitude:  53.92680546122101,
