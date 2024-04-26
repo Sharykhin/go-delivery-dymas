@@ -7,17 +7,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Sharykhin/go-delivery-dymas/order/domain"
-	om "github.com/Sharykhin/go-delivery-dymas/order/order_mocks"
 	qt "github.com/frankban/quicktest"
 	"github.com/gojuno/minimock/v3"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
+	"github.com/Sharykhin/go-delivery-dymas/order/domain"
+	om "github.com/Sharykhin/go-delivery-dymas/order/order_mocks"
 )
 
 // TestValidateOrderForService covered scenarios fail save order validation and fail save order and fail publish in third system also success update order flow
 func TestValidateOrderForService(t *testing.T) {
 	c := qt.New(t)
 	mc := minimock.NewController(c)
+
 	c.Run("fail get order from db", func(c *qt.C) {
 		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
 
