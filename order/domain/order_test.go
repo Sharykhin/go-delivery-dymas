@@ -148,11 +148,11 @@ func TestValidateOrderForService(t *testing.T) {
 			CourierError:       "",
 		}
 
-		orderRepositoryMock.SaveOrderValidationMock.Inspect(func(ctx context.Context, orderValidation *domain.OrderValidation) {
+		orderRepositoryMock.SaveOrderValidationMock.Set(func(ctx context.Context, orderValidation *domain.OrderValidation) error {
 			c.Assert(orderValidation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &orderValidationTest)
-		})
 
-		orderRepositoryMock.SaveOrderValidationMock.Return(err)
+			return errors.New("fail save order validation")
+		})
 
 		orderPublisherMock := om.NewOrderPublisherMock(mc)
 
