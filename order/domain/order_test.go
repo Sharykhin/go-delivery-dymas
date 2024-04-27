@@ -3,7 +3,6 @@ package domain_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
-	om "github.com/Sharykhin/go-delivery-dymas/order/order_mocks"
+	"github.com/Sharykhin/go-delivery-dymas/order/mock"
 )
 
 // TestValidateOrderForService covered scenarios fail save order validation and fail save order and fail publish in third system also success update order flow
@@ -21,57 +20,56 @@ func TestValidateOrderForService(t *testing.T) {
 	mc := minimock.NewController(c)
 
 	c.Run("fail get order from db", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad425"
 
-		err := errors.New("test get fail order")
-		orderRepositoryMock.GetOrderByIDMock.Expect(minimock.AnyContext, orderID).Return(nil, err)
+		orderRepositoryMock.GetOrderByIDMock.Expect(minimock.AnyContext, orderID).
+			Return(nil, errors.New("fail get order from db"))
 
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad425"}`)
-		err = fmt.Errorf("failed to get order: %w", err)
+
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(errResult, qt.ErrorMatches, "failed to get order: fail get order from db")
 	})
 
 	c.Run("fail get order validation with type not expected error", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad555"
 
-		err := errors.New("test get fail order validation")
 		order := domain.Order{
 			ID: orderID,
 		}
 
 		orderRepositoryMock.GetOrderByIDMock.Expect(minimock.AnyContext, orderID).Return(&order, nil)
 
-		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).Return(nil, err)
+		orderRepositoryMock.GetOrderValidationByIDMock.
+			Expect(minimock.AnyContext, orderID).Return(nil, errors.New("test get fail order validation"))
 
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err = fmt.Errorf("failed to get order validation: %w", err)
+
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(errResult, qt.ErrorMatches, "failed to get order validation: test get fail order validation")
 	})
 
 	c.Run("fail unmarshal payload", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad555"
 
-		err := errors.New("invalid character 'o' looking for beginning of value")
 		order := domain.Order{
 			ID: orderID,
 		}
@@ -85,55 +83,27 @@ func TestValidateOrderForService(t *testing.T) {
 		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
 			Return(&orderValidation, nil)
 
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`ooooooo`)
-		err = fmt.Errorf("failed to unmarshal courier payload: %w", err)
+
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
-	})
-
-	c.Run("fail unmarshal payload", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
-
-		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad555"
-
-		err := errors.New("invalid character 'o' looking for beginning of value")
-		order := domain.Order{
-			ID: orderID,
-		}
-
-		orderRepositoryMock.GetOrderByIDMock.Expect(minimock.AnyContext, orderID).Return(&order, nil)
-
-		orderValidation := domain.OrderValidation{
-			OrderID: orderID,
-		}
-
-		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
-			Return(&orderValidation, nil)
-
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
-
-		serviceName := "courier"
-		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
-
-		validationInfo := []byte(`ooooooo`)
-		err = fmt.Errorf("failed to unmarshal courier payload: %w", err)
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
-
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(
+			errResult,
+			qt.ErrorMatches,
+			"failed to unmarshal courier payload: invalid character 'o' looking for beginning of value",
+		)
 	})
 
 	c.Run("fail save order validation", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad666"
 
-		err := errors.New("fail save order validation")
 		order := domain.Order{
 			ID: orderID,
 		}
@@ -154,24 +124,26 @@ func TestValidateOrderForService(t *testing.T) {
 			return errors.New("fail save order validation")
 		})
 
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err = fmt.Errorf("failed to save order in database during validation: %w", err)
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(
+			errResult,
+			qt.ErrorMatches,
+			"failed to save order in database during validation: fail save order validation",
+		)
 	})
 
 	c.Run("fail order update validation", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad666"
 
-		err := errors.New("fail update order validation")
 		order := domain.Order{
 			ID: orderID,
 		}
@@ -187,70 +159,33 @@ func TestValidateOrderForService(t *testing.T) {
 		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
 			Return(&orderValidationTest, nil)
 
-		orderRepositoryMock.UpdateOrderValidationMock.Inspect(func(ctx context.Context, orderValidation *domain.OrderValidation) {
-			fmt.Println(orderValidation)
+		orderRepositoryMock.UpdateOrderValidationMock.Set(func(ctx context.Context, orderValidation *domain.OrderValidation) error {
 			c.Assert(orderValidation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &orderValidationTest)
+
+			return errors.New("fail update order validation")
 		})
 
-		orderRepositoryMock.UpdateOrderValidationMock.Return(err)
-
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err = fmt.Errorf("failed to save order in database during validation: %w", err)
+
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
-	})
-
-	c.Run("fail order update validation", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
-
-		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad666"
-
-		err := errors.New("fail save  order validation")
-		order := domain.Order{
-			ID: orderID,
-		}
-
-		orderRepositoryMock.GetOrderByIDMock.Expect(minimock.AnyContext, orderID).Return(&order, nil)
-
-		orderValidationTest := domain.OrderValidation{
-			OrderID:            orderID,
-			CourierValidatedAt: time.Now(),
-			CourierError:       "",
-		}
-
-		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
-			Return(&orderValidationTest, nil)
-
-		orderRepositoryMock.UpdateOrderValidationMock.Inspect(func(ctx context.Context, orderValidation *domain.OrderValidation) {
-			c.Assert(orderValidation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &orderValidationTest)
-		})
-
-		orderRepositoryMock.UpdateOrderValidationMock.Return(err)
-
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
-
-		serviceName := "courier"
-		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
-
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err = fmt.Errorf("failed to save order in database during validation: %w", err)
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
-
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(
+			errResult,
+			qt.ErrorMatches,
+			"failed to save order in database during validation: fail update order validation",
+		)
 	})
 
 	c.Run("fail order update", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad666"
 
-		err := errors.New("fail save order")
 		order := domain.Order{
 			ID: orderID,
 		}
@@ -266,32 +201,35 @@ func TestValidateOrderForService(t *testing.T) {
 		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
 			Return(&orderValidationTest, nil)
 
-		orderRepositoryMock.UpdateOrderValidationMock.Inspect(func(ctx context.Context, orderValidation *domain.OrderValidation) {
+		orderRepositoryMock.UpdateOrderValidationMock.Set(func(ctx context.Context, orderValidation *domain.OrderValidation) (err error) {
 			c.Assert(orderValidation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &orderValidationTest)
+
+			return nil
 		})
 
-		orderRepositoryMock.UpdateOrderValidationMock.Return(nil)
+		orderRepositoryMock.UpdateOrderMock.Expect(minimock.AnyContext, &order).Return(errors.New("fail order update"))
 
-		orderRepositoryMock.UpdateOrderMock.Expect(minimock.AnyContext, &order).Return(err)
-
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err = fmt.Errorf("failed to order order in database during validation: %w", err)
+
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(
+			errResult,
+			qt.ErrorMatches,
+			"failed to order order in database during validation: fail order update",
+		)
 	})
 
 	c.Run("fail order update", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad666"
 
-		err := errors.New("fail save order")
 		order := domain.Order{
 			ID: orderID,
 		}
@@ -307,32 +245,31 @@ func TestValidateOrderForService(t *testing.T) {
 		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
 			Return(&orderValidationTest, nil)
 
-		orderRepositoryMock.UpdateOrderValidationMock.Inspect(func(ctx context.Context, orderValidation *domain.OrderValidation) {
+		orderRepositoryMock.UpdateOrderValidationMock.Set(func(ctx context.Context, orderValidation *domain.OrderValidation) (err error) {
 			c.Assert(orderValidation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &orderValidationTest)
+
+			return nil
 		})
 
-		orderRepositoryMock.UpdateOrderValidationMock.Return(nil)
+		orderRepositoryMock.UpdateOrderMock.Expect(minimock.AnyContext, &order).Return(errors.New("fail update order"))
 
-		orderRepositoryMock.UpdateOrderMock.Expect(minimock.AnyContext, &order).Return(err)
-
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err = fmt.Errorf("failed to order order in database during validation: %w", err)
+
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(errResult, qt.ErrorMatches, "failed to order order in database during validation: fail update order")
 	})
 
 	c.Run("failed to publish a order", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad666"
 
-		err := errors.New("fail save order")
 		order := domain.Order{
 			ID: orderID,
 		}
@@ -348,30 +285,31 @@ func TestValidateOrderForService(t *testing.T) {
 		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
 			Return(&orderValidationTest, nil)
 
-		orderRepositoryMock.UpdateOrderValidationMock.Inspect(func(ctx context.Context, orderValidation *domain.OrderValidation) {
+		orderRepositoryMock.UpdateOrderValidationMock.Set(func(ctx context.Context, orderValidation *domain.OrderValidation) (err error) {
 			c.Assert(orderValidation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &orderValidationTest)
-		})
 
-		orderRepositoryMock.UpdateOrderValidationMock.Return(nil)
+			return nil
+		})
 
 		orderRepositoryMock.UpdateOrderMock.Expect(minimock.AnyContext, &order).Return(nil)
 
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
-		orderPublisherMock.PublishOrderMock.Expect(minimock.AnyContext, &order, domain.EventOrderUpdated).Return(err)
+		orderPublisherMock.PublishOrderMock.Expect(minimock.AnyContext, &order, domain.EventOrderUpdated).
+			Return(errors.New("fail save order"))
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err = fmt.Errorf("failed to publish a order in the kafka: %w", err)
+
 		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, err.Error())
+		c.Assert(errResult, qt.ErrorMatches, "failed to publish a order in the kafka: fail save order")
 	})
 
 	c.Run("success update order", func(c *qt.C) {
-		orderRepositoryMock := om.NewOrderRepositoryMock(mc)
+		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
 
 		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad666"
 
@@ -390,15 +328,15 @@ func TestValidateOrderForService(t *testing.T) {
 		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
 			Return(&orderValidationTest, nil)
 
-		orderRepositoryMock.UpdateOrderValidationMock.Inspect(func(ctx context.Context, orderValidation *domain.OrderValidation) {
+		orderRepositoryMock.UpdateOrderValidationMock.Set(func(ctx context.Context, orderValidation *domain.OrderValidation) (err error) {
 			c.Assert(orderValidation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &orderValidationTest)
-		})
 
-		orderRepositoryMock.UpdateOrderValidationMock.Return(nil)
+			return nil
+		})
 
 		orderRepositoryMock.UpdateOrderMock.Expect(minimock.AnyContext, &order).Return(nil)
 
-		orderPublisherMock := om.NewOrderPublisherMock(mc)
+		orderPublisherMock := mock.NewOrderPublisherMock(mc)
 
 		orderPublisherMock.PublishOrderMock.Expect(minimock.AnyContext, &order, domain.EventOrderUpdated).Return(nil)
 
