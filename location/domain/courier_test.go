@@ -57,9 +57,9 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
 
-		errResult := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
+		err := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
 		c.Assert(
-			errResult,
+			err,
 			qt.ErrorMatches,
 			"failed to store latest courier location in the repository: repository error",
 		)
@@ -83,7 +83,7 @@ func TestSaveLatestCourierLocation(t *testing.T) {
 			Expect(minimock.AnyContext, &courier).Return(errors.New("publisher error"))
 
 		courierLocationService := domain.NewCourierLocationService(courierLocationRepositoryMock, publisherLocationMock)
-		errResult := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
-		c.Assert(errResult, qt.ErrorMatches, "failed to publish latest courier location: publisher error")
+		err := courierLocationService.SaveLatestCourierLocation(minimock.AnyContext, &courier)
+		c.Assert(err, qt.ErrorMatches, "failed to publish latest courier location: publisher error")
 	})
 }

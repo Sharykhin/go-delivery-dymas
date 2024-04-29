@@ -34,9 +34,9 @@ func TestValidateOrderForService(t *testing.T) {
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad425"}`)
 
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, "failed to get order: fail get order from db")
+		c.Assert(err, qt.ErrorMatches, "failed to get order: fail get order from db")
 	})
 
 	c.Run("fail get order validation with type not expected error", func(c *qt.C) {
@@ -60,9 +60,9 @@ func TestValidateOrderForService(t *testing.T) {
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
 
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, "failed to get order validation: test get fail order validation")
+		c.Assert(err, qt.ErrorMatches, "failed to get order validation: test get fail order validation")
 	})
 
 	c.Run("fail unmarshal payload", func(c *qt.C) {
@@ -90,10 +90,10 @@ func TestValidateOrderForService(t *testing.T) {
 
 		validationInfo := []byte(`ooooooo`)
 
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
 		c.Assert(
-			errResult,
+			err,
 			qt.ErrorMatches,
 			"failed to unmarshal courier payload: invalid character 'o' looking for beginning of value",
 		)
@@ -130,10 +130,10 @@ func TestValidateOrderForService(t *testing.T) {
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
 		c.Assert(
-			errResult,
+			err,
 			qt.ErrorMatches,
 			"failed to save order in database during validation: fail save order validation",
 		)
@@ -172,10 +172,10 @@ func TestValidateOrderForService(t *testing.T) {
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
 
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
 		c.Assert(
-			errResult,
+			err,
 			qt.ErrorMatches,
 			"failed to save order in database during validation: fail update order validation",
 		)
@@ -216,10 +216,10 @@ func TestValidateOrderForService(t *testing.T) {
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
 
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
 		c.Assert(
-			errResult,
+			err,
 			qt.ErrorMatches,
 			"failed to order order in database during validation: fail order update",
 		)
@@ -260,9 +260,9 @@ func TestValidateOrderForService(t *testing.T) {
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
 
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, "failed to order order in database during validation: fail update order")
+		c.Assert(err, qt.ErrorMatches, "failed to order order in database during validation: fail update order")
 	})
 
 	c.Run("failed to publish a order", func(c *qt.C) {
@@ -303,9 +303,9 @@ func TestValidateOrderForService(t *testing.T) {
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
 
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.ErrorMatches, "failed to publish a order in the kafka: fail save order")
+		c.Assert(err, qt.ErrorMatches, "failed to publish a order in the kafka: fail save order")
 	})
 
 	c.Run("success update order", func(c *qt.C) {
@@ -344,8 +344,8 @@ func TestValidateOrderForService(t *testing.T) {
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
 		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		errResult := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
 
-		c.Assert(errResult, qt.IsNil)
+		c.Assert(err, qt.IsNil)
 	})
 }
