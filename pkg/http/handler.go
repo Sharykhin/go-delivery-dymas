@@ -38,7 +38,6 @@ type Handler struct {
 // DecodePayloadFromJson decodes payload from body http query and handle exceptions scenarios
 func (h *Handler) DecodePayloadFromJson(r *nethttp.Request, requestData any) error {
 	err := json.NewDecoder(r.Body).Decode(requestData)
-
 	if err != nil {
 		log.Printf("incorrect json! please check your json formatting: %v\n", err)
 
