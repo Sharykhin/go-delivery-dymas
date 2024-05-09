@@ -99,12 +99,11 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 	case errors.Is(errFailResponse, ErrValidatePayloadFailed):
 		log.Printf("validate payload: %v", errFailResponse)
 
+		w.WriteHeader(nethttp.StatusBadRequest)
 		json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
 		})
-
-		w.WriteHeader(nethttp.StatusBadRequest)
 
 	default:
 		log.Printf("Server error: %v\n", errFailResponse)
