@@ -86,6 +86,7 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 	w.Header().Set("Content-Type", "application/json")
 	switch true {
 	case errors.Is(errFailResponse, ErrDecodeFailed):
+		w.WriteHeader(nethttp.StatusBadRequest)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
@@ -94,8 +95,6 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 		if err != nil {
 			log.Printf("failed to encode json response: %v\n", err)
 		}
-
-		w.WriteHeader(nethttp.StatusBadRequest)
 
 	case errors.Is(errFailResponse, ErrValidatePayloadFailed):
 		log.Printf("validate payload: %v", errFailResponse)
