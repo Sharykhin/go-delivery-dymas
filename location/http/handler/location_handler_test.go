@@ -21,17 +21,18 @@ import (
 // TestHandlerCouriersLocation coverages scenarios failed decode and failed validation and success save
 func TestHandlerCouriersLocation(t *testing.T) {
 	c := qt.New(t)
-	mc := minimock.NewController(c)
 	handler := pkghttp.NewHandler()
 	c.Run("failed to decode payload", func(c *qt.C) {
+		mc := minimock.NewController(c)
+
 		req := httptest.NewRequest(http.MethodPost, "/courier/77204924-4714-40cd-845e-36fcc67f9479/location", nil)
 
 		workerPoolMock := mock.NewCourierLocationWorkerPoolMock(mc)
 
 		w := httptest.NewRecorder()
 
-		locationHandler := locationHandler.NewLocationHandler(workerPoolMock, handler)
-		locationHandler.HandlerCouriersLocation(w, req)
+		locationHandlerTest := locationHandler.NewLocationHandler(workerPoolMock, handler)
+		locationHandlerTest.HandlerCouriersLocation(w, req)
 
 		res := w.Result()
 
@@ -41,6 +42,7 @@ func TestHandlerCouriersLocation(t *testing.T) {
 	})
 
 	c.Run("failed payload validation", func(c *qt.C) {
+		mc := minimock.NewController(c)
 
 		bodyReader := bytes.NewReader([]byte(`{"latitude": 0, "longitude": 0}`))
 
@@ -60,6 +62,7 @@ func TestHandlerCouriersLocation(t *testing.T) {
 	})
 
 	c.Run("success save courier location", func(c *qt.C) {
+		mc := minimock.NewController(c)
 
 		bodyReader := bytes.NewReader([]byte(`{"latitude": 20, "longitude": 131, "courier_id": "77204924-4714-40cd-845e-36fcc67f1111"}`))
 
