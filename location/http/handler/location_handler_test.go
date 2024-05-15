@@ -10,6 +10,7 @@ import (
 	qt "github.com/frankban/quicktest"
 	"github.com/gojuno/minimock/v3"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/gorilla/mux"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	locationHandler "github.com/Sharykhin/go-delivery-dymas/location/http/handler"
@@ -59,19 +60,19 @@ func TestHandlerCouriersLocation(t *testing.T) {
 	})
 
 	c.Run("success save courier location", func(c *qt.C) {
-		courierLocationTest := domain.CourierLocation{
-			Latitude:  20,
-			Longitude: 131,
-			CreatedAt: time.Now(),
-		}
 
-		bodyReader := bytes.NewReader([]byte(`{"latitude": 20, "longitude": 131}`))
+		bodyReader := bytes.NewReader([]byte(`{"latitude": 20, "longitude": 131, "courier_id": "77204924-4714-40cd-845e-36fcc67f1111"}`))
 
-		req := httptest.NewRequest(http.MethodPost, "/courier/77204924-4714-40cd-845e-36fcc67f9479/location", bodyReader)
-
+		req := httptest.NewRequest(http.MethodPost, "/courier/77204924-4714-40cd-845e-36fcc67f1111/location", bodyReader)
+		req = mux.SetURLVars(req, map[string]string{"courier_id": "77204924-4714-40cd-845e-36fcc67f1111"})
 		workerPoolMock := mock.NewCourierLocationWorkerPoolMock(mc)
 		workerPoolMock.AddTaskMock.Set(func(courierLocation *domain.CourierLocation) {
-			c.Assert(courierLocation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &courierLocationTest)
+			c.Assert(courierLocation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &domain.CourierLocation{
+				Latitude:  20,
+				Longitude: 131,
+				CreatedAt: time.Now(),
+				CourierID: "77204924-4714-40cd-845e-36fcc67f1111",
+			})
 		})
 
 		w := httptest.NewRecorder()
