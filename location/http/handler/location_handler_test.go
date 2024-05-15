@@ -68,7 +68,9 @@ func TestHandlerCouriersLocation(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/courier/77204924-4714-40cd-845e-36fcc67f1111/location", bodyReader)
 		req = mux.SetURLVars(req, map[string]string{"courier_id": "77204924-4714-40cd-845e-36fcc67f1111"})
+
 		workerPoolMock := mock.NewCourierLocationWorkerPoolMock(mc)
+
 		workerPoolMock.AddTaskMock.Set(func(courierLocation *domain.CourierLocation) {
 			c.Assert(courierLocation, qt.CmpEquals(cmpopts.EquateApproxTime(time.Second)), &domain.CourierLocation{
 				Latitude:  20,
