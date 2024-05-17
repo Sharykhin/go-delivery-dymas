@@ -64,7 +64,7 @@ func TestHandlerCouriersLocation(t *testing.T) {
 	c.Run("success save courier location", func(c *qt.C) {
 		mc := minimock.NewController(c)
 
-		bodyReader := bytes.NewReader([]byte(`{"latitude": 20, "longitude": 131, "courier_id": "77204924-4714-40cd-845e-36fcc67f1111"}`))
+		bodyReader := bytes.NewReader([]byte(`{"latitude": 20, "longitude": 131}`))
 
 		req := httptest.NewRequest(http.MethodPost, "/courier/77204924-4714-40cd-845e-36fcc67f1111/location", bodyReader)
 		req = mux.SetURLVars(req, map[string]string{"courier_id": "77204924-4714-40cd-845e-36fcc67f1111"})
