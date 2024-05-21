@@ -27,7 +27,7 @@ type CourierLocation struct {
 	CourierID string    `json:"courier_id"`
 	Latitude  float64   `json:"latitude"`
 	Longitude float64   `json:"longitude"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_atttt"`
 }
 
 // CourierLocationRepositoryInterface saves latest location position courier in storage.
