@@ -38,7 +38,6 @@ type Handler struct {
 // DecodePayloadFromJson decodes payload from body http query and handle exceptions scenarios
 func (h *Handler) DecodePayloadFromJson(r *nethttp.Request, requestData any) error {
 	err := json.NewDecoder(r.Body).Decode(requestData)
-
 	if err != nil {
 		log.Printf("incorrect json! please check your json formatting: %v\n", err)
 
@@ -86,6 +85,7 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 	w.Header().Set("Content-Type", "application/json")
 	switch true {
 	case errors.Is(errFailResponse, ErrDecodeFailed):
+		w.WriteHeader(nethttp.StatusBadRequest)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
@@ -95,17 +95,14 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 			log.Printf("failed to encode json response: %v\n", err)
 		}
 
-		w.WriteHeader(nethttp.StatusBadRequest)
-
 	case errors.Is(errFailResponse, ErrValidatePayloadFailed):
 		log.Printf("validate payload: %v", errFailResponse)
 
+		w.WriteHeader(nethttp.StatusBadRequest)
 		json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
 		})
-
-		w.WriteHeader(nethttp.StatusBadRequest)
 
 	default:
 		log.Printf("Server error: %v\n", errFailResponse)
