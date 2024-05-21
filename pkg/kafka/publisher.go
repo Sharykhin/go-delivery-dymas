@@ -17,7 +17,7 @@ type Publisher struct {
 }
 
 // NewPublisher Create new Publisher Async for sending in kafka
-func NewPublisher(address []string, schemaRegistryServers []string, schema string, topic string) (*Publisher, error) {
+func NewPublisher(address []string, schemaRegistryServers []string, topic string) (*Publisher, error) {
 	publisher := Publisher{}
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewManualPartitioner
