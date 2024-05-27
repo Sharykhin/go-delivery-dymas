@@ -9,6 +9,7 @@ install:
 	docker-compose build
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 	go install github.com/gojuno/minimock/v3/cmd/minimock@latest
+	go install github.com/actgardner/gogen-avro/v10/cmd/gogen-avro@latest
 
 create-migration:
 	goose -dir "./$(SERVICE_NAME)/db/migrations"  create $(MIGRATION_NAME) sql
