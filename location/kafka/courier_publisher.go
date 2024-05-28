@@ -15,7 +15,7 @@ type CourierLocationLatestPublisher struct {
 }
 
 // NewCourierLocationPublisher creates new publisher and init
-func NewCourierLocationPublisher(publisher *pkgkafka.Publisher) *CourierLocationLatestPublisher {
+func NewCourierLocationPublisher(publisher *pkgkafka.Publisher, schema avro.LatestCourierLocation) *CourierLocationLatestPublisher {
 	courierPublisher := CourierLocationLatestPublisher{}
 	courierPublisher.publisher = publisher
 	return &courierPublisher

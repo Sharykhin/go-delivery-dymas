@@ -1,6 +1,6 @@
 module github.com/Sharykhin/go-delivery-dymas/location
 
-go 1.21.3
+go 1.22.2
 
 require (
 	github.com/IBM/sarama v1.41.3
@@ -16,6 +16,7 @@ require (
 )
 
 require (
+	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240527170015-26c948eb89c5 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

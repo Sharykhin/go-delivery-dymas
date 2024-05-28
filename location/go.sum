@@ -1,5 +1,7 @@
 github.com/IBM/sarama v1.41.3 h1:MWBEJ12vHC8coMjdEXFq/6ftO6DUZnQlFYcxtOJFa7c=
 github.com/IBM/sarama v1.41.3/go.mod h1:Xxho9HkHd4K/MDUo/T/sOqwtX/17D33++E9Wib6hUdQ=
+github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240527170015-26c948eb89c5 h1:6AxdsPilQ+a5IkFglnqn0atHswIvBZC/956j0B7cBzo=
+github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240527170015-26c948eb89c5/go.mod h1:hDimWIAxK+pRDGE3BpJqZy6tBoSSE5ic+ColsK51ers=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e h1:rmbfhk9Ee9LR7JU/RLuH3FZct6azDAPutObLE2bhUvE=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240429171910-d0e9f44e85f5 h1:Eyr/Q2bDvSmxMMv6a6fH7j6DsjvOo9lpYeysLCp30jQ=
