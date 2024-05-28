@@ -3,8 +3,13 @@ module github.com/Sharykhin/go-delivery-dymas/pkg
 go 1.21.3
 
 require (
-	github.com/IBM/sarama v1.41.3 // indirect
-	github.com/Shopify/sarama v1.38.1 // indirect
+	github.com/IBM/sarama v1.41.3
+	github.com/go-playground/validator/v10 v10.16.0
+	github.com/gorilla/mux v1.8.1
+	github.com/linkedin/goavro v2.1.0+incompatible
+)
+
+require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.4.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
@@ -12,10 +17,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.16.0 // indirect
-	github.com/gojuno/minimock v1.9.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -32,4 +34,5 @@ require (
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
+	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )

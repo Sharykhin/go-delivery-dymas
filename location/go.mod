@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	github.com/IBM/sarama v1.41.3
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240509122205-f72114a5ca95
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240521090243-2d5acd1a2267
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/frankban/quicktest v1.14.6
@@ -41,6 +41,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/linkedin/goavro v2.1.0+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect

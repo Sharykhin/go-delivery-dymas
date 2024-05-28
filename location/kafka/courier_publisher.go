@@ -29,7 +29,17 @@ func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLoca
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
 
-	err = courierPublisher.publisher.PublishMessage(ctx, message, []byte(courierLocation.CourierID))
+	schema := `{
+				"type": "record",
+				"name": "LatestCourierLocation",
+				"fields": [
+					{"name": "courier_id", "type": "string"},
+					{"name": "latitude", "type": "double"},
+					{"name": "longitude", "type": "double"},
+					{ "name": "created_at", "type": "long", "logicalType": "timestamp-millis"}
+				]
+			}`
+	err = courierPublisher.publisher.PublishMessage(ctx, message, []byte(courierLocation.CourierID), schema)
 
 	if err != nil {
 		return fmt.Errorf("failed to publish courier location: %w", err)
