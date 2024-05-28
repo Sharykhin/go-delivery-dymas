@@ -4,6 +4,8 @@ github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240527170015-26c948eb89c5 h
 github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240527170015-26c948eb89c5/go.mod h1:hDimWIAxK+pRDGE3BpJqZy6tBoSSE5ic+ColsK51ers=
 github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134500-53f2cf6fb1db h1:VNwbLY/PSES9KVKCFuPsyeOEdgcIYJovG6PVx5VRqYU=
 github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134500-53f2cf6fb1db/go.mod h1:KNAInfainxGzQ4b+6FM1N3oF0TnJ+di/H6kPKnJsIMU=
+github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134759-da8b07311f63 h1:7hgbGALT5W+CIqudD5GVvPcKZUV2ambE2+fcFVrc8Rg=
+github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134759-da8b07311f63/go.mod h1:KNAInfainxGzQ4b+6FM1N3oF0TnJ+di/H6kPKnJsIMU=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e h1:rmbfhk9Ee9LR7JU/RLuH3FZct6azDAPutObLE2bhUvE=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e/go.mod h1:SQ8WkT48HmoV2h8nCCFgit4GzIxlBslTbHrxPU+f0zI=
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240429171910-d0e9f44e85f5 h1:Eyr/Q2bDvSmxMMv6a6fH7j6DsjvOo9lpYeysLCp30jQ=
@@ -20,6 +22,8 @@ github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240521090243-2d5acd1a2267 h1
 github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240521090243-2d5acd1a2267/go.mod h1:PRmZO0N/i0hM45Kc4vkhn1fLdjKMN+5HFJwUdaGzot4=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7 h1:+wuUHnhSsL5E+P74fUqXbavKbsKTAzxMxfNSwCJNrHE=
 github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7/go.mod h1:lQd7nauqIctrMNgldE2KxneFY6YgG0CWQPN3aQotlfc=
+github.com/actgardner/gogen-avro/v10 v10.2.1 h1:z3pOGblRjAJCYpkIJ8CmbMJdksi4rAhaygw0dyXZ930=
+github.com/actgardner/gogen-avro/v10 v10.2.1/go.mod h1:QUhjeHPchheYmMDni/Nx7VB0RsT/ee8YIgGY/xpEQgQ=
 github.com/bsm/ginkgo/v2 v2.7.0 h1:ItPMPH90RbmZJt5GtkcNvIRuGEdwlBItdNVoyzaNQao=
 github.com/bsm/ginkgo/v2 v2.7.0/go.mod h1:AiKlXPm7ItEHNc/2+OkrNG4E0ITzojb9/xWzvQ9XZ9w=
 github.com/bsm/gomega v1.26.0 h1:LhQm+AFcgV2M0WyKroMASzAzCAJVpAxQXv4SaI9a69Y=

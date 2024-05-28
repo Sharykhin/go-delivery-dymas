@@ -16,7 +16,8 @@ require (
 )
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134500-53f2cf6fb1db // indirect
+	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134759-da8b07311f63 // indirect
+	github.com/actgardner/gogen-avro/v10 v10.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

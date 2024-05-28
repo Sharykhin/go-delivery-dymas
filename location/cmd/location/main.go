@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Sharykhin/go-delivery-dymas/avro"
 	wp "github.com/Sharykhin/go-delivery-dymas/location/workerpool"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -53,7 +54,7 @@ func main() {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
-	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher)
+	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher, avro.NewLatestCourierLocation())
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 
 	defer redisClient.Close()

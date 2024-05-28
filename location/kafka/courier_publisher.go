@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Sharykhin/go-delivery-dymas/avro"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
@@ -12,12 +13,14 @@ import (
 // CourierLocationLatestPublisher Publisher for kafka
 type CourierLocationLatestPublisher struct {
 	publisher *pkgkafka.Publisher
+	schema    avro.LatestCourierLocation
 }
 
 // NewCourierLocationPublisher creates new publisher and init
 func NewCourierLocationPublisher(publisher *pkgkafka.Publisher, schema avro.LatestCourierLocation) *CourierLocationLatestPublisher {
 	courierPublisher := CourierLocationLatestPublisher{}
 	courierPublisher.publisher = publisher
+	courierPublisher.schema = schema
 	return &courierPublisher
 }
 
@@ -29,16 +32,7 @@ func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLoca
 		return fmt.Errorf("failed to marshal courier location before sending Kafka event: %w", err)
 	}
 
-	schema := `{
-				"type": "record",
-				"name": "LatestCourierLocation",
-				"fields": [
-					{"name": "courier_id", "type": "string"},
-					{"name": "latitude", "type": "double"},
-					{"name": "longitude", "type": "double"},
-					{ "name": "created_at", "type": "long", "logicalType": "timestamp-millis"}
-				]
-			}`
+	schema := courierPublisher.schema.Schema()
 	err = courierPublisher.publisher.PublishMessage(ctx, message, []byte(courierLocation.CourierID), schema)
 
 	if err != nil {
