@@ -75,7 +75,7 @@ func (publisher *Publisher) PublishMessage(ctx context.Context, message []byte, 
 		Content:  binaryValue,
 	}
 	messageKafka := sarama.ProducerMessage{
-		Topic: publisher.topic,
+		Topic: publisher.topic + ".v" + string(schemaId),
 		Value: binaryMsg,
 	}
 
