@@ -5,6 +5,6 @@
         {"name": "courier_id", "type": "string"},
         {"name": "latitude", "type": "double"},
         {"name": "longitude", "type": "double"},
-        { "name": "created_at", "type": "long", "logicalType": "timestamp-millis"}
+        {"name": "created_at", "type": {"type":"long", "logicalType":"timestamp-millis"}}
     ]
 }

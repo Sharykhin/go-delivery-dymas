@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/IBM/sarama v1.41.3
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240521090243-2d5acd1a2267
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240529121557-44a8683d7dc6
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/frankban/quicktest v1.14.6
