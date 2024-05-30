@@ -55,3 +55,9 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )
+
+replace (
+	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134759-da8b07311f63 => ../avro
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240529121557-44a8683d7dc6 => ../pkg
+	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7 => ../proto
+)
