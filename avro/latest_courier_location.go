@@ -24,10 +24,10 @@ type LatestCourierLocation struct {
 
 	Longitude float64 `json:"longitude"`
 
-	Created_at int32 `json:"created_at"`
+	Created_at int64 `json:"created_at"`
 }
 
-const LatestCourierLocationAvroCRC64Fingerprint = "\x05\xe0Vk(\xff\xe0o"
+const LatestCourierLocationAvroCRC64Fingerprint = "\xfc\x8f.\xb1\x80\x06B\x12"
 
 func NewLatestCourierLocation() LatestCourierLocation {
 	r := LatestCourierLocation{}
@@ -71,7 +71,7 @@ func writeLatestCourierLocation(r LatestCourierLocation, w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	err = vm.WriteInt(r.Created_at, w)
+	err = vm.WriteLong(r.Created_at, w)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (r LatestCourierLocation) Serialize(w io.Writer) error {
 }
 
 func (r LatestCourierLocation) Schema() string {
-	return "{\"fields\":[{\"name\":\"courier_id\",\"type\":\"string\"},{\"name\":\"latitude\",\"type\":\"double\"},{\"name\":\"longitude\",\"type\":\"double\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"date\",\"type\":\"int\"}}],\"name\":\"LatestCourierLocation\",\"type\":\"record\"}"
+	return "{\"fields\":[{\"name\":\"courier_id\",\"type\":\"string\"},{\"name\":\"latitude\",\"type\":\"double\"},{\"name\":\"longitude\",\"type\":\"double\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"timestamp-millis\",\"type\":\"long\"}}],\"name\":\"LatestCourierLocation\",\"type\":\"record\"}"
 }
 
 func (r LatestCourierLocation) SchemaName() string {
@@ -117,7 +117,7 @@ func (r *LatestCourierLocation) Get(i int) types.Field {
 		return w
 
 	case 3:
-		w := types.Int{Target: &r.Created_at}
+		w := types.Long{Target: &r.Created_at}
 
 		return w
 
