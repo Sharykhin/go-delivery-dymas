@@ -12,12 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Sharykhin/go-delivery-dymas/avro"
-	wp "github.com/Sharykhin/go-delivery-dymas/location/workerpool"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
+	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/location/grpc"
@@ -25,6 +24,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
 	"github.com/Sharykhin/go-delivery-dymas/location/redis"
+	wp "github.com/Sharykhin/go-delivery-dymas/location/workerpool"
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
@@ -48,15 +48,16 @@ func main() {
 
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
-	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, "latest_position_courier")
+	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, "latest_position_courier.v1")
 
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
-	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher, avro.NewLatestCourierLocation())
-	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 
+	latestCourierLocation := avro.NewLatestCourierLocation()
+	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher, &latestCourierLocation)
+	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 	defer redisClient.Close()
 
 	repoRedis := redis.NewCourierLocationRepository(redisClient)

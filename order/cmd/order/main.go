@@ -10,6 +10,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
@@ -41,12 +42,13 @@ func main() {
 
 	defer clientPostgres.Close()
 	orderRepo := postgres.NewOrderRepository(clientPostgres)
-	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "orders")
+	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, "orders")
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
-	orderPublisher := kafka.NewOrderPublisher(publisher)
+	orderMessage := avro.NewOrderMessage()
+	orderPublisher := kafka.NewOrderPublisher(publisher, &orderMessage)
 	orderServiceManager := domain.NewOrderServiceManager(orderRepo, orderPublisher)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -85,7 +87,8 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 
 func runOrderConsumer(ctx context.Context, orderService domain.OrderService, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	orderConsumer := kafka.NewOrderConsumerValidation(orderService)
+	avroOrderMessageValidation := avro.NewOrderValidationMessage()
+	orderConsumer := kafka.NewOrderConsumerValidation(orderService, avroOrderMessageValidation)
 	consumer, err := pkgkafka.NewConsumer(
 		orderConsumer,
 		config.KafkaAddress,
@@ -93,6 +96,7 @@ func runOrderConsumer(ctx context.Context, orderService domain.OrderService, wg 
 		config.Oldest,
 		config.Assignor,
 		"order_validations",
+		[]string{config.KafkaSchemaRegistryAddress},
 	)
 
 	if err != nil {

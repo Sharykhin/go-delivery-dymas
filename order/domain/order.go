@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -26,17 +25,17 @@ type Order struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
-// CourierPayload gets from service courier data and need for unmarshal from payload object that have payloads field any
-type CourierPayload struct {
-	CourierID string `json:"courier_id"`
-}
-
 // OrderValidation imagine entity for order validation for saving in db
 type OrderValidation struct {
 	OrderID            string
 	CourierValidatedAt time.Time
 	UpdatedAt          time.Time
 	CourierError       string
+}
+
+// OrderValidationPayload imagine payload for order validation for different services
+type OrderValidationPayload struct {
+	CourierID string
 }
 
 // OrderPublisher publish message some systems.
@@ -64,7 +63,7 @@ type OrderRepository interface {
 type OrderService interface {
 	CreateOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error
+	ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload OrderValidationPayload) error
 }
 
 // CheckValidation checks validation for all services after that we change status order if order pass validation
@@ -99,7 +98,7 @@ func (s *OrderServiceManager) CreateOrder(ctx context.Context, order *Order) (*O
 }
 
 // ValidateOrderForService updates order status and creates or saves order validation
-func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, validationInfo []byte) error {
+func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload OrderValidationPayload) error {
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
 	if err != nil {
 		return fmt.Errorf("failed to get order: %w", err)
@@ -122,12 +121,7 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 
 	switch serviceName {
 	case "courier":
-		var courierPayload CourierPayload
-		if err := json.Unmarshal(validationInfo, &courierPayload); err != nil {
-			return fmt.Errorf("failed to unmarshal courier payload: %w", err)
-		}
-
-		order.CourierID = courierPayload.CourierID
+		order.CourierID = orderValidationPayload.CourierID
 		orderValidation.CourierValidatedAt = time.Now()
 		isCourierUpdateInOrder = true
 	}
@@ -189,7 +183,10 @@ func (s *OrderServiceManager) GetOrderByID(ctx context.Context, orderID string) 
 }
 
 // NewOrderServiceManager creates new order service
-func NewOrderServiceManager(orderRepo OrderRepository, orderPublisher OrderPublisher) *OrderServiceManager {
+func NewOrderServiceManager(
+	orderRepo OrderRepository,
+	orderPublisher OrderPublisher,
+) *OrderServiceManager {
 	return &OrderServiceManager{
 		orderRepository: orderRepo,
 		orderPublisher:  orderPublisher,

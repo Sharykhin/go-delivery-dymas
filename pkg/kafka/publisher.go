@@ -55,9 +55,15 @@ func (publisher *Publisher) PublishMessage(ctx context.Context, message []byte, 
 	if err != nil {
 		return err
 	}
+
 	schemaId, err := publisher.GetSchemaId(publisher.topic, avroCodec)
+
 	if err != nil {
 		return err
+	}
+
+	if schemaId == 0 {
+
 	}
 
 	native, _, err := avroCodec.NativeFromTextual(message)
@@ -75,7 +81,7 @@ func (publisher *Publisher) PublishMessage(ctx context.Context, message []byte, 
 		Content:  binaryValue,
 	}
 	messageKafka := sarama.ProducerMessage{
-		Topic: publisher.topic + ".v" + string(schemaId),
+		Topic: publisher.topic,
 		Value: binaryMsg,
 	}
 

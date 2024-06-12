@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "Order",
+  "fields": [
+    {"name": "order_id", "type": "string", "logicalType": "UUID"},
+    {"name": "is_successful", "type": "boolean"},
+    {"name": "status", "type": "string"},
+    {"name": "created_at", "type": {"type":"long", "logicalType":"timestamp-millis"}}
+  ]
+}

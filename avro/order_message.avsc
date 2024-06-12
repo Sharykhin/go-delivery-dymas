@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "name": "OrderMessage",
+  "fields": [
+    {"name": "event", "type": "string"},
+    {
+      "name": "Payload",
+      "type": {
+        "type": "record",
+        "name": "OrderMessagePayload",
+        "fields": [
+          {"name": "order_id", "type": "string", "logicalType": "UUID"}
+        ]
+      }
+    }
+  ]
+}

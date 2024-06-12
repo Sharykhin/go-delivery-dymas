@@ -10,6 +10,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
@@ -48,11 +49,12 @@ func main() {
 	defer courierLocationGRPCConnection.Close()
 
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, kafka.OrderTopicValidation)
+	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, kafka.OrderTopicValidation)
 	if err != nil {
 		log.Panicf("failed to create publisher: %v\n", err)
 	}
-	orderValidationPublisher := kafka.NewOrderValidationPublisher(publisher)
+	orderMessageValidation := avro.NewOrderValidationMessage()
+	orderValidationPublisher := kafka.NewOrderValidationPublisher(publisher, &orderMessageValidation)
 	courierLocationClient := couriergrpc.NewCourierLocationPositionClient(courierLocationGRPCConnection)
 	courierServiceManager := domain.NewCourierServiceManager(courierRepository, orderValidationPublisher, courierLocationClient)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -86,7 +88,8 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, c
 
 func runOrderConsumer(ctx context.Context, courierService domain.CourierService, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	orderConsumer := kafka.NewOrderConsumer(courierService)
+	avroOrderMessage := avro.NewOrderMessage()
+	orderConsumer := kafka.NewOrderConsumer(courierService, &avroOrderMessage)
 	consumer, err := pkgkafka.NewConsumer(
 		orderConsumer,
 		config.KafkaAddress,
@@ -94,6 +97,7 @@ func runOrderConsumer(ctx context.Context, courierService domain.CourierService,
 		config.Oldest,
 		config.Assignor,
 		kafka.OrderTopic,
+		[]string{config.KafkaSchemaRegistryAddress},
 	)
 
 	if err != nil {

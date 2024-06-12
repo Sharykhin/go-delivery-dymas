@@ -1,0 +1,20 @@
+{
+  "type": "record",
+  "name": "OrderValidationMessage",
+  "fields": [
+    {"name": "order_id", "type": "string", "logicalType": "UUID"},
+    {"name": "service_name", "type": "string"},
+    {"name": "created_at", "type": {"type":"long", "logicalType":"timestamp-millis"}},
+    {"name": "is_successful", "type": "boolean"},
+    {
+      "name": "Payload",
+      "type": {
+        "type": "record",
+        "name": "PayloadMessageValidation",
+        "fields": [
+          {"name": "courier_id", "type": ["string", "null"], "logicalType": "UUID", "default": "null"}
+        ]
+      }
+    }
+  ]
+}

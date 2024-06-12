@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/sarama"
-
+	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 )
 
 // OrderConsumerValidation consumes message order validation from kafka
 type OrderConsumerValidation struct {
-	orderService domain.OrderService
+	orderService           domain.OrderService
+	orderValidationMessage avro.OrderValidationMessage
 }
 
 // OrderMessageValidation sends in third system for service information about order assign.
@@ -27,28 +27,32 @@ type OrderMessageValidation struct {
 // NewOrderConsumerValidation creates order validation consumer
 func NewOrderConsumerValidation(
 	orderService domain.OrderService,
+	orderValidationMessage avro.OrderValidationMessage,
 ) *OrderConsumerValidation {
 	orderConsumer := &OrderConsumerValidation{
-		orderService: orderService,
+		orderService:           orderService,
+		orderValidationMessage: orderValidationMessage,
 	}
 
 	return orderConsumer
 }
 
 // HandleJSONMessage Handle kafka message in json format
-func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
-	var orderMessageValidation OrderMessageValidation
-	if err := json.Unmarshal(message.Value, &orderMessageValidation); err != nil {
+func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx context.Context, message []byte) error {
+	if err := orderConsumerValidation.orderValidationMessage.UnmarshalJSON(message); err != nil {
 		log.Printf("failed to unmarshal Kafka message into order validation struct: %v\n", err)
 
 		return nil
 	}
 
+	payload := domain.OrderValidationPayload{
+		CourierID: orderConsumerValidation.orderValidationMessage.Payload.Courier_id.String,
+	}
 	err := orderConsumerValidation.orderService.ValidateOrderForService(
 		ctx,
-		orderMessageValidation.ServiceName,
-		orderMessageValidation.OrderID,
-		orderMessageValidation.Payload,
+		orderConsumerValidation.orderValidationMessage.Service_name,
+		orderConsumerValidation.orderValidationMessage.Order_id,
+		payload,
 	)
 
 	if err != nil {

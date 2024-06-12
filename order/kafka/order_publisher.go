@@ -2,16 +2,17 @@ package kafka
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
 // OrderPublisher publisher for kafka
 type OrderPublisher struct {
-	publisher *pkgkafka.Publisher
+	publisher    *pkgkafka.Publisher
+	orderMessage *avro.OrderMessage
 }
 
 // OrderPayload uses for embedding order id and phone customer
@@ -26,9 +27,10 @@ type OrderMessage struct {
 }
 
 // NewOrderPublisher creates new publisher and init
-func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisher {
+func NewOrderPublisher(publisher *pkgkafka.Publisher, orderMessage *avro.OrderMessage) *OrderPublisher {
 	orderPublisher := OrderPublisher{
-		publisher: publisher,
+		publisher:    publisher,
+		orderMessage: orderMessage,
 	}
 
 	return &orderPublisher
@@ -36,20 +38,16 @@ func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisher {
 
 // PublishOrder sends order message in json format in Kafka.
 func (orderPublisher *OrderPublisher) PublishOrder(ctx context.Context, order *domain.Order, event string) error {
-	messageOrder := OrderMessage{
-		Event: event,
-		OrderPayload: OrderPayload{
-			OrderID: order.ID,
-		},
-	}
-
-	message, err := json.Marshal(messageOrder)
+	orderPublisher.orderMessage.Payload.Order_id = order.ID
+	orderPublisher.orderMessage.Event = event
+	message, err := orderPublisher.orderMessage.MarshalJSON()
+	schema := orderPublisher.orderMessage.Schema()
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal order before sending Kafka event: %w", err)
 	}
 
-	err = orderPublisher.publisher.PublishMessage(ctx, message, []byte(order.ID))
+	err = orderPublisher.publisher.PublishMessage(ctx, message, []byte(order.ID), schema)
 
 	if err != nil {
 		return fmt.Errorf("failed to publish order event: %w", err)
