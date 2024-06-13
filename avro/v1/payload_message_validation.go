@@ -27,8 +27,6 @@ func NewPayloadMessageValidation() PayloadMessageValidation {
 	r := PayloadMessageValidation{}
 	r.Courier_id = NewUnionStringNull()
 
-	r.Courier_id = NewUnionStringNull()
-	r.Courier_id.String = "null"
 	return r
 }
 
@@ -69,7 +67,7 @@ func (r PayloadMessageValidation) Serialize(w io.Writer) error {
 }
 
 func (r PayloadMessageValidation) Schema() string {
-	return "{\"fields\":[{\"default\":\"null\",\"logicalType\":\"UUID\",\"name\":\"courier_id\",\"type\":[\"string\",\"null\"]}],\"name\":\"PayloadMessageValidation\",\"type\":\"record\"}"
+	return "{\"fields\":[{\"name\":\"courier_id\",\"type\":[{\"logicalType\":\"uuid\",\"type\":\"string\"},\"null\"]}],\"name\":\"PayloadMessageValidation\",\"type\":\"record\"}"
 }
 
 func (r PayloadMessageValidation) SchemaName() string {
@@ -97,10 +95,6 @@ func (r *PayloadMessageValidation) Get(i int) types.Field {
 
 func (r *PayloadMessageValidation) SetDefault(i int) {
 	switch i {
-	case 0:
-		r.Courier_id = NewUnionStringNull()
-		r.Courier_id.String = "null"
-		return
 	}
 	panic("Unknown field index")
 }
@@ -152,10 +146,7 @@ func (r *PayloadMessageValidation) UnmarshalJSON(data []byte) error {
 			return err
 		}
 	} else {
-		r.Courier_id = NewUnionStringNull()
-
-		r.Courier_id = NewUnionStringNull()
-		r.Courier_id.String = "null"
+		return fmt.Errorf("no value specified for courier_id")
 	}
 	return nil
 }

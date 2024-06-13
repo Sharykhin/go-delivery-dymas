@@ -84,7 +84,7 @@ func DeserializeUnionStringNullFromSchema(r io.Reader, schema string) (*UnionStr
 }
 
 func (r *UnionStringNull) Schema() string {
-	return "[\"string\",\"null\"]"
+	return "[{\"logicalType\":\"uuid\",\"type\":\"string\"},\"null\"]"
 }
 
 func (_ *UnionStringNull) SetBoolean(v bool)   { panic("Unsupported operation") }

@@ -12,7 +12,9 @@
         "type": "record",
         "name": "PayloadMessageValidation",
         "fields": [
-          {"name": "courier_id", "type": ["string", "null"], "logicalType": "UUID", "default": "null"}
+          {
+            "name": "courier_id", "type": [{"type": "string", "logicalType": "uuid"}, "null"]
+          }
         ]
       }
     }

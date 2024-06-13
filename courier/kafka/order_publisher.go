@@ -46,6 +46,7 @@ func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx cont
 	orderPublisher.orderValidationMessage.Service_name = "courier"
 	orderPublisher.orderValidationMessage.Is_successful = true
 	orderPublisher.orderValidationMessage.Payload.Courier_id.String = courierAssigment.CourierID
+	orderPublisher.orderValidationMessage.Payload.Courier_id.Null = nil
 
 	message, err := orderPublisher.orderValidationMessage.MarshalJSON()
 

@@ -42,7 +42,7 @@ func main() {
 
 	defer clientPostgres.Close()
 	orderRepo := postgres.NewOrderRepository(clientPostgres)
-	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, "orders")
+	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, "orders.v1")
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return

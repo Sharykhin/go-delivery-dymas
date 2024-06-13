@@ -91,7 +91,7 @@ func (r OrderValidationMessage) Serialize(w io.Writer) error {
 }
 
 func (r OrderValidationMessage) Schema() string {
-	return "{\"fields\":[{\"logicalType\":\"UUID\",\"name\":\"order_id\",\"type\":\"string\"},{\"name\":\"service_name\",\"type\":\"string\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"timestamp-millis\",\"type\":\"long\"}},{\"name\":\"is_successful\",\"type\":\"boolean\"},{\"name\":\"Payload\",\"type\":{\"fields\":[{\"default\":\"null\",\"logicalType\":\"UUID\",\"name\":\"courier_id\",\"type\":[\"string\",\"null\"]}],\"name\":\"PayloadMessageValidation\",\"type\":\"record\"}}],\"name\":\"OrderValidationMessage\",\"type\":\"record\"}"
+	return "{\"fields\":[{\"logicalType\":\"UUID\",\"name\":\"order_id\",\"type\":\"string\"},{\"name\":\"service_name\",\"type\":\"string\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"timestamp-millis\",\"type\":\"long\"}},{\"name\":\"is_successful\",\"type\":\"boolean\"},{\"name\":\"Payload\",\"type\":{\"fields\":[{\"name\":\"courier_id\",\"type\":[{\"logicalType\":\"uuid\",\"type\":\"string\"},\"null\"]}],\"name\":\"PayloadMessageValidation\",\"type\":\"record\"}}],\"name\":\"OrderValidationMessage\",\"type\":\"record\"}"
 }
 
 func (r OrderValidationMessage) SchemaName() string {
