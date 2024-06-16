@@ -63,7 +63,7 @@ type OrderRepository interface {
 type OrderService interface {
 	CreateOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
-	ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload OrderValidationPayload) error
+	ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload *OrderValidationPayload) error
 }
 
 // CheckValidation checks validation for all services after that we change status order if order pass validation
@@ -98,7 +98,7 @@ func (s *OrderServiceManager) CreateOrder(ctx context.Context, order *Order) (*O
 }
 
 // ValidateOrderForService updates order status and creates or saves order validation
-func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload OrderValidationPayload) error {
+func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload *OrderValidationPayload) error {
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
 	if err != nil {
 		return fmt.Errorf("failed to get order: %w", err)

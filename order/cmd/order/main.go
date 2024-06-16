@@ -88,7 +88,7 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 func runOrderConsumer(ctx context.Context, orderService domain.OrderService, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
 	avroOrderMessageValidation := avro.NewOrderValidationMessage()
-	orderConsumer := kafka.NewOrderConsumerValidation(orderService, avroOrderMessageValidation)
+	orderConsumer := kafka.NewOrderConsumerValidation(orderService, &avroOrderMessageValidation)
 	consumer, err := pkgkafka.NewConsumer(
 		orderConsumer,
 		config.KafkaAddress,

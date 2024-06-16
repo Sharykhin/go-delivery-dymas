@@ -12,12 +12,12 @@ import (
 
 type CourierLocationConsumer struct {
 	courierLocationRepository domain.CourierLocationRepositoryInterface
-	latestCourierLocation     avro.LatestCourierLocation
+	latestCourierLocation     *avro.LatestCourierLocation
 }
 
 func NewCourierLocationConsumer(
 	courierLocationRepository domain.CourierLocationRepositoryInterface,
-	latestCourierLocation avro.LatestCourierLocation,
+	latestCourierLocation *avro.LatestCourierLocation,
 ) *CourierLocationConsumer {
 	courierLocationConsumer := &CourierLocationConsumer{
 		courierLocationRepository: courierLocationRepository,

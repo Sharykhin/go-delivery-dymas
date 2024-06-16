@@ -15,6 +15,7 @@ type CachedSchemaRegistryClient struct {
 	schemaIdCacheLock    sync.RWMutex
 }
 
+// NewCachedSchemaRegistryClient creates SchemaRegistryClient with cache
 func NewCachedSchemaRegistryClient(connect []string) *CachedSchemaRegistryClient {
 	SchemaRegistryClient := NewSchemaRegistryClient(connect)
 	return &CachedSchemaRegistryClient{SchemaRegistryClient: SchemaRegistryClient, schemaCache: make(map[int]*goavro.Codec), schemaIdCache: make(map[string]int)}

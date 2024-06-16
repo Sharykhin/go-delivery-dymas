@@ -29,7 +29,7 @@ func main() {
 	defer client.Close()
 	repo := postgres.NewCourierLocationRepository(client)
 	latestCourierLocation := avro.NewLatestCourierLocation()
-	courierLocationConsumer := kafka.NewCourierLocationConsumer(repo, latestCourierLocation)
+	courierLocationConsumer := kafka.NewCourierLocationConsumer(repo, &latestCourierLocation)
 	consumer, err := pkgkafka.NewConsumer(
 		courierLocationConsumer,
 		config.KafkaAddress,

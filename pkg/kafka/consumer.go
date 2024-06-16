@@ -29,7 +29,7 @@ type Consumer struct {
 	jsonMessageHandler   JSONMessageHandler
 	ready                chan bool
 	consumerGroup        sarama.ConsumerGroup
-	schemaRegistryClient *SchemaRegistryClient
+	schemaRegistryClient *CachedSchemaRegistryClient
 }
 
 // NewConsumer Create new Consumer with specify consumer group
@@ -73,7 +73,7 @@ func NewConsumer(
 	if err != nil {
 		return nil, fmt.Errorf("failed to create courier location consumer: %w", err)
 	}
-	schemaRegistryClient := NewSchemaRegistryClient(kafkaSchemaRegistryAddress)
+	schemaRegistryClient := NewCachedSchemaRegistryClient(kafkaSchemaRegistryAddress)
 	return &Consumer{
 		consumerGroup:        consumerGroup,
 		keepRunning:          true,

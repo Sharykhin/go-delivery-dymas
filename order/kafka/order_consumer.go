@@ -13,7 +13,7 @@ import (
 // OrderConsumerValidation consumes message order validation from kafka
 type OrderConsumerValidation struct {
 	orderService           domain.OrderService
-	orderValidationMessage avro.OrderValidationMessage
+	orderValidationMessage *avro.OrderValidationMessage
 }
 
 // OrderMessageValidation sends in third system for service information about order assign.
@@ -27,7 +27,7 @@ type OrderMessageValidation struct {
 // NewOrderConsumerValidation creates order validation consumer
 func NewOrderConsumerValidation(
 	orderService domain.OrderService,
-	orderValidationMessage avro.OrderValidationMessage,
+	orderValidationMessage *avro.OrderValidationMessage,
 ) *OrderConsumerValidation {
 	orderConsumer := &OrderConsumerValidation{
 		orderService:           orderService,
@@ -45,14 +45,14 @@ func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx co
 		return nil
 	}
 
-	payload := domain.OrderValidationPayload{
+	orderValidationPayload := domain.OrderValidationPayload{
 		CourierID: orderConsumerValidation.orderValidationMessage.Payload.Courier_id.String,
 	}
 	err := orderConsumerValidation.orderService.ValidateOrderForService(
 		ctx,
 		orderConsumerValidation.orderValidationMessage.Service_name,
 		orderConsumerValidation.orderValidationMessage.Order_id,
-		payload,
+		&orderValidationPayload,
 	)
 
 	if err != nil {
