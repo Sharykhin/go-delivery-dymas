@@ -11,8 +11,7 @@ import (
 
 // OrderPublisher publisher for kafka
 type OrderPublisher struct {
-	publisher    *pkgkafka.Publisher
-	orderMessage *avro.OrderMessage
+	publisher *pkgkafka.Publisher
 }
 
 // OrderPayload uses for embedding order id and phone customer
@@ -27,10 +26,9 @@ type OrderMessage struct {
 }
 
 // NewOrderPublisher creates new publisher and init
-func NewOrderPublisher(publisher *pkgkafka.Publisher, orderMessage *avro.OrderMessage) *OrderPublisher {
+func NewOrderPublisher(publisher *pkgkafka.Publisher) *OrderPublisher {
 	orderPublisher := OrderPublisher{
-		publisher:    publisher,
-		orderMessage: orderMessage,
+		publisher: publisher,
 	}
 
 	return &orderPublisher
@@ -38,10 +36,11 @@ func NewOrderPublisher(publisher *pkgkafka.Publisher, orderMessage *avro.OrderMe
 
 // PublishOrder sends order message in json format in Kafka.
 func (orderPublisher *OrderPublisher) PublishOrder(ctx context.Context, order *domain.Order, event string) error {
-	orderPublisher.orderMessage.Payload.Order_id = order.ID
-	orderPublisher.orderMessage.Event = event
-	message, err := orderPublisher.orderMessage.MarshalJSON()
-	schema := orderPublisher.orderMessage.Schema()
+	orderMessage := avro.NewOrderMessage()
+	orderMessage.Payload.Order_id = order.ID
+	orderMessage.Event = event
+	message, err := orderMessage.MarshalJSON()
+	schema := orderMessage.Schema()
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal order before sending Kafka event: %w", err)

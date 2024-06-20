@@ -10,7 +10,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
@@ -47,8 +46,8 @@ func main() {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
-	orderMessage := avro.NewOrderMessage()
-	orderPublisher := kafka.NewOrderPublisher(publisher, &orderMessage)
+
+	orderPublisher := kafka.NewOrderPublisher(publisher)
 	orderServiceManager := domain.NewOrderServiceManager(orderRepo, orderPublisher)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -87,8 +86,7 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 
 func runOrderConsumer(ctx context.Context, orderService domain.OrderService, wg *sync.WaitGroup, config env.Config) {
 	defer wg.Done()
-	avroOrderMessageValidation := avro.NewOrderValidationMessage()
-	orderConsumer := kafka.NewOrderConsumerValidation(orderService, &avroOrderMessageValidation)
+	orderConsumer := kafka.NewOrderConsumerValidation(orderService)
 	consumer, err := pkgkafka.NewConsumer(
 		orderConsumer,
 		config.KafkaAddress,

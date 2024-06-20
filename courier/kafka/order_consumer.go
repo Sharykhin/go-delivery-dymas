@@ -15,7 +15,6 @@ const OrderTopic = "orders.v1"
 // OrderConsumer gets order from kafka and apply order to courier and send order message validations
 type OrderConsumer struct {
 	courierService domain.CourierService
-	orderMessage   *avro.OrderMessage
 }
 
 // OrderPayload  needs for order message
@@ -32,11 +31,9 @@ type OrderMessage struct {
 // NewOrderConsumer creates and init order consumer this consumer consume message from kafka
 func NewOrderConsumer(
 	courierService domain.CourierService,
-	orderMessage *avro.OrderMessage,
 ) *OrderConsumer {
 	courierConsumer := &OrderConsumer{
 		courierService: courierService,
-		orderMessage:   orderMessage,
 	}
 
 	return courierConsumer
@@ -44,17 +41,18 @@ func NewOrderConsumer(
 
 // HandleJSONMessage Handle kafka message in json format
 func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, message []byte) error {
-	if err := orderConsumer.orderMessage.UnmarshalJSON(message); err != nil {
+	orderMessage := avro.NewOrderMessage()
+	if err := orderMessage.UnmarshalJSON(message); err != nil {
 		log.Printf("failed to unmarshal Kafka message into courier order message struct: %v\n", err)
 
 		return nil
 	}
 
-	if orderConsumer.orderMessage.Event == "updated" {
+	if orderMessage.Event == "updated" {
 		return nil
 	}
 
-	err := orderConsumer.courierService.AssignOrderToCourier(ctx, orderConsumer.orderMessage.Payload.Order_id)
+	err := orderConsumer.courierService.AssignOrderToCourier(ctx, orderMessage.Payload.Order_id)
 	if err != nil {
 		return fmt.Errorf("can not assign order to courier: %w", err)
 	}

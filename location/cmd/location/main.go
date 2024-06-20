@@ -16,7 +16,6 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
-	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	"github.com/Sharykhin/go-delivery-dymas/location/domain"
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
 	couriergrpc "github.com/Sharykhin/go-delivery-dymas/location/grpc"
@@ -48,15 +47,14 @@ func main() {
 
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
-	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, "latest_position_courier.v1")
+	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, kafka.LatestPositionCourierTopic)
 
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
 
-	latestCourierLocation := avro.NewLatestCourierLocation()
-	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher, &latestCourierLocation)
+	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher)
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
 	defer redisClient.Close()
 

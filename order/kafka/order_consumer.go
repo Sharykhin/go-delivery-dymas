@@ -12,8 +12,7 @@ import (
 
 // OrderConsumerValidation consumes message order validation from kafka
 type OrderConsumerValidation struct {
-	orderService           domain.OrderService
-	orderValidationMessage *avro.OrderValidationMessage
+	orderService domain.OrderService
 }
 
 // OrderMessageValidation sends in third system for service information about order assign.
@@ -27,11 +26,9 @@ type OrderMessageValidation struct {
 // NewOrderConsumerValidation creates order validation consumer
 func NewOrderConsumerValidation(
 	orderService domain.OrderService,
-	orderValidationMessage *avro.OrderValidationMessage,
 ) *OrderConsumerValidation {
 	orderConsumer := &OrderConsumerValidation{
-		orderService:           orderService,
-		orderValidationMessage: orderValidationMessage,
+		orderService: orderService,
 	}
 
 	return orderConsumer
@@ -39,19 +36,20 @@ func NewOrderConsumerValidation(
 
 // HandleJSONMessage Handle kafka message in json format
 func (orderConsumerValidation *OrderConsumerValidation) HandleJSONMessage(ctx context.Context, message []byte) error {
-	if err := orderConsumerValidation.orderValidationMessage.UnmarshalJSON(message); err != nil {
+	orderValidationMessage := avro.NewOrderValidationMessage()
+	if err := orderValidationMessage.UnmarshalJSON(message); err != nil {
 		log.Printf("failed to unmarshal Kafka message into order validation struct: %v\n", err)
 
 		return nil
 	}
 
 	orderValidationPayload := domain.OrderValidationPayload{
-		CourierID: orderConsumerValidation.orderValidationMessage.Payload.Courier_id.String,
+		CourierID: orderValidationMessage.Payload.Courier_id.String,
 	}
 	err := orderConsumerValidation.orderService.ValidateOrderForService(
 		ctx,
-		orderConsumerValidation.orderValidationMessage.Service_name,
-		orderConsumerValidation.orderValidationMessage.Order_id,
+		orderValidationMessage.Service_name,
+		orderValidationMessage.Order_id,
 		&orderValidationPayload,
 	)
 

@@ -1,3 +1,4 @@
+//Schema for SchemaRegistry for kafka  it describes schema Order validation message
 {
   "type": "record",
   "name": "OrderValidationMessage",

@@ -9,12 +9,11 @@ import (
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
-const OrderTopicValidation = "order_validations"
+const OrderTopicValidation = "order_validations.v1"
 
 // OrderValidationPublisher publisher for kafka
 type OrderValidationPublisher struct {
-	publisher              *pkgkafka.Publisher
-	orderValidationMessage *avro.OrderValidationMessage
+	publisher *pkgkafka.Publisher
 }
 
 // CourierPayload need for send order message validation in kafka
@@ -31,10 +30,9 @@ type OrderMessageValidation struct {
 }
 
 // NewOrderValidationPublisher creates new publisher and init
-func NewOrderValidationPublisher(publisher *pkgkafka.Publisher, orderValidationMessage *avro.OrderValidationMessage) *OrderValidationPublisher {
+func NewOrderValidationPublisher(publisher *pkgkafka.Publisher) *OrderValidationPublisher {
 	orderValidationPublisher := OrderValidationPublisher{
-		publisher:              publisher,
-		orderValidationMessage: orderValidationMessage,
+		publisher: publisher,
 	}
 
 	return &orderValidationPublisher
@@ -42,19 +40,20 @@ func NewOrderValidationPublisher(publisher *pkgkafka.Publisher, orderValidationM
 
 // PublishValidationResult sends order message in json format in Kafka.
 func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx context.Context, courierAssigment *domain.CourierAssignment) error {
-	orderPublisher.orderValidationMessage.Order_id = courierAssigment.OrderID
-	orderPublisher.orderValidationMessage.Service_name = "courier"
-	orderPublisher.orderValidationMessage.Is_successful = true
-	orderPublisher.orderValidationMessage.Payload.Courier_id.String = courierAssigment.CourierID
-	orderPublisher.orderValidationMessage.Payload.Courier_id.Null = nil
+	OrderValidationMessage := avro.NewOrderValidationMessage()
+	OrderValidationMessage.Order_id = courierAssigment.OrderID
+	OrderValidationMessage.Service_name = "courier"
+	OrderValidationMessage.Is_successful = true
+	OrderValidationMessage.Payload.Courier_id.String = courierAssigment.CourierID
+	OrderValidationMessage.Payload.Courier_id.Null = nil
 
-	message, err := orderPublisher.orderValidationMessage.MarshalJSON()
+	message, err := OrderValidationMessage.MarshalJSON()
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal order message validation before sending Kafka event: %w", err)
 	}
 
-	schema := orderPublisher.orderValidationMessage.Schema()
+	schema := OrderValidationMessage.Schema()
 	err = orderPublisher.publisher.PublishMessage(ctx, message, []byte(courierAssigment.OrderID), schema)
 
 	if err != nil {

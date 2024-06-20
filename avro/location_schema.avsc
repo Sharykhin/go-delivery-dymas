@@ -1,3 +1,4 @@
+//Schema for SchemaRegistry for kafka  it describes schema latest position courier
 {
     "type": "record",
     "name": "LatestCourierLocation",

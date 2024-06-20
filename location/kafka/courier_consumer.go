@@ -12,16 +12,13 @@ import (
 
 type CourierLocationConsumer struct {
 	courierLocationRepository domain.CourierLocationRepositoryInterface
-	latestCourierLocation     *avro.LatestCourierLocation
 }
 
 func NewCourierLocationConsumer(
 	courierLocationRepository domain.CourierLocationRepositoryInterface,
-	latestCourierLocation *avro.LatestCourierLocation,
 ) *CourierLocationConsumer {
 	courierLocationConsumer := &CourierLocationConsumer{
 		courierLocationRepository: courierLocationRepository,
-		latestCourierLocation:     latestCourierLocation,
 	}
 
 	return courierLocationConsumer
@@ -29,18 +26,19 @@ func NewCourierLocationConsumer(
 
 // HandleJSONMessage Handle kafka message in json format
 func (courierLocationConsumer *CourierLocationConsumer) HandleJSONMessage(ctx context.Context, message []byte) error {
+	latestCourierLocation := avro.NewLatestCourierLocation()
 	var courierLocation domain.CourierLocation
-	if err := courierLocationConsumer.latestCourierLocation.UnmarshalJSON(message); err != nil {
+	if err := latestCourierLocation.UnmarshalJSON(message); err != nil {
 		log.Printf("failed to unmarshal Kafka message into courier location struct: %v\n", err)
 
 		return nil
 	}
 
-	time := time.UnixMilli(courierLocationConsumer.latestCourierLocation.Created_at)
+	time := time.UnixMilli(latestCourierLocation.Created_at)
 	courierLocation = domain.CourierLocation{
-		CourierID: courierLocationConsumer.latestCourierLocation.Courier_id,
-		Latitude:  courierLocationConsumer.latestCourierLocation.Latitude,
-		Longitude: courierLocationConsumer.latestCourierLocation.Longitude,
+		CourierID: latestCourierLocation.Courier_id,
+		Latitude:  latestCourierLocation.Latitude,
+		Longitude: latestCourierLocation.Longitude,
 		CreatedAt: time,
 	}
 

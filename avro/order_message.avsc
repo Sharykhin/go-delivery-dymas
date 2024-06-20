@@ -1,3 +1,4 @@
+//Schema for SchemaRegistry for kafka  it describes schema Order message
 {
   "type": "record",
   "name": "OrderMessage",

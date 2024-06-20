@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Sharykhin/go-delivery-dymas/avro/v1"
 	_ "github.com/lib/pq"
 
 	"github.com/Sharykhin/go-delivery-dymas/location/env"
@@ -28,8 +27,7 @@ func main() {
 	}
 	defer client.Close()
 	repo := postgres.NewCourierLocationRepository(client)
-	latestCourierLocation := avro.NewLatestCourierLocation()
-	courierLocationConsumer := kafka.NewCourierLocationConsumer(repo, &latestCourierLocation)
+	courierLocationConsumer := kafka.NewCourierLocationConsumer(repo)
 	consumer, err := pkgkafka.NewConsumer(
 		courierLocationConsumer,
 		config.KafkaAddress,
