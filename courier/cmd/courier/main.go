@@ -31,7 +31,7 @@ func main() {
 		return
 	}
 
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DBUser, config.DBPassword, config.DBName)
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresDB)
 	clientPostgres, err := sql.Open("postgres", connPostgres)
 
 	if err != nil {

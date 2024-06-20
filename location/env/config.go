@@ -15,9 +15,9 @@ type Config struct {
 	Assignor                                     string `env:"KAFKA_CONSUMER_ASSIGNOR" envDefault:"range"`
 	Oldest                                       bool   `env:"KAFKA_CONSUMER_OLDEST" envDefault:"true"`
 	Verbose                                      bool   `env:"KAFKA_CONSUMER_VERBOSE" envDefault:"false"`
-	DbName                                       string `env:"POSTGRES_DB" envDefault:"courier_location"`
-	DbPassword                                   string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
-	DbUser                                       string `env:"POSTGRES_USER" envDefault:"citizix_user"`
+	PostgresDB                                   string `env:"POSTGRES_DB" envDefault:"courier_location"`
+	PostgresPassword                             string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
+	PostgresUser                                 string `env:"POSTGRES_USER" envDefault:"citizix_user"`
 	CourierLocationQueueSizeTasks                int    `env:"COURIER_LOCATION_QUEUE_SIZE_TASKS" envDefault:"10000"`
 	CourierLocationWorkerPoolCount               int    `env:"COURIER_LOCATION_WORKER_POOL_COUNT" envDefault:"10"`
 	CourierLocationWorkerTimeoutGracefulShutdown int    `env:"COURIER_LOCATION_WORKER_TIMEOUT_GRACEFUL_SHUTDOWN" envDefault:"30"`

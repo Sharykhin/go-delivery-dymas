@@ -6,9 +6,9 @@ import (
 
 // Config provides values env
 type Config struct {
-	DBName                     string `env:"POSTGRES_DB" envDefault:"courier"`
-	DBPassword                 string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
-	DBUser                     string `env:"POSTGRES_USER" envDefault:"citizix_user"`
+	PostgresDB                 string `env:"POSTGRES_DB" envDefault:"courier"`
+	PostgresPassword           string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
+	PostgresUser               string `env:"POSTGRES_USER" envDefault:"citizix_user"`
 	KafkaSchemaRegistryAddress string `env:"KAFKA_SCHEMA_REGISTRY_ADDRESS" envDefault:"http://schemaregistry:8085"`
 	PortServerCourier          string `env:"PORT_SERVER_COURIER" envDefault:"9667"`
 	CourierGrpcAddress         string `env:"COURIER_GRPC_ADDRESS" envDefault:":9666"`
