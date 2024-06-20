@@ -20,7 +20,7 @@ func main() {
 		log.Panicf("failed to parse variable env: %v\n", err)
 	}
 	ctx := context.Background()
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.PostrgresUser, config.PostrgresPassword, config.PostrgresDB)
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresDB)
 	client, err := sql.Open("postgres", connPostgres)
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
