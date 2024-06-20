@@ -57,7 +57,7 @@ func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx cont
 	err = orderPublisher.publisher.PublishMessage(ctx, message, []byte(courierAssigment.OrderID), schema)
 
 	if err != nil {
-		return fmt.Errorf("failed to publish order event: %w", err)
+		return fmt.Errorf("failed to publish order message validation event: %w", err)
 	}
 
 	return nil
