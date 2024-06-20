@@ -10,6 +10,8 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 )
 
+const OrderValidationsTopic = "order_validations.v1"
+
 // OrderConsumerValidation consumes message order validation from kafka
 type OrderConsumerValidation struct {
 	orderService domain.OrderService

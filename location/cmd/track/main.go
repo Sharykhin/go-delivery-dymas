@@ -34,7 +34,7 @@ func main() {
 		config.Verbose,
 		config.Oldest,
 		config.Assignor,
-		"latest_position_courier.v1",
+		kafka.LatestPositionCourierTopic,
 		[]string{config.KafkaSchemaRegistryAddress},
 	)
 

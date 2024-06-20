@@ -9,6 +9,8 @@ import (
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 )
 
+const OrderTopic = "orders.v1"
+
 // OrderPublisher publisher for kafka
 type OrderPublisher struct {
 	publisher *pkgkafka.Publisher
