@@ -1,0 +1,11 @@
+{
+    "type": "record",
+    "name": "LatestCourierLocationMessage",
+    "doc": "this event describes the state of the order when it is created or updated, for example undergoing validation. The moment an order is created can be listened to by other services, for example the courier service, in order to assign a courier, the order identifier is used as a key for the partition in order to save the entire life cycle in the correct sequence",
+    "fields": [
+        {"name": "courier_id", "type": "string"},
+        {"name": "latitude", "type": "double"},
+        {"name": "longitude", "type": "double"},
+        {"name": "created_at", "type": {"type":"long", "logicalType":"timestamp-millis"}}
+    ]
+}

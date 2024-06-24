@@ -26,19 +26,19 @@ func NewCourierLocationConsumer(
 
 // HandleJSONMessage Handle kafka message in json format
 func (courierLocationConsumer *CourierLocationConsumer) HandleJSONMessage(ctx context.Context, message []byte) error {
-	latestCourierLocation := avro.NewLatestCourierLocation()
+	latestCourierLocationMessage := avro.NewLatestCourierLocationMessage()
 	var courierLocation domain.CourierLocation
-	if err := latestCourierLocation.UnmarshalJSON(message); err != nil {
+	if err := latestCourierLocationMessage.UnmarshalJSON(message); err != nil {
 		log.Printf("failed to unmarshal Kafka message into courier location struct: %v\n", err)
 
 		return nil
 	}
 
-	time := time.UnixMilli(latestCourierLocation.Created_at)
+	time := time.UnixMilli(latestCourierLocationMessage.Created_at)
 	courierLocation = domain.CourierLocation{
-		CourierID: latestCourierLocation.Courier_id,
-		Latitude:  latestCourierLocation.Latitude,
-		Longitude: latestCourierLocation.Longitude,
+		CourierID: latestCourierLocationMessage.Courier_id,
+		Latitude:  latestCourierLocationMessage.Latitude,
+		Longitude: latestCourierLocationMessage.Longitude,
 		CreatedAt: time,
 	}
 

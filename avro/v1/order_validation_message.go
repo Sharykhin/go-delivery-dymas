@@ -17,6 +17,7 @@ import (
 
 var _ = fmt.Printf
 
+// this event describes the state of the order when it is created or updated, for example undergoing validation. The moment an order is created can be listened to by other services, for example the courier service, in order to assign a courier, the order identifier is used as a key for the partition in order to save the entire life cycle in the correct sequence
 type OrderValidationMessage struct {
 	Order_id string `json:"order_id"`
 
@@ -91,7 +92,7 @@ func (r OrderValidationMessage) Serialize(w io.Writer) error {
 }
 
 func (r OrderValidationMessage) Schema() string {
-	return "{\"fields\":[{\"logicalType\":\"UUID\",\"name\":\"order_id\",\"type\":\"string\"},{\"name\":\"service_name\",\"type\":\"string\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"timestamp-millis\",\"type\":\"long\"}},{\"name\":\"is_successful\",\"type\":\"boolean\"},{\"name\":\"Payload\",\"type\":{\"fields\":[{\"name\":\"courier_id\",\"type\":[{\"logicalType\":\"uuid\",\"type\":\"string\"},\"null\"]}],\"name\":\"PayloadMessageValidation\",\"type\":\"record\"}}],\"name\":\"OrderValidationMessage\",\"type\":\"record\"}"
+	return "{\"doc\":\"this event describes the state of the order when it is created or updated, for example undergoing validation. The moment an order is created can be listened to by other services, for example the courier service, in order to assign a courier, the order identifier is used as a key for the partition in order to save the entire life cycle in the correct sequence\",\"fields\":[{\"logicalType\":\"UUID\",\"name\":\"order_id\",\"type\":\"string\"},{\"name\":\"service_name\",\"type\":\"string\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"timestamp-millis\",\"type\":\"long\"}},{\"name\":\"is_successful\",\"type\":\"boolean\"},{\"name\":\"Payload\",\"type\":{\"fields\":[{\"name\":\"courier_id\",\"type\":[{\"logicalType\":\"uuid\",\"type\":\"string\"},\"null\"]}],\"name\":\"PayloadMessageValidation\",\"type\":\"record\"}}],\"name\":\"OrderValidationMessage\",\"type\":\"record\"}"
 }
 
 func (r OrderValidationMessage) SchemaName() string {

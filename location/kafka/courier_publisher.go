@@ -25,7 +25,7 @@ func NewCourierLocationPublisher(publisher *pkgkafka.Publisher) *CourierLocation
 
 // PublishLatestCourierLocation sends latest courier position message in json format in Kafka.
 func (courierPublisher *CourierLocationLatestPublisher) PublishLatestCourierLocation(ctx context.Context, courierLocation *domain.CourierLocation) error {
-	latestCourierLocation := avro.NewLatestCourierLocation()
+	latestCourierLocation := avro.NewLatestCourierLocationMessage()
 	latestCourierLocation.Courier_id = courierLocation.CourierID
 	latestCourierLocation.Longitude = courierLocation.Longitude
 	latestCourierLocation.Latitude = courierLocation.Latitude
