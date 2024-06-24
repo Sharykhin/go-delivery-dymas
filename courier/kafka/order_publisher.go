@@ -40,20 +40,20 @@ func NewOrderValidationPublisher(publisher *pkgkafka.Publisher) *OrderValidation
 
 // PublishValidationResult sends order message in json format in Kafka.
 func (orderPublisher *OrderValidationPublisher) PublishValidationResult(ctx context.Context, courierAssigment *domain.CourierAssignment) error {
-	OrderValidationMessage := avro.NewOrderValidationMessage()
-	OrderValidationMessage.Order_id = courierAssigment.OrderID
-	OrderValidationMessage.Service_name = "courier"
-	OrderValidationMessage.Is_successful = true
-	OrderValidationMessage.Payload.Courier_id.String = courierAssigment.CourierID
-	OrderValidationMessage.Payload.Courier_id.Null = nil
+	orderValidationMessage := avro.NewOrderValidationMessage()
+	orderValidationMessage.Order_id = courierAssigment.OrderID
+	orderValidationMessage.Service_name = "courier"
+	orderValidationMessage.Is_successful = true
+	orderValidationMessage.Payload.Courier_id.String = courierAssigment.CourierID
+	orderValidationMessage.Payload.Courier_id.Null = nil
 
-	message, err := OrderValidationMessage.MarshalJSON()
+	message, err := orderValidationMessage.MarshalJSON()
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal order message validation before sending Kafka event: %w", err)
 	}
 
-	schema := OrderValidationMessage.Schema()
+	schema := orderValidationMessage.Schema()
 	err = orderPublisher.publisher.PublishMessage(ctx, message, []byte(courierAssigment.OrderID), schema)
 
 	if err != nil {
