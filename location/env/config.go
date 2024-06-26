@@ -7,7 +7,7 @@ import (
 // Config Provides values env.
 type Config struct {
 	KafkaAddress                                 string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
-	KafkaSchemaRegistryAddress                   string `env:"KAFKA_SCHEMA_REGISTRY_ADDRESS" envDefault:"http://schemaregistry:8085"`
+	KafkaSchemaRegistryAddress                   string `env:"KAFKA_SCHEMA_REGISTRY_ADDRESS" envDefault:"http://localhost:8085"`
 	CourierGrpcAddress                           string `env:"COURIER_GRPC_ADDRESS" envDefault:":9666"`
 	RedisAddress                                 string `env:"REDIS_ADDRESS" envDefault:"localhost:6379"`
 	PortServer                                   string `env:"PORT_SERVER" envDefault:"8081"`

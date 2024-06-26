@@ -9,7 +9,7 @@ type Config struct {
 	PostgresDB                 string `env:"POSTGRES_DB" envDefault:"order"`
 	PostgresPassword           string `env:"POSTGRES_PASSWORD" envDefault:"S3cret"`
 	PostgresUser               string `env:"POSTGRES_USER" envDefault:"citizix_user"`
-	KafkaSchemaRegistryAddress string `env:"KAFKA_SCHEMA_REGISTRY_ADDRESS" envDefault:"http://schemaregistry:8085"`
+	KafkaSchemaRegistryAddress string `env:"KAFKA_SCHEMA_REGISTRY_ADDRESS" envDefault:"http://localhost:8085"`
 	PortServerOrder            string `env:"PORT_SERVER_ORDER" envDefault:"6661"`
 	CourierGrpcAddress         string `env:"COURIER_GRPC_ADDRESS" envDefault:":5555"`
 	KafkaAddress               string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
