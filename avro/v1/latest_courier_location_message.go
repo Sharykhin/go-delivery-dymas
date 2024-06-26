@@ -3,7 +3,7 @@
  * SOURCE:
  *     location_message_schema.avsc
  */
-package v1
+package avro
 
 import (
 	"encoding/json"
@@ -17,7 +17,7 @@ import (
 
 var _ = fmt.Printf
 
-// This event desc
+// this event describes latest coords courier and we can track movement courier.
 type LatestCourierLocationMessage struct {
 	Courier_id string `json:"courier_id"`
 
@@ -84,7 +84,7 @@ func (r LatestCourierLocationMessage) Serialize(w io.Writer) error {
 }
 
 func (r LatestCourierLocationMessage) Schema() string {
-	return "{\"doc\":\"This event desc\",\"fields\":[{\"name\":\"courier_id\",\"type\":\"string\"},{\"name\":\"latitude\",\"type\":\"double\"},{\"name\":\"longitude\",\"type\":\"double\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"timestamp-millis\",\"type\":\"long\"}}],\"name\":\"LatestCourierLocationMessage\",\"type\":\"record\"}"
+	return "{\"doc\":\"this event describes latest coords courier and we can track movement courier.\",\"fields\":[{\"name\":\"courier_id\",\"type\":\"string\"},{\"name\":\"latitude\",\"type\":\"double\"},{\"name\":\"longitude\",\"type\":\"double\"},{\"name\":\"created_at\",\"type\":{\"logicalType\":\"timestamp-millis\",\"type\":\"long\"}}],\"name\":\"LatestCourierLocationMessage\",\"type\":\"record\"}"
 }
 
 func (r LatestCourierLocationMessage) SchemaName() string {

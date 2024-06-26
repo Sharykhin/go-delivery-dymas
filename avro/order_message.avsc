@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "OrderMessage",
-  "doc": "this event describes latest coords courier and we can track movement courier.",
+  "doc": "this event describes the state of the order when it is created or updated, for example undergoing validation. The moment an order is created can be listened to by other services, for example the courier service, in order to assign a courier, the order identifier is used as a key for the partition in order to save the entire life cycle in the correct sequence",
   "fields": [
     {"name": "event", "type": "string"},
     {

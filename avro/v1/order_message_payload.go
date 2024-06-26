@@ -3,7 +3,7 @@
  * SOURCE:
  *     order_message.avsc
  */
-package v1
+package avro
 
 import (
 	"encoding/json"

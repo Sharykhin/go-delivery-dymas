@@ -3,7 +3,7 @@
  * SOURCE:
  *     order_message.avsc
  */
-package v1
+package avro
 
 import (
 	"encoding/json"
@@ -17,7 +17,7 @@ import (
 
 var _ = fmt.Printf
 
-// this event describes latest coords courier and we can track movement courier.
+// this event describes the state of the order when it is created or updated, for example undergoing validation. The moment an order is created can be listened to by other services, for example the courier service, in order to assign a courier, the order identifier is used as a key for the partition in order to save the entire life cycle in the correct sequence
 type OrderMessage struct {
 	Event string `json:"event"`
 
@@ -74,7 +74,7 @@ func (r OrderMessage) Serialize(w io.Writer) error {
 }
 
 func (r OrderMessage) Schema() string {
-	return "{\"doc\":\"this event describes latest coords courier and we can track movement courier.\",\"fields\":[{\"name\":\"event\",\"type\":\"string\"},{\"name\":\"Payload\",\"type\":{\"fields\":[{\"logicalType\":\"UUID\",\"name\":\"order_id\",\"type\":\"string\"}],\"name\":\"OrderMessagePayload\",\"type\":\"record\"}}],\"name\":\"OrderMessage\",\"type\":\"record\"}"
+	return "{\"doc\":\"this event describes the state of the order when it is created or updated, for example undergoing validation. The moment an order is created can be listened to by other services, for example the courier service, in order to assign a courier, the order identifier is used as a key for the partition in order to save the entire life cycle in the correct sequence\",\"fields\":[{\"name\":\"event\",\"type\":\"string\"},{\"name\":\"Payload\",\"type\":{\"fields\":[{\"logicalType\":\"UUID\",\"name\":\"order_id\",\"type\":\"string\"}],\"name\":\"OrderMessagePayload\",\"type\":\"record\"}}],\"name\":\"OrderMessage\",\"type\":\"record\"}"
 }
 
 func (r OrderMessage) SchemaName() string {

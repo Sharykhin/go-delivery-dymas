@@ -1,7 +1,7 @@
 {
     "type": "record",
     "name": "LatestCourierLocationMessage",
-    "doc": "This event desc",
+    "doc": "this event describes latest coords courier and we can track movement courier.",
     "fields": [
         {"name": "courier_id", "type": "string"},
         {"name": "latitude", "type": "double"},
