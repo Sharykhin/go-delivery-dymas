@@ -12,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	wp "github.com/Sharykhin/go-delivery-dymas/location/workerpool"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
@@ -24,6 +23,7 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/location/kafka"
 	"github.com/Sharykhin/go-delivery-dymas/location/postgres"
 	"github.com/Sharykhin/go-delivery-dymas/location/redis"
+	wp "github.com/Sharykhin/go-delivery-dymas/location/workerpool"
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 	pkgkafka "github.com/Sharykhin/go-delivery-dymas/pkg/kafka"
 	pb "github.com/Sharykhin/go-delivery-dymas/proto/generate/location/v1"
@@ -38,7 +38,7 @@ func main() {
 		return
 	}
 
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresDB)
 	clientPostgres, err := sql.Open("postgres", connPostgres)
 
 	if err != nil {
@@ -47,15 +47,15 @@ func main() {
 
 	defer clientPostgres.Close()
 	repoPostgres := postgres.NewCourierLocationRepository(clientPostgres)
-	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, "latest_position_courier")
+	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, kafka.LatestPositionCourierTopic)
 
 	if err != nil {
 		log.Printf("failed to create publisher: %v\n", err)
 		return
 	}
+
 	courierLocationPublisher := kafka.NewCourierLocationPublisher(publisher)
 	redisClient := redis.NewConnect(config.RedisAddress, config.Db)
-
 	defer redisClient.Close()
 
 	repoRedis := redis.NewCourierLocationRepository(redisClient)

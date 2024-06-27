@@ -20,7 +20,7 @@ func main() {
 		log.Panicf("failed to parse variable env: %v\n", err)
 	}
 	ctx := context.Background()
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DbUser, config.DbPassword, config.DbName)
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresDB)
 	client, err := sql.Open("postgres", connPostgres)
 	if err != nil {
 		log.Panicf("Error connection database: %v\n", err)
@@ -34,7 +34,8 @@ func main() {
 		config.Verbose,
 		config.Oldest,
 		config.Assignor,
-		"orders",
+		kafka.LatestPositionCourierTopic,
+		[]string{config.KafkaSchemaRegistryAddress},
 	)
 
 	if err != nil {

@@ -32,9 +32,11 @@ func TestValidateOrderForService(t *testing.T) {
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad425"}`)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad425",
+		}
 
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(err, qt.ErrorMatches, "failed to get order: fail get order from db")
 	})
@@ -57,46 +59,13 @@ func TestValidateOrderForService(t *testing.T) {
 
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad777",
+		}
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(err, qt.ErrorMatches, "failed to get order validation: test get fail order validation")
-	})
-
-	c.Run("fail unmarshal payload", func(c *qt.C) {
-		orderRepositoryMock := mock.NewOrderRepositoryMock(mc)
-
-		orderID := "23906828-0744-4a48-a2ca-d5d6d89ad555"
-
-		order := domain.Order{
-			ID: orderID,
-		}
-
-		orderRepositoryMock.GetOrderByIDMock.Expect(minimock.AnyContext, orderID).Return(&order, nil)
-
-		orderValidation := domain.OrderValidation{
-			OrderID: orderID,
-		}
-
-		orderRepositoryMock.GetOrderValidationByIDMock.Expect(minimock.AnyContext, orderID).
-			Return(&orderValidation, nil)
-
-		orderPublisherMock := mock.NewOrderPublisherMock(mc)
-
-		serviceName := "courier"
-		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
-
-		validationInfo := []byte(`ooooooo`)
-
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
-
-		c.Assert(
-			err,
-			qt.ErrorMatches,
-			"failed to unmarshal courier payload: invalid character 'o' looking for beginning of value",
-		)
 	})
 
 	c.Run("fail save order validation", func(c *qt.C) {
@@ -129,8 +98,11 @@ func TestValidateOrderForService(t *testing.T) {
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad777",
+		}
+
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(
 			err,
@@ -170,9 +142,11 @@ func TestValidateOrderForService(t *testing.T) {
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad777",
+		}
 
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(
 			err,
@@ -214,9 +188,11 @@ func TestValidateOrderForService(t *testing.T) {
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad777",
+		}
 
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(
 			err,
@@ -258,9 +234,11 @@ func TestValidateOrderForService(t *testing.T) {
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad777",
+		}
 
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(err, qt.ErrorMatches, "failed to order order in database during validation: fail update order")
 	})
@@ -301,9 +279,11 @@ func TestValidateOrderForService(t *testing.T) {
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad777",
+		}
 
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(err, qt.ErrorMatches, "failed to publish a order in the kafka: fail save order")
 	})
@@ -343,8 +323,11 @@ func TestValidateOrderForService(t *testing.T) {
 		serviceName := "courier"
 		orderServiceManager := domain.NewOrderServiceManager(orderRepositoryMock, orderPublisherMock)
 
-		validationInfo := []byte(`{"courier_id": "23906828-0744-4a48-a2ca-d5d6d89ad777"}`)
-		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, validationInfo)
+		orderValidationPayload := domain.OrderValidationPayload{
+			CourierID: "23906828-0744-4a48-a2ca-d5d6d89ad777",
+		}
+
+		err := orderServiceManager.ValidateOrderForService(minimock.AnyContext, serviceName, orderID, &orderValidationPayload)
 
 		c.Assert(err, qt.IsNil)
 	})

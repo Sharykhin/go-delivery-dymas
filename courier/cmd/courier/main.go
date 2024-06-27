@@ -31,7 +31,7 @@ func main() {
 		return
 	}
 
-	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.DBUser, config.DBPassword, config.DBName)
+	connPostgres := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresDB)
 	clientPostgres, err := sql.Open("postgres", connPostgres)
 
 	if err != nil {
@@ -48,7 +48,7 @@ func main() {
 	defer courierLocationGRPCConnection.Close()
 
 	courierRepository := postgres.NewCourierRepository(clientPostgres)
-	publisher, err := pkgkafka.NewPublisher(config.KafkaAddress, kafka.OrderTopicValidation)
+	publisher, err := pkgkafka.NewPublisher([]string{config.KafkaAddress}, []string{config.KafkaSchemaRegistryAddress}, kafka.OrderTopicValidation)
 	if err != nil {
 		log.Panicf("failed to create publisher: %v\n", err)
 	}
@@ -94,6 +94,7 @@ func runOrderConsumer(ctx context.Context, courierService domain.CourierService,
 		config.Oldest,
 		config.Assignor,
 		kafka.OrderTopic,
+		[]string{config.KafkaSchemaRegistryAddress},
 	)
 
 	if err != nil {

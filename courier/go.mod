@@ -1,11 +1,10 @@
 module github.com/Sharykhin/go-delivery-dymas/courier
 
-go 1.21.3
-
-toolchain go1.21.4
+go 1.22.2
 
 require (
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20231228063404-d287757e096e
+	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-playground/validator/v10 v10.16.0
@@ -16,6 +15,7 @@ require (
 
 require (
 	github.com/IBM/sarama v1.42.1 // indirect
+	github.com/actgardner/gogen-avro/v10 v10.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.4.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
@@ -39,6 +39,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/linkedin/goavro v2.1.0+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
@@ -48,4 +49,10 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+)
+
+replace (
+	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0 => ../avro
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0 => ../pkg
+	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7 => ../proto
 )

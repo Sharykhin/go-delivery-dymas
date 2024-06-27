@@ -1,10 +1,10 @@
 module github.com/Sharykhin/go-delivery-dymas/location
 
-go 1.21.3
+go 1.22.2
 
 require (
 	github.com/IBM/sarama v1.41.3
-	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240509122205-f72114a5ca95
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240529121557-44a8683d7dc6
 	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/frankban/quicktest v1.14.6
@@ -16,6 +16,8 @@ require (
 )
 
 require (
+	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134759-da8b07311f63 // indirect
+	github.com/actgardner/gogen-avro/v10 v10.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -41,6 +43,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/linkedin/goavro v2.1.0+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
@@ -51,4 +54,10 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+)
+
+replace (
+	github.com/Sharykhin/go-delivery-dymas/avro v0.0.0-20240528134759-da8b07311f63 => ../avro
+	github.com/Sharykhin/go-delivery-dymas/pkg v0.0.0-20240529121557-44a8683d7dc6 => ../pkg
+	github.com/Sharykhin/go-delivery-dymas/proto v0.0.0-20240314190505-43946d4d96f7 => ../proto
 )
