@@ -72,11 +72,11 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 	routes := map[string]pkghttp.Route{
 		"/orders": {
 			Handler: orderHandler.HandleOrderCreate,
-			Method:  "POST",
+			Method:  []string{"POST"},
 		},
 		orderURL: {
 			Handler: orderHandler.HandleGetByOrderID,
-			Method:  "GET",
+			Method:  []string{"GET"},
 		},
 	}
 
