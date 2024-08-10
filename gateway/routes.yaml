@@ -1,6 +1,6 @@
 routes:
     - route:
-      path: "/couriers/{courier_id}/location"
+      path: "/courier/{courier_id}/location"
       methods:
         - "POST"
       host_redirect: "http://localhost:8081"
@@ -11,7 +11,7 @@ routes:
     - route:
       path: "/couriers/{courier_id}"
       methods:
-        - "POST"
+        - "GET"
       host_redirect: "http://localhost:9667"
       parameters:
         - name: "courier_id"
