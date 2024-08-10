@@ -5,33 +5,20 @@ import (
 	nethttp "net/http"
 	"net/http/httputil"
 	neturl "net/url"
-	"regexp"
 )
 
-type GateWayProxyHandler struct {
-	routes map[string]string
-}
+// NewGateWayProxyHandler create proxy for redirect on services use host with port redirect from config routes
+func NewGateWayProxyHandler(hostRedirect string) func(w nethttp.ResponseWriter, r *nethttp.Request) {
+	return func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		urlService, err := neturl.Parse(hostRedirect)
+		fmt.Println(urlService)
+		if err != nil {
+			w.WriteHeader(nethttp.StatusBadRequest)
 
-func NewGateWayProxyHandler(routes map[string]string) *GateWayProxyHandler {
-	return &GateWayProxyHandler{
-		routes: routes,
-	}
-}
-
-func (gph *GateWayProxyHandler) RequestServiceHandler(w nethttp.ResponseWriter, r *nethttp.Request) {
-	for url, host := range gph.routes {
-		isMatch, _ := regexp.MatchString("^"+url+"$", r.RequestURI)
-		if isMatch {
-			urlService, err := neturl.Parse(host)
-			fmt.Println(urlService)
-			if err != nil {
-				w.WriteHeader(nethttp.StatusBadRequest)
-
-				return
-			}
-			proxy := httputil.NewSingleHostReverseProxy(urlService)
-			proxy.ServeHTTP(w, r)
+			return
 		}
+		proxy := httputil.NewSingleHostReverseProxy(urlService)
+		proxy.ServeHTTP(w, r)
+		fmt.Print(r.RequestURI)
 	}
-	fmt.Print(r.RequestURI)
 }
