@@ -14,7 +14,7 @@ func UuidMiddleware(paramName string) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			queryParams := mux.Vars(r)
 			param, ok := queryParams[paramName]
-			isUUID, err := regexp.MatchString(
+			isUuid, err := regexp.MatchString(
 				"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
 				param,
 			)
@@ -23,7 +23,7 @@ func UuidMiddleware(paramName string) func(next http.Handler) http.Handler {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			if !ok || !isUUID {
+			if !ok || !isUuid {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
