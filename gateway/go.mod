@@ -1,4 +1,4 @@
-module gateway
+module github.com/Sharykhin/go-delivery-dymas/gateway
 
 go 1.22.2
 

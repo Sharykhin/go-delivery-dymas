@@ -6,8 +6,7 @@ routes:
       host_redirect: "http://localhost:8081"
       parameters:
         - name: "courier_id"
-          patterns:
-            - "uuid"
+          pattern: "uuid"
     - route:
       path: "/couriers/{courier_id}"
       methods:
@@ -15,8 +14,7 @@ routes:
       host_redirect: "http://localhost:9667"
       parameters:
         - name: "courier_id"
-        - patterns:
-            - "uuid"
+          pattern: "uuid"
     - route:
       path: "/orders/{order_id}"
       methods:
@@ -24,8 +22,7 @@ routes:
       host_redirect: "http://localhost:6661"
       parameters:
         - name: "order_id"
-          patterns:
-            - "uuid"
+          pattern: "uuid"
     - route:
       path: "/orders"
       methods:

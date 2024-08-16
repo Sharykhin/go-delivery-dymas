@@ -10,9 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"gateway/env"
-	"gateway/middleware"
-	"gateway/route"
+	"github.com/Sharykhin/go-delivery-dymas/gateway/env"
+	"github.com/Sharykhin/go-delivery-dymas/gateway/middleware"
+	"github.com/Sharykhin/go-delivery-dymas/gateway/route"
 	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 )
 

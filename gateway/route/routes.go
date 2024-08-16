@@ -1,14 +1,13 @@
 package route
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
-	"gateway/handler"
-	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
-
 	"gopkg.in/yaml.v3"
+
+	"github.com/Sharykhin/go-delivery-dymas/gateway/handler"
+	pkghttp "github.com/Sharykhin/go-delivery-dymas/pkg/http"
 )
 
 type Routes struct {
@@ -23,8 +22,8 @@ type Route struct {
 }
 
 type Parameter struct {
-	Name     string   `yaml:"name"`
-	Patterns []string `yaml:"patterns"`
+	Name    string `yaml:"name"`
+	Pattern string `yaml:"pattern"`
 }
 
 // CreateServicesRoutesFromConfig create routes based on routes from config yml and add according handler  for route
@@ -35,26 +34,17 @@ func CreateServicesRoutesFromConfig(middleWares map[string]func(paramName string
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(routes)
 	var routers = make(map[string]pkghttp.Route)
 	for _, route := range routes.Routes {
 		router := pkghttp.Route{
 			Methods: route.Methods,
 			Handler: handler.NewGateWayProxyHandler(route.HostRedirect),
 		}
-		if route.Parameters != nil {
-			for _, routeParameter := range route.Parameters {
-				if routeParameter.Patterns != nil {
-					for _, pattern := range routeParameter.Patterns {
-						if routeParameter.Name != "" && pattern != "" {
-							middleWare, ok := middleWares[pattern]
-							if ok && middleWare != nil {
-
-								router.Middlewares = append(router.Middlewares, middleWare(routeParameter.Name))
-							}
-						}
-					}
+		for _, routeParameter := range route.Parameters {
+			if routeParameter.Pattern != "" && routeParameter.Name != "" {
+				middleWare, ok := middleWares[routeParameter.Pattern]
+				if ok && middleWare != nil {
+					router.Middlewares = append(router.Middlewares, middleWare(routeParameter.Name))
 				}
 			}
 		}
