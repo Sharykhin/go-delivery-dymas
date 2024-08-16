@@ -20,6 +20,14 @@ func UuidMiddleware(paramName string) func(next http.Handler) http.Handler {
 			param, ok := params[paramName]
 			if !ok {
 				w.WriteHeader(http.StatusBadRequest)
+				err := json.NewEncoder(w).Encode(&pkghttp.ResponseMessage{
+					Status:  "Error",
+					Message: "Invalid UUID format",
+				})
+
+				if err != nil {
+					log.Printf("failed to encode json response: %v\n", err)
+				}
 				return
 			}
 			isUuid := uuid.MatchString(param)
