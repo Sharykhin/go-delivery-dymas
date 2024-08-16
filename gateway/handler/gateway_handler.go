@@ -17,6 +17,7 @@ func NewGateWayProxyHandler(hostRedirect string) func(w nethttp.ResponseWriter, 
 		urlService, err := neturl.Parse(hostRedirect)
 		fmt.Println(urlService)
 		if err != nil {
+			w.WriteHeader(nethttp.StatusBadRequest)
 			err := json.NewEncoder(w).Encode(&pkghttp.ResponseMessage{
 				Status:  "Error",
 				Message: "Incorrect config host",
