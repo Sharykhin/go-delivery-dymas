@@ -1,0 +1,31 @@
+routes:
+    - route:
+      path: "/courier/{courier_id}/location"
+      methods:
+        - "POST"
+      host_redirect: "http://localhost:8081"
+      parameters:
+        - name: "courier_id"
+          pattern: "uuid"
+    - route:
+      path: "/couriers/{courier_id}"
+      methods:
+        - "GET"
+      host_redirect: "http://localhost:9667"
+      parameters:
+        - name: "courier_id"
+          pattern: "uuid"
+    - route:
+      path: "/orders/{order_id}"
+      methods:
+        - "GET"
+      host_redirect: "http://localhost:6661"
+      parameters:
+        - name: "order_id"
+          pattern: "uuid"
+    - route:
+      path: "/orders"
+      methods:
+        - "POST"
+      protocol: "http"
+      host_redirect: "http://localhost:6661"

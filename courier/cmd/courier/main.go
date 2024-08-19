@@ -73,11 +73,11 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, c
 
 	routes := map[string]pkghttp.Route{"/couriers": {
 		Handler: courierHandler.HandlerCourierCreate,
-		Method:  "POST",
+		Methods: []string{"POST"},
 	},
 		courierLatestPositionURL: {
 			Handler: courierHandler.GetCourier,
-			Method:  "GET",
+			Methods: []string{"GET"},
 		},
 	}
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
