@@ -6,7 +6,7 @@ import (
 
 // Config Provides values env.
 type Config struct {
-	PortServerCourier string `env:"PORT_SERVER_COURIER" envDefault:"8080"`
+	PortServerGateway string `env:"PORT_SERVER_GATEWAY" envDefault:"8080"`
 }
 
 // GetConfig gets Configs env.

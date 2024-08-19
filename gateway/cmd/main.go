@@ -17,13 +17,13 @@ import (
 )
 
 func main() {
-	middlewares := map[string]func(paramName string) func(next http.Handler) http.Handler{
-		"uuid": middleware.UuidMiddleware,
-	}
 	config, err := env.GetConfig()
 	if err != nil {
 		log.Printf("failed to parse variable env: %v\n", err)
 		return
+	}
+	middlewares := map[string]func(paramName string) func(next http.Handler) http.Handler{
+		"uuid": middleware.UuidMiddleware,
 	}
 	routes, err := route.CreateServicesRoutesFromConfig(middlewares)
 	if err != nil {
@@ -33,5 +33,5 @@ func main() {
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-	pkghttp.RunServer(ctx, router, ":"+config.PortServerCourier)
+	pkghttp.RunServer(ctx, router, ":"+config.PortServerGateway)
 }
