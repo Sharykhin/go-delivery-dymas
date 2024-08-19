@@ -20,10 +20,11 @@ func UuidMiddleware(paramName string) func(next http.Handler) http.Handler {
 			params := mux.Vars(r)
 			param, ok := params[paramName]
 			if !ok {
+				message := fmt.Sprintf("%s doesn't exist in the defined route path", param)
 				w.WriteHeader(http.StatusBadRequest)
 				err := json.NewEncoder(w).Encode(&pkghttp.ResponseMessage{
 					Status:  "Error",
-					Message: "Invalid UUID format",
+					Message: message,
 				})
 
 				if err != nil {
@@ -32,12 +33,11 @@ func UuidMiddleware(paramName string) func(next http.Handler) http.Handler {
 				return
 			}
 			isUuid := uuid.MatchString(param)
-			message := fmt.Sprintf("%s doesn't exist in the defined route path", param)
 			if !isUuid {
 				w.WriteHeader(http.StatusBadRequest)
 				err := json.NewEncoder(w).Encode(&pkghttp.ResponseMessage{
 					Status:  "Error",
-					Message: message,
+					Message: "Invalid UUID format",
 				})
 
 				if err != nil {
