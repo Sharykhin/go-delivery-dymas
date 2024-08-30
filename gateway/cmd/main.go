@@ -31,6 +31,7 @@ func main() {
 		return
 	}
 	router := pkghttp.NewRoute(routes, mux.NewRouter())
+	router.Use(pkghttp.CreateReqIDMiddleware)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerGateway)
