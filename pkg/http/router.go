@@ -17,7 +17,7 @@ type Route struct {
 	Middlewares []func(next http.Handler) http.Handler
 }
 
-// NewRoute creates for handling different path routes with specific requestID for logging request
+// NewRoute creates for handling different path routes
 func NewRoute(routes map[string]Route, router *mux.Router) *mux.Router {
 	for url, route := range routes {
 		if route.Middlewares != nil {
