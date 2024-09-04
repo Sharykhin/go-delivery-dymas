@@ -31,7 +31,7 @@ func main() {
 		return
 	}
 
-	requiresMiddlewares := []func(next http.Handler) http.Handler{pkghttp.GetRequestID}
+	requiresMiddlewares := []func(next http.Handler) http.Handler{pkghttp.CreateReqIDMiddleware, pkghttp.GetRequestID}
 	router := pkghttp.NewRoute(routes, mux.NewRouter(), requiresMiddlewares)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
