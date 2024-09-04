@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -80,7 +81,8 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 		},
 	}
 
-	router := pkghttp.NewRoute(routes, mux.NewRouter())
+	middlewaresRequires := []func(next http.Handler) http.Handler{pkghttp.GetRequestID}
+	router := pkghttp.NewRoute(routes, mux.NewRouter(), middlewaresRequires)
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerOrder)
 }
 

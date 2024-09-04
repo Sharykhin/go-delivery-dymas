@@ -40,6 +40,7 @@ func CreateServicesRoutesFromConfig(middleWares map[string]func(paramName string
 			Methods: route.Methods,
 			Handler: handler.NewGateWayProxyHandler(route.HostRedirect),
 		}
+
 		for _, routeParameter := range route.Parameters {
 			if routeParameter.Pattern != "" && routeParameter.Name != "" {
 				middleWare, ok := middleWares[routeParameter.Pattern]
@@ -48,6 +49,7 @@ func CreateServicesRoutesFromConfig(middleWares map[string]func(paramName string
 				}
 			}
 		}
+
 		routers[route.Path] = router
 	}
 
