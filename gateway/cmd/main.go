@@ -30,7 +30,9 @@ func main() {
 		log.Printf("failed to parse routes config: %v\n", err)
 		return
 	}
-	router := pkghttp.NewRoute(routes, mux.NewRouter())
+
+	requiresMiddlewares := []func(next http.Handler) http.Handler{pkghttp.GetRequestID, pkghttp.CreateReqIDMiddleware}
+	router := pkghttp.NewRoute(routes, mux.NewRouter(), requiresMiddlewares)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	pkghttp.RunServer(ctx, router, ":"+config.PortServerGateway)

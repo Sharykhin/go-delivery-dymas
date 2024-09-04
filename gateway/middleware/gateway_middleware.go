@@ -16,6 +16,7 @@ var uuid = regexp.MustCompile(`[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-f
 // UuidMiddleware Check parameter by nane from request param is uuid or not and return Bad Request if param is not uuid
 func UuidMiddleware(paramName string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
+		fmt.Println("UUID Middleweare")
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			params := mux.Vars(r)
 			param, ok := params[paramName]

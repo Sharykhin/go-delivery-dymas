@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	nethttp "net/http"
 
@@ -46,7 +47,7 @@ func NewOrderHandler(
 // HandleOrderCreate handles request order and validate query have valid payload and save data from payload in storage.
 func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Request) {
 	var orderCreatePayload OrderCreatePayload
-
+	fmt.Println(r.Context().Value(pkghttp.RequestIDKeyContextValue))
 	if err := h.httpHandler.DecodePayloadFromJson(r, &orderCreatePayload); err != nil {
 		h.httpHandler.FailResponse(w, err)
 

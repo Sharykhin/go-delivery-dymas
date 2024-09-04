@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -91,7 +92,8 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, l
 		Methods: []string{"POST"},
 	},
 	}
-	router := pkghttp.NewRoute(routes, mux.NewRouter())
+	middlewaresRequires := []func(next http.Handler) http.Handler{pkghttp.GetRequestID}
+	router := pkghttp.NewRoute(routes, mux.NewRouter(), middlewaresRequires)
 	pkghttp.RunServer(ctx, router, ":"+config.PortServer)
 	wg.Done()
 }
