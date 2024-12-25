@@ -37,13 +37,13 @@ func (h *LocationHandler) HandlerCouriersLocation(w nethttp.ResponseWriter, r *n
 	var locationPayload LocationPayload
 
 	if err := h.httpHandler.DecodePayloadFromJson(r, &locationPayload); err != nil {
-		h.httpHandler.FailResponse(w, err)
+		h.httpHandler.FailResponse(w, err, nethttp.StatusBadRequest)
 
 		return
 	}
 
 	if err := h.httpHandler.ValidatePayload(&locationPayload); err != nil {
-		h.httpHandler.FailResponse(w, err)
+		h.httpHandler.FailResponse(w, err, nethttp.StatusBadRequest)
 
 		return
 	}

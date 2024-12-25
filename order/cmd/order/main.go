@@ -68,6 +68,10 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 		"/orders/{order_id:%s}",
 		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
 	)
+	orderCancelUrl := fmt.Sprintf(
+		"/orders/cancel/{order_id:%s}",
+		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
+	)
 
 	routes := map[string]pkghttp.Route{
 		"/orders": {
@@ -77,6 +81,10 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 		orderURL: {
 			Handler: orderHandler.HandleGetByOrderID,
 			Methods: []string{"GET"},
+		},
+		orderCancelUrl: {
+			Handler: orderHandler.HandleOrderCancel,
+			Methods: []string{"POST"},
 		},
 	}
 

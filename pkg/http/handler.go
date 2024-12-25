@@ -17,6 +17,8 @@ var ErrDecodeFailed = errors.New("failed to decode payload")
 // ErrValidatePayloadFailed throws this error when we have invalid payload
 var ErrValidatePayloadFailed = errors.New("failed to validated payload")
 
+var ErrHandleFailed = errors.New("error handle request")
+
 // ResponseMessage returns when we have bad request, or we have problem on server
 type ResponseMessage struct {
 	Status  string `json:"status"`
@@ -27,7 +29,7 @@ type HandlerInterface interface {
 	DecodePayloadFromJson(r *nethttp.Request, requestData any) error
 	SuccessResponse(w nethttp.ResponseWriter, requestData any, status int)
 	ValidatePayload(payload any) error
-	FailResponse(w nethttp.ResponseWriter, errFailResponse error)
+	FailResponse(w nethttp.ResponseWriter, errFailResponse error, status int)
 }
 
 // Handler abstract handler we can reuse it in different handlers
@@ -81,11 +83,11 @@ func (h *Handler) ValidatePayload(payload any) error {
 }
 
 // FailResponse returns response for bad request
-func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) {
+func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	switch true {
 	case errors.Is(errFailResponse, ErrDecodeFailed):
-		w.WriteHeader(nethttp.StatusBadRequest)
+		w.WriteHeader(status)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
@@ -98,15 +100,20 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 	case errors.Is(errFailResponse, ErrValidatePayloadFailed):
 		log.Printf("validate payload: %v", errFailResponse)
 
-		w.WriteHeader(nethttp.StatusBadRequest)
+		w.WriteHeader(status)
 		json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
 		})
-
+	case errors.As(errFailResponse, &ErrHandleFailed):
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(&ResponseMessage{
+			Status:  "Error",
+			Message: errFailResponse.Error(),
+		})
 	default:
 		log.Printf("Server error: %v\n", errFailResponse)
-		w.WriteHeader(nethttp.StatusInternalServerError)
+		w.WriteHeader(status)
 	}
 }
 

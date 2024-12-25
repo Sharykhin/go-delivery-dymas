@@ -151,6 +151,76 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	return
 }
 
+// UnassignOrderToCourier remove assigned and do courier available
+func (repo *CourierRepository) UnassignOrderToCourier(ctx context.Context, orderID string) (err error) {
+	tx, err := repo.client.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+	defer func(tx *sql.Tx) {
+		if err != nil {
+			errRollBack := tx.Rollback()
+			if errRollBack != nil {
+				log.Printf("failed to rolback transaction: %v\n", errRollBack)
+			}
+
+			return
+		}
+
+		err = tx.Rollback()
+
+		if errors.Is(err, sql.ErrTxDone) {
+			err = nil
+
+			return
+		}
+
+		log.Printf("failed to rolback transaction: %v\n", err)
+
+		return
+	}(tx)
+
+	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
+	if err != nil {
+		return
+	}
+	query := "DELETE FROM order_assignments WHERE order_id=$1 RETURNING courier_id"
+	row := tx.QueryRowContext(
+		ctx,
+		query,
+		orderID,
+	)
+
+	var courierID string
+	err = row.Scan(&courierID)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return
+	}
+
+	query = "UPDATE couriers SET is_available = TRUE " +
+		"where id = $1"
+	_, err = tx.ExecContext(
+		ctx,
+		query,
+		courierID,
+	)
+
+	if err != nil {
+		return
+	}
+
+	if err = tx.Commit(); err != nil {
+		return
+	}
+
+	return
+}
+
 func (repo *CourierRepository) hashOrderID(orderID string) int64 {
 	h := fnv.New64a()
 	h.Write([]byte(orderID))

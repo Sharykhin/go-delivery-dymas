@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE orders (
     id UUID DEFAULT gen_random_uuid(),
     courier_id UUID NULL,
     customer_phone_number char(15) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS orders (
     PRIMARY KEY (id)
     );
 
-CREATE TABLE IF NOT EXISTS order_validations (
+CREATE TABLE order_validations (
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     courier_validated_at TIMESTAMPTZ,
     courier_error VARCHAR(256),

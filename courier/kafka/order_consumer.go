@@ -52,6 +52,15 @@ func (orderConsumer *OrderConsumer) HandleJSONMessage(ctx context.Context, messa
 		return nil
 	}
 
+	if orderMessage.Event == "canceled" {
+		err := orderConsumer.courierService.UnassignOrderToCourier(ctx, orderMessage.Payload.Order_id)
+		if err != nil {
+			return fmt.Errorf("can not assign order to courier: %w", err)
+		}
+
+		return nil
+	}
+
 	err := orderConsumer.courierService.AssignOrderToCourier(ctx, orderMessage.Payload.Order_id)
 	if err != nil {
 		return fmt.Errorf("can not assign order to courier: %w", err)

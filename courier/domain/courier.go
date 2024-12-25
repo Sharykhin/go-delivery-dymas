@@ -46,6 +46,7 @@ type CourierRepositoryInterface interface {
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
 	AssignOrderToCourier(ctx context.Context, orderID string) (CourierAssignment *CourierAssignment, err error)
+	UnassignOrderToCourier(ctx context.Context, orderID string) (err error)
 }
 
 // CourierAssignment has order assign courier
@@ -59,6 +60,7 @@ type CourierAssignment struct {
 type CourierService interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
 	AssignOrderToCourier(ctx context.Context, orderID string) (err error)
+	UnassignOrderToCourier(ctx context.Context, orderID string) (err error)
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 }
 
@@ -81,6 +83,17 @@ func (s *CourierServiceManager) AssignOrderToCourier(ctx context.Context, orderI
 
 	if err != nil {
 		return fmt.Errorf("failed to publish a order message validation in kafka: %w", err)
+	}
+
+	return nil
+}
+
+// UnassignOrderToCourier remove assigned order to courier and do available courier
+func (s *CourierServiceManager) UnassignOrderToCourier(ctx context.Context, orderID string) error {
+
+	err := s.courierRepository.UnassignOrderToCourier(ctx, orderID)
+	if err != nil {
+		return fmt.Errorf("failed to unassigment courier to order and do courier available: %w", err)
 	}
 
 	return nil
