@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"log"
 	"time"
@@ -151,8 +152,8 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	return
 }
 
-// UnassignOrderToCourier remove assigned and do courier available
-func (repo *CourierRepository) UnassignOrderToCourier(ctx context.Context, orderID string) (err error) {
+// UnassignOrder remove assigned and do courier available
+func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string) (err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
 		return
@@ -168,8 +169,6 @@ func (repo *CourierRepository) UnassignOrderToCourier(ctx context.Context, order
 			return
 		}
 
-		err = tx.Rollback()
-
 		if errors.Is(err, sql.ErrTxDone) {
 			err = nil
 
@@ -183,6 +182,7 @@ func (repo *CourierRepository) UnassignOrderToCourier(ctx context.Context, order
 
 	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
 	if err != nil {
+		err = fmt.Errorf("error lock: %w", err)
 		return
 	}
 	query := "DELETE FROM order_assignments WHERE order_id=$1 RETURNING courier_id"
@@ -202,8 +202,7 @@ func (repo *CourierRepository) UnassignOrderToCourier(ctx context.Context, order
 		return
 	}
 
-	query = "UPDATE couriers SET is_available = TRUE " +
-		"where id = $1"
+	query = "UPDATE couriers SET is_available = TRUE WHERE id = $1"
 	_, err = tx.ExecContext(
 		ctx,
 		query,

@@ -50,13 +50,13 @@ func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Re
 	var orderCreatePayload OrderCreatePayload
 
 	if err := h.httpHandler.DecodePayloadFromJson(r, &orderCreatePayload); err != nil {
-		h.httpHandler.FailResponse(w, err, nethttp.StatusBadRequest)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
 
 	if err := h.httpHandler.ValidatePayload(&orderCreatePayload); err != nil {
-		h.httpHandler.FailResponse(w, err, nethttp.StatusBadRequest)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
@@ -71,7 +71,7 @@ func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Re
 
 	if err != nil {
 		log.Printf("Failed to save courier: %v", err)
-		h.httpHandler.FailResponse(w, err, nethttp.StatusInternalServerError)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
@@ -91,7 +91,7 @@ func (h *OrderHandler) HandleGetByOrderID(w nethttp.ResponseWriter, r *nethttp.R
 	order, err := h.orderService.GetOrderByID(r.Context(), orderID)
 
 	if err != nil {
-		h.httpHandler.FailResponse(w, err, nethttp.StatusInternalServerError)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
@@ -110,11 +110,11 @@ func (h *OrderHandler) HandleOrderCancel(w nethttp.ResponseWriter, r *nethttp.Re
 	err := h.orderService.CancelOrderByID(r.Context(), orderID)
 
 	if errors.Is(err, domain.ErrorCanceledOrder) {
-		err = fmt.Errorf("Conflict cancel order: %w, %w", err, pkghttp.ErrHandleFailed)
+		err = fmt.Errorf("conflict cancel order: %w, %w", err, pkghttp.ErrConflict)
 	}
 
 	if err != nil {
-		h.httpHandler.FailResponse(w, err, nethttp.StatusConflict)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}

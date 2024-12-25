@@ -38,13 +38,13 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 	var courierPayload CourierPayload
 
 	if err := h.httpHandler.DecodePayloadFromJson(r, &courierPayload); err != nil {
-		h.httpHandler.FailResponse(w, err, nethttp.StatusBadRequest)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
 
 	if err := h.httpHandler.ValidatePayload(&courierPayload); err != nil {
-		h.httpHandler.FailResponse(w, err, nethttp.StatusBadRequest)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
@@ -60,7 +60,7 @@ func (h *CourierHandler) HandlerCourierCreate(w nethttp.ResponseWriter, r *netht
 
 	if err != nil {
 		log.Printf("Failed to save courier: %v", err)
-		h.httpHandler.FailResponse(w, err, nethttp.StatusInternalServerError)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}
@@ -78,7 +78,7 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 
 	if err != nil {
 		log.Printf("failed to get courier: %v", err)
-		h.httpHandler.FailResponse(w, err, nethttp.StatusInternalServerError)
+		h.httpHandler.FailResponse(w, err)
 
 		return
 	}

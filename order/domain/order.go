@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -14,11 +13,12 @@ const EventOrderUpdated = "updated"
 const OrderStatusAccepted = "accepted"
 const OrderStatusCanceled = "canceled"
 
+var ErrorTransactionNotBegin = errors.New("transaction not begin")
+
 // ErrOrderNotFound shows type this error, when we don't have order in db
 var ErrOrderNotFound = errors.New("order was not found")
 var ErrOrderValidationNotFound = errors.New("order validation was not found")
 var ErrorCanceledOrder = errors.New("order can not be canceled order has incorrect status for canceling")
-var ErrorOrderWasCanceled = errors.New("order was canceled")
 
 // Order is a model of an order.
 type Order struct {
@@ -56,9 +56,10 @@ type OrderServiceManager struct {
 
 // OrderRepository OrderRepositoryInterface saves and reads courier from storage
 type OrderRepository interface {
-	Commit(ctx context.Context) (err error)
+	Commit(ctx context.Context) error
 	BeginTx(ctx context.Context) (context.Context, error)
-	Rollback(ctx context.Context) (err error)
+	Rollback(ctx context.Context)
+	LockTransaction(ctx context.Context, orderID string) error
 	SaveOrder(ctx context.Context, order *Order) (*Order, error)
 	GetOrderByID(ctx context.Context, orderID string) (*Order, error)
 	SaveOrderValidation(ctx context.Context, orderValidation *OrderValidation) error
@@ -107,31 +108,26 @@ func (s *OrderServiceManager) CreateOrder(ctx context.Context, order *Order) (*O
 }
 
 // ValidateOrderForService updates order status and creates or saves order validation
-func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload *OrderValidationPayload) (err error) {
-	ctx, err = s.orderRepository.BeginTx(ctx)
+func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, serviceName string, orderID string, orderValidationPayload *OrderValidationPayload) error {
+	ctx, err := s.orderRepository.BeginTx(ctx)
+
 	if err != nil {
-		err = fmt.Errorf("failed to begin transaction: %w", err)
-		return
+		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer func(orderRepository OrderRepository, ctx context.Context) {
-		if err != nil {
-			errRollBack := orderRepository.Rollback(ctx)
-			if errRollBack != nil {
-				log.Printf("failed to rolback transaction: %v\n", errRollBack)
-			}
-			return
-		}
+	defer s.orderRepository.Rollback(ctx)
 
-		err = orderRepository.Rollback(ctx)
+	err = s.orderRepository.LockTransaction(ctx, orderID)
 
-		return
-	}(s.orderRepository, ctx)
+	if err != nil {
+		return fmt.Errorf("failed to lock transaction: %w", err)
+	}
+
+	defer s.orderRepository.Rollback(ctx)
 
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
 	if err != nil {
-		err = fmt.Errorf("failed to get order: %w", err)
-		return
+		return fmt.Errorf("failed to get order: %w", err)
 	}
 
 	orderValidation, err := s.orderRepository.GetOrderValidationByID(ctx, orderID)
@@ -169,8 +165,7 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 	}
 
 	if err != nil {
-		err = fmt.Errorf("failed to save order in database during validation: %w", err)
-		return
+		return fmt.Errorf("failed to save order in database during validation: %w", err)
 	}
 
 	isOrderValidated := orderValidation.CheckValidation()
@@ -182,53 +177,44 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 		err = s.orderRepository.UpdateOrder(ctx, order)
 
 		if err != nil {
-			err = fmt.Errorf("failed to order order in database during validation: %w", err)
-			return
+			return fmt.Errorf("failed to order order in database during validation: %w", err)
 		}
 
+	}
+
+	err = s.orderRepository.Commit(ctx)
+
+	if err != nil {
+		return fmt.Errorf("failed to commit: %w", err)
 	}
 
 	if isOrderValidated {
 		err = s.orderPublisher.PublishOrder(ctx, order, EventOrderUpdated)
 
 		if err != nil {
-			err = fmt.Errorf("failed to publish a order in the kafka: %w", err)
-			return
+			return fmt.Errorf("failed to publish a order in the kafka: %w", err)
 		}
 	}
 
-	err = s.orderRepository.Commit(ctx)
-
-	if err != nil {
-		return
-	}
-	return
+	return nil
 }
 
 // CancelOrderByID cancel order and publish in kafka message with event cancel for removing courier assign
-func (s *OrderServiceManager) CancelOrderByID(ctx context.Context, orderID string) (err error) {
+func (s *OrderServiceManager) CancelOrderByID(ctx context.Context, orderID string) error {
 
-	ctx, err = s.orderRepository.BeginTx(ctx)
+	ctx, err := s.orderRepository.BeginTx(ctx)
 
 	if err != nil {
-		return
+		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer func(orderRepository OrderRepository, ctx context.Context) {
-		if err != nil {
-			errRollBack := orderRepository.Rollback(ctx)
-			if errRollBack != nil {
-				log.Printf("failed to rolback transaction: %v\n", errRollBack)
-			}
-			return
-		}
+	defer s.orderRepository.Rollback(ctx)
 
-		err = orderRepository.Rollback(ctx)
+	err = s.orderRepository.LockTransaction(ctx, orderID)
 
-		log.Printf("failed to rolback transaction: %v\n", err)
-
-		return
-	}(s.orderRepository, ctx)
+	if err != nil {
+		return fmt.Errorf("failed to lock transaction: %w", err)
+	}
 
 	order, err := s.orderRepository.GetOrderByID(
 		ctx,
@@ -236,34 +222,30 @@ func (s *OrderServiceManager) CancelOrderByID(ctx context.Context, orderID strin
 	)
 
 	if err != nil {
-		err = fmt.Errorf("failed to retrieve order by id: %w", err)
-		return err
+		return fmt.Errorf("failed to retrieve order by id: %w", err)
 	}
 
 	if order.Status != OrderNewStatus {
-		err = ErrorCanceledOrder
-		return
+		return ErrorCanceledOrder
 	}
 
 	order.Status = OrderStatusCanceled
 	err = s.orderRepository.UpdateOrder(ctx, order)
 
 	if err != nil {
-		err = fmt.Errorf("failed to cancel order by id: %w", err)
-		return
-	}
-
-	err = s.orderPublisher.PublishOrder(ctx, order, OrderStatusCanceled)
-
-	if err != nil {
-		err = fmt.Errorf("failed to publish a order in the kafka: %w", err)
-		return
+		return fmt.Errorf("failed to cancel order by id: %w", err)
 	}
 
 	err = s.orderRepository.Commit(ctx)
 
 	if err != nil {
-		return
+		return fmt.Errorf("failed to commit: %w", err)
+	}
+
+	err = s.orderPublisher.PublishOrder(ctx, order, OrderStatusCanceled)
+
+	if err != nil {
+		return fmt.Errorf("failed to publish a order in the kafka: %w", err)
 	}
 
 	return nil

@@ -17,7 +17,7 @@ var ErrDecodeFailed = errors.New("failed to decode payload")
 // ErrValidatePayloadFailed throws this error when we have invalid payload
 var ErrValidatePayloadFailed = errors.New("failed to validated payload")
 
-var ErrHandleFailed = errors.New("error handle request")
+var ErrConflict = errors.New("error conflict")
 
 // ResponseMessage returns when we have bad request, or we have problem on server
 type ResponseMessage struct {
@@ -29,7 +29,7 @@ type HandlerInterface interface {
 	DecodePayloadFromJson(r *nethttp.Request, requestData any) error
 	SuccessResponse(w nethttp.ResponseWriter, requestData any, status int)
 	ValidatePayload(payload any) error
-	FailResponse(w nethttp.ResponseWriter, errFailResponse error, status int)
+	FailResponse(w nethttp.ResponseWriter, errFailResponse error)
 }
 
 // Handler abstract handler we can reuse it in different handlers
@@ -83,11 +83,11 @@ func (h *Handler) ValidatePayload(payload any) error {
 }
 
 // FailResponse returns response for bad request
-func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error, status int) {
+func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) {
 	w.Header().Set("Content-Type", "application/json")
 	switch true {
 	case errors.Is(errFailResponse, ErrDecodeFailed):
-		w.WriteHeader(status)
+		w.WriteHeader(nethttp.StatusBadRequest)
 		err := json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
@@ -100,20 +100,20 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error, 
 	case errors.Is(errFailResponse, ErrValidatePayloadFailed):
 		log.Printf("validate payload: %v", errFailResponse)
 
-		w.WriteHeader(status)
+		w.WriteHeader(nethttp.StatusBadRequest)
 		json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
 		})
-	case errors.As(errFailResponse, &ErrHandleFailed):
-		w.WriteHeader(status)
+	case errors.Is(errFailResponse, ErrConflict):
+		w.WriteHeader(nethttp.StatusConflict)
 		json.NewEncoder(w).Encode(&ResponseMessage{
 			Status:  "Error",
 			Message: errFailResponse.Error(),
 		})
 	default:
 		log.Printf("Server error: %v\n", errFailResponse)
-		w.WriteHeader(status)
+		w.WriteHeader(nethttp.StatusInternalServerError)
 	}
 }
 

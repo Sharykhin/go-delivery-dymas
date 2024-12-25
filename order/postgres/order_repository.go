@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"hash/fnv"
+	"log"
 	"time"
 
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
@@ -21,17 +24,8 @@ type Client interface {
 
 // SaveOrder saves orders in db.
 func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
-
-	var client Client
-
-	if ctx.Value("transaction") != nil {
-		client = ctx.Value("transaction").(*sql.Tx)
-	} else {
-		client = repo.client
-	}
-
 	query := "insert into orders (customer_phone_number, created_at, status) values ($1, $2, $3) RETURNING id, customer_phone_number, status, created_at"
-	row := client.QueryRowContext(
+	row := repo.getClient(ctx).QueryRowContext(
 		ctx,
 		query,
 		order.CustomerPhoneNumber,
@@ -57,21 +51,17 @@ func (repo *OrderRepository) BeginTx(ctx context.Context) (context.Context, erro
 }
 
 // Rollback transaction in repository
-func (repo *OrderRepository) Rollback(ctx context.Context) (err error) {
+func (repo *OrderRepository) Rollback(ctx context.Context) {
 	tx := ctx.Value("transaction").(*sql.Tx)
-	err = tx.Rollback()
+	err := tx.Rollback()
 
-	if errors.Is(err, sql.ErrTxDone) {
-		err = nil
-
-		return
+	if err != nil && !errors.Is(err, sql.ErrTxDone) {
+		log.Println("Rollback failed:", err)
 	}
-
-	return
 }
 
 // Commit transaction
-func (repo *OrderRepository) Commit(ctx context.Context) (err error) {
+func (repo *OrderRepository) Commit(ctx context.Context) error {
 	tx := ctx.Value("transaction").(*sql.Tx)
 
 	return tx.Commit()
@@ -79,16 +69,9 @@ func (repo *OrderRepository) Commit(ctx context.Context) (err error) {
 
 // UpdateOrder update order in db after get data from services.
 func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Order) error {
-	var client Client
-
-	if ctx.Value("transaction") != nil {
-		client = ctx.Value("transaction").(*sql.Tx)
-	} else {
-		client = repo.client
-	}
 
 	query := "UPDATE orders SET status=$1, courier_id=$2 WHERE id = $3 RETURNING id, customer_phone_number, status, created_at, courier_id"
-	_, err := client.ExecContext(
+	_, err := repo.getClient(ctx).ExecContext(
 		ctx,
 		query,
 		order.Status,
@@ -99,19 +82,39 @@ func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Orde
 	return err
 }
 
-// GetOrderValidationByID GetOrderValidationValidationById gets order validation by id from db
-func (repo *OrderRepository) GetOrderValidationByID(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
-	var client Client
-
-	if ctx.Value("transaction") != nil {
-		client = ctx.Value("transaction").(*sql.Tx)
-	} else {
-		client = repo.client
+// LockTransaction Lock row in during transaction
+func (repo *OrderRepository) LockTransaction(ctx context.Context, orderID string) error {
+	if ctx.Value("transaction") == nil {
+		return domain.ErrorTransactionNotBegin
 	}
 
+	tx := ctx.Value("transaction").(*sql.Tx)
+	_, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
+	if err != nil {
+		return fmt.Errorf("error lock: %w", err)
+	}
+	return nil
+}
+
+func (repo *OrderRepository) hashOrderID(orderID string) int64 {
+	h := fnv.New64a()
+	h.Write([]byte(orderID))
+	return int64(h.Sum64())
+}
+
+func (repo *OrderRepository) getClient(ctx context.Context) Client {
+	if ctx.Value("transaction") != nil {
+		return ctx.Value("transaction").(*sql.Tx)
+	} else {
+		return repo.client
+	}
+}
+
+// GetOrderValidationByID GetOrderValidationValidationById gets order validation by id from db
+func (repo *OrderRepository) GetOrderValidationByID(ctx context.Context, orderID string) (*domain.OrderValidation, error) {
 	query := "SELECT order_id, courier_validated_at, courier_error, updated_at FROM order_validations WHERE order_id=$1"
 
-	row := client.QueryRowContext(
+	row := repo.getClient(ctx).QueryRowContext(
 		ctx,
 		query,
 		orderID,
@@ -133,16 +136,8 @@ func (repo *OrderRepository) SaveOrderValidation(
 	ctx context.Context,
 	orderValidation *domain.OrderValidation,
 ) error {
-	var client Client
-
-	if ctx.Value("transaction") != nil {
-		client = ctx.Value("transaction").(*sql.Tx)
-	} else {
-		client = repo.client
-	}
-
 	query := "INSERT INTO order_validations(order_id, courier_validated_at, courier_error) VALUES ($1, $2, $3)"
-	_, err := client.ExecContext(
+	_, err := repo.getClient(ctx).ExecContext(
 		ctx,
 		query,
 		orderValidation.OrderID,
@@ -158,17 +153,8 @@ func (repo *OrderRepository) UpdateOrderValidation(
 	ctx context.Context,
 	orderValidation *domain.OrderValidation,
 ) error {
-
-	var client Client
-
-	if ctx.Value("transaction") != nil {
-		client = ctx.Value("transaction").(*sql.Tx)
-	} else {
-		client = repo.client
-	}
-
 	query := "UPDATE  order_validations SET courier_validated_at = $2, courier_error = $3, updated_at = $4 WHERE updated_at=$5 AND order_id=$1"
-	result, err := client.ExecContext(
+	result, err := repo.getClient(ctx).ExecContext(
 		ctx,
 		query,
 		orderValidation.OrderID,
@@ -197,16 +183,8 @@ func (repo *OrderRepository) UpdateOrderValidation(
 
 // GetOrderByID gets order status and order id from database by uuid order and return model with order id.
 func (repo *OrderRepository) GetOrderByID(ctx context.Context, orderID string) (*domain.Order, error) {
-	var client Client
-
-	if ctx.Value("transaction") != nil {
-		client = ctx.Value("transaction").(*sql.Tx)
-	} else {
-		client = repo.client
-	}
-
-	query := "SELECT id, status, courier_id FROM orders WHERE id=$1 FOR SHARE"
-	row := client.QueryRowContext(
+	query := "SELECT id, status, courier_id FROM orders WHERE id=$1"
+	row := repo.getClient(ctx).QueryRowContext(
 		ctx,
 		query,
 		orderID,
