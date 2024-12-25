@@ -260,6 +260,12 @@ func (s *OrderServiceManager) CancelOrderByID(ctx context.Context, orderID strin
 		return
 	}
 
+	err = s.orderRepository.Commit(ctx)
+
+	if err != nil {
+		return
+	}
+
 	return nil
 }
 
