@@ -12,6 +12,8 @@ import (
 	"github.com/Sharykhin/go-delivery-dymas/order/domain"
 )
 
+const ctxTransactionKey = "transaction"
+
 // OrderRepository needs for managing order.
 type OrderRepository struct {
 	client *sql.DB
@@ -43,16 +45,19 @@ func (repo *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order)
 func (repo *OrderRepository) BeginTx(ctx context.Context) (context.Context, error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
 
-	if err == nil {
-		ctx = context.WithValue(ctx, "transaction", tx)
+	if err != nil {
+		err = fmt.Errorf("failed to begin transaction: %w", err)
+		return nil, err
 	}
 
-	return ctx, err
+	ctx = context.WithValue(ctx, ctxTransactionKey, tx)
+
+	return ctx, nil
 }
 
 // Rollback transaction in repository
 func (repo *OrderRepository) Rollback(ctx context.Context) {
-	tx := ctx.Value("transaction").(*sql.Tx)
+	tx := ctx.Value(ctxTransactionKey).(*sql.Tx)
 	err := tx.Rollback()
 
 	if err != nil && !errors.Is(err, sql.ErrTxDone) {
@@ -62,7 +67,7 @@ func (repo *OrderRepository) Rollback(ctx context.Context) {
 
 // Commit transaction
 func (repo *OrderRepository) Commit(ctx context.Context) error {
-	tx := ctx.Value("transaction").(*sql.Tx)
+	tx := ctx.Value(ctxTransactionKey).(*sql.Tx)
 
 	return tx.Commit()
 }
@@ -84,11 +89,11 @@ func (repo *OrderRepository) UpdateOrder(ctx context.Context, order *domain.Orde
 
 // LockTransaction Lock row in during transaction
 func (repo *OrderRepository) LockTransaction(ctx context.Context, orderID string) error {
-	if ctx.Value("transaction") == nil {
+	if ctx.Value(ctxTransactionKey) == nil {
 		return domain.ErrorTransactionNotBegin
 	}
 
-	tx := ctx.Value("transaction").(*sql.Tx)
+	tx := ctx.Value(ctxTransactionKey).(*sql.Tx)
 	_, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
 	if err != nil {
 		return fmt.Errorf("error lock: %w", err)
@@ -103,8 +108,8 @@ func (repo *OrderRepository) hashOrderID(orderID string) int64 {
 }
 
 func (repo *OrderRepository) getClient(ctx context.Context) Client {
-	if ctx.Value("transaction") != nil {
-		return ctx.Value("transaction").(*sql.Tx)
+	if ctx.Value(ctxTransactionKey) != nil {
+		return ctx.Value(ctxTransactionKey).(*sql.Tx)
 	} else {
 		return repo.client
 	}

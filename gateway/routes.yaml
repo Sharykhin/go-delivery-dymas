@@ -16,12 +16,12 @@ routes:
         - name: "courier_id"
           pattern: "uuid"
     - route:
-      path: "orders/cancel/{order_id}"
+      path: "/orders/cancel/{order_id}"
       methods:
-        - "GET"
+        - "POST"
       host_redirect: "http://localhost:6661"
       parameters:
-        - name: "courier_id"
+        - name: "order_id"
           pattern: "uuid"
 
     - route:
