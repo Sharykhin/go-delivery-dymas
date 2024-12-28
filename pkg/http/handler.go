@@ -17,6 +17,7 @@ var ErrDecodeFailed = errors.New("failed to decode payload")
 // ErrValidatePayloadFailed throws this error when we have invalid payload
 var ErrValidatePayloadFailed = errors.New("failed to validated payload")
 
+// ErrConflict error handles when we try to repeat operation
 var ErrConflict = errors.New("error conflict")
 
 // ResponseMessage returns when we have bad request, or we have problem on server

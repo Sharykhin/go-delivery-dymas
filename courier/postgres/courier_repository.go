@@ -138,7 +138,7 @@ func (repo *CourierRepository) rollBack(tx *sql.Tx) {
 	}
 }
 
-// UnassignOrder remove assigned and do courier available
+// UnassignOrder remove assigned and do courier available when we cancel order
 func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string) error {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {

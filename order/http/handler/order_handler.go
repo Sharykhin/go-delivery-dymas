@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	nethttp "net/http"
 
@@ -110,7 +109,9 @@ func (h *OrderHandler) HandleOrderCancel(w nethttp.ResponseWriter, r *nethttp.Re
 	err := h.orderService.CancelOrderByID(r.Context(), orderID)
 
 	if errors.Is(err, domain.ErrorCanceledOrder) {
-		err = fmt.Errorf("conflict cancel order: %w, %w", err, pkghttp.ErrConflict)
+		h.httpHandler.FailResponse(w, pkghttp.ErrConflict)
+
+		return
 	}
 
 	if err != nil {

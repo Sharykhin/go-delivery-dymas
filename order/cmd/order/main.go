@@ -64,19 +64,17 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 	defer wg.Done()
 
 	orderHandler := handler.NewOrderHandler(orderService, pkghttp.NewHandler())
-	orderURL := "/orders/{order_id}"
-	orderCancelUrl := "/orders/cancel/{order_id}"
 
 	routes := map[string]pkghttp.Route{
 		"/orders": {
 			Handler: orderHandler.HandleOrderCreate,
 			Methods: []string{"POST"},
 		},
-		orderURL: {
+		"/orders/{order_id}": {
 			Handler: orderHandler.HandleGetByOrderID,
 			Methods: []string{"GET"},
 		},
-		orderCancelUrl: {
+		"/orders/cancel/{order_id}": {
 			Handler: orderHandler.HandleOrderCancel,
 			Methods: []string{"POST"},
 		},

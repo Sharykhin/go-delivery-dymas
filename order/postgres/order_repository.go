@@ -19,6 +19,7 @@ type OrderRepository struct {
 	client *sql.DB
 }
 
+// Client for describing different connection type
 type Client interface {
 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
 	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
@@ -46,8 +47,7 @@ func (repo *OrderRepository) BeginTx(ctx context.Context) (context.Context, erro
 	tx, err := repo.client.BeginTx(ctx, nil)
 
 	if err != nil {
-		err = fmt.Errorf("failed to begin transaction: %w", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	ctx = context.WithValue(ctx, ctxTransactionKey, tx)

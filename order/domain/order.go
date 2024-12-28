@@ -123,8 +123,6 @@ func (s *OrderServiceManager) ValidateOrderForService(ctx context.Context, servi
 		return fmt.Errorf("failed to lock transaction: %w", err)
 	}
 
-	defer s.orderRepository.Rollback(ctx)
-
 	order, err := s.orderRepository.GetOrderByID(ctx, orderID)
 	if err != nil {
 		return fmt.Errorf("failed to get order: %w", err)
@@ -231,7 +229,7 @@ func (s *OrderServiceManager) CancelOrderByID(ctx context.Context, orderID strin
 
 	order.Status = OrderStatusCanceled
 	if err := s.orderRepository.UpdateOrder(ctx, order); err != nil {
-	    return fmt.Errorf("failed to cancel order by id: %w", err)
+		return fmt.Errorf("failed to cancel order by id: %w", err)
 	}
 
 	if err != nil {
