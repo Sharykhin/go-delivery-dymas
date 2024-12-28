@@ -82,8 +82,7 @@ func main() {
 func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, locationWorkerPool domain.CourierLocationWorkerPool) {
 
 	locationHandler := handler.NewLocationHandler(locationWorkerPool, pkghttp.NewHandler())
-	var courierLocationURL = "/courier/{courier_id}/location"
-	routes := map[string]pkghttp.Route{courierLocationURL: {
+	routes := map[string]pkghttp.Route{"/courier/{courier_id}/location": {
 		Handler: locationHandler.HandlerCouriersLocation,
 		Methods: []string{"POST"},
 	},
