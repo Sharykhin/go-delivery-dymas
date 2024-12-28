@@ -73,7 +73,7 @@ func (h *CourierHandler) GetCourier(w nethttp.ResponseWriter, r *nethttp.Request
 
 	vars := mux.Vars(r)
 	ctx := r.Context()
-	courierID := vars["id"]
+	courierID := vars["courier_id"]
 	courierResponse, err := h.courierService.GetCourierWithLatestPosition(ctx, courierID)
 
 	if err != nil {
