@@ -63,28 +63,7 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		return
 	}
 
-	defer func(tx *sql.Tx) {
-		if err != nil {
-			errRollBack := tx.Rollback()
-			if errRollBack != nil {
-				log.Printf("failed to rolback transaction: %v\n", errRollBack)
-			}
-
-			return
-		}
-
-		err = tx.Rollback()
-
-		if errors.Is(err, sql.ErrTxDone) {
-			err = nil
-
-			return
-		}
-
-		log.Printf("failed to rolback transaction: %v\n", err)
-
-		return
-	}(tx)
+	defer repo.rollBack(tx)
 
 	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
 	if err != nil {
@@ -152,6 +131,13 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	return
 }
 
+func (repo *CourierRepository) rollBack(tx *sql.Tx) {
+	err := tx.Rollback()
+	if err != nil && !errors.Is(err, sql.ErrTxDone) {
+		log.Printf("failed to rolback transaction: %v\n", err)
+	}
+}
+
 // UnassignOrder remove assigned and do courier available
 func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string) (err error) {
 	tx, err := repo.client.BeginTx(ctx, nil)
@@ -159,26 +145,7 @@ func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string
 		return
 	}
 
-	defer func(tx *sql.Tx) {
-		if err != nil {
-			errRollBack := tx.Rollback()
-			if errRollBack != nil {
-				log.Printf("failed to rolback transaction: %v\n", errRollBack)
-			}
-
-			return
-		}
-
-		if errors.Is(err, sql.ErrTxDone) {
-			err = nil
-
-			return
-		}
-
-		log.Printf("failed to rolback transaction: %v\n", err)
-
-		return
-	}(tx)
+	defer repo.rollBack(tx)
 
 	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
 	if err != nil {
