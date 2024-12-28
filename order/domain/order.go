@@ -230,7 +230,9 @@ func (s *OrderServiceManager) CancelOrderByID(ctx context.Context, orderID strin
 	}
 
 	order.Status = OrderStatusCanceled
-	err = s.orderRepository.UpdateOrder(ctx, order)
+	if err := s.orderRepository.UpdateOrder(ctx, order); err != nil {
+	    return fmt.Errorf("failed to cancel order by id: %w", err)
+	}
 
 	if err != nil {
 		return fmt.Errorf("failed to cancel order by id: %w", err)
