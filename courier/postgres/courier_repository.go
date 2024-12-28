@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"log"
 	"time"
@@ -62,28 +63,7 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 		return
 	}
 
-	defer func(tx *sql.Tx) {
-		if err != nil {
-			errRollBack := tx.Rollback()
-			if errRollBack != nil {
-				log.Printf("failed to rolback transaction: %v\n", errRollBack)
-			}
-
-			return
-		}
-
-		err = tx.Rollback()
-
-		if errors.Is(err, sql.ErrTxDone) {
-			err = nil
-
-			return
-		}
-
-		log.Printf("failed to rolback transaction: %v\n", err)
-
-		return
-	}(tx)
+	defer repo.rollBack(tx)
 
 	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
 	if err != nil {
@@ -149,6 +129,61 @@ func (repo *CourierRepository) AssignOrderToCourier(ctx context.Context, orderID
 	}
 
 	return
+}
+
+func (repo *CourierRepository) rollBack(tx *sql.Tx) {
+	err := tx.Rollback()
+	if err != nil && !errors.Is(err, sql.ErrTxDone) {
+		log.Printf("failed to rolback transaction: %v\n", err)
+	}
+}
+
+// UnassignOrder remove assigned and do courier available when we cancel order
+func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string) error {
+	tx, err := repo.client.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed begin transaction: %w", err)
+	}
+
+	defer repo.rollBack(tx)
+
+	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
+	if err != nil {
+		return fmt.Errorf("error lock: %w", err)
+	}
+	query := "DELETE FROM order_assignments WHERE order_id=$1 RETURNING courier_id"
+	row := tx.QueryRowContext(
+		ctx,
+		query,
+		orderID,
+	)
+
+	var courierID string
+	err = row.Scan(&courierID)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to select courier: %w", err)
+	}
+
+	query = "UPDATE couriers SET is_available = TRUE WHERE id = $1"
+	_, err = tx.ExecContext(
+		ctx,
+		query,
+		courierID,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed update courier: %w", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("failed commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (repo *CourierRepository) hashOrderID(orderID string) int64 {

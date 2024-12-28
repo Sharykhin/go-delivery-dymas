@@ -82,11 +82,7 @@ func main() {
 func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, locationWorkerPool domain.CourierLocationWorkerPool) {
 
 	locationHandler := handler.NewLocationHandler(locationWorkerPool, pkghttp.NewHandler())
-	var courierLocationURL = fmt.Sprintf(
-		"/courier/{courier_id:%s}/location",
-		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
-	)
-	routes := map[string]pkghttp.Route{courierLocationURL: {
+	routes := map[string]pkghttp.Route{"/courier/{courier_id}/location": {
 		Handler: locationHandler.HandlerCouriersLocation,
 		Methods: []string{"POST"},
 	},

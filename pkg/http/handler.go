@@ -17,6 +17,9 @@ var ErrDecodeFailed = errors.New("failed to decode payload")
 // ErrValidatePayloadFailed throws this error when we have invalid payload
 var ErrValidatePayloadFailed = errors.New("failed to validated payload")
 
+// ErrConflict error handles when we try to repeat operation
+var ErrConflict = errors.New("error conflict")
+
 // ResponseMessage returns when we have bad request, or we have problem on server
 type ResponseMessage struct {
 	Status  string `json:"status"`
@@ -103,7 +106,12 @@ func (h *Handler) FailResponse(w nethttp.ResponseWriter, errFailResponse error) 
 			Status:  "Error",
 			Message: errFailResponse.Error(),
 		})
-
+	case errors.Is(errFailResponse, ErrConflict):
+		w.WriteHeader(nethttp.StatusConflict)
+		json.NewEncoder(w).Encode(&ResponseMessage{
+			Status:  "Error",
+			Message: errFailResponse.Error(),
+		})
 	default:
 		log.Printf("Server error: %v\n", errFailResponse)
 		w.WriteHeader(nethttp.StatusInternalServerError)

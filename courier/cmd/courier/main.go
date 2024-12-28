@@ -66,16 +66,12 @@ func main() {
 func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, courierService domain.CourierService) {
 	defer wg.Done()
 	courierHandler := handler.NewCourierHandler(courierService, pkghttp.NewHandler())
-	courierLatestPositionURL := fmt.Sprintf(
-		"/couriers/{id:%s}",
-		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
-	)
 
 	routes := map[string]pkghttp.Route{"/couriers": {
 		Handler: courierHandler.HandlerCourierCreate,
 		Methods: []string{"POST"},
 	},
-		courierLatestPositionURL: {
+		"/couriers/{courier_id}": {
 			Handler: courierHandler.GetCourier,
 			Methods: []string{"GET"},
 		},

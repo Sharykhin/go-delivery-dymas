@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	nethttp "net/http"
 
@@ -15,8 +16,8 @@ type OrderCreatePayload struct {
 	PhoneNumber string `json:"phone_number" validate:"omitempty,e164"`
 }
 
-// OrderCreateResponse imagine response order status from http query.
-type OrderCreateResponse struct {
+// OrderResponse imagine response order status from http query.
+type OrderResponse struct {
 	Status string `json:"status"`
 	ID     string `json:"order_id"`
 }
@@ -74,7 +75,7 @@ func (h *OrderHandler) HandleOrderCreate(w nethttp.ResponseWriter, r *nethttp.Re
 		return
 	}
 
-	orderStatusResponse := OrderCreateResponse{
+	orderStatusResponse := OrderResponse{
 		Status: order.Status,
 		ID:     order.ID,
 	}
@@ -87,8 +88,30 @@ func (h *OrderHandler) HandleGetByOrderID(w nethttp.ResponseWriter, r *nethttp.R
 	vars := mux.Vars(r)
 	orderID := vars["order_id"]
 	order, err := h.orderService.GetOrderByID(r.Context(), orderID)
+
+	if err != nil {
+		h.httpHandler.FailResponse(w, err)
+
+		return
+	}
+
 	orderStatusResponse := OrderStatusResponse{
 		Status: order.Status,
+	}
+
+	h.httpHandler.SuccessResponse(w, orderStatusResponse, nethttp.StatusOK)
+}
+
+// HandleOrderCancel handles cancel order and publish event cancel in kafka for removing courier order assign.
+func (h *OrderHandler) HandleOrderCancel(w nethttp.ResponseWriter, r *nethttp.Request) {
+	vars := mux.Vars(r)
+	orderID := vars["order_id"]
+	err := h.orderService.CancelOrderByID(r.Context(), orderID)
+
+	if errors.Is(err, domain.ErrorCanceledOrder) {
+		h.httpHandler.FailResponse(w, pkghttp.ErrConflict)
+
+		return
 	}
 
 	if err != nil {
@@ -96,5 +119,11 @@ func (h *OrderHandler) HandleGetByOrderID(w nethttp.ResponseWriter, r *nethttp.R
 
 		return
 	}
+
+	orderStatusResponse := OrderResponse{
+		Status: domain.OrderStatusCanceled,
+		ID:     orderID,
+	}
+
 	h.httpHandler.SuccessResponse(w, orderStatusResponse, nethttp.StatusOK)
 }
