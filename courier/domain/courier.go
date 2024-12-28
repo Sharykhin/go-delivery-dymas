@@ -46,7 +46,7 @@ type CourierRepositoryInterface interface {
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 	GetCourierByID(ctx context.Context, courierID string) (*Courier, error)
 	AssignOrderToCourier(ctx context.Context, orderID string) (CourierAssignment *CourierAssignment, err error)
-	UnassignOrder(ctx context.Context, orderID string) (err error)
+	UnassignOrder(ctx context.Context, orderID string) error
 }
 
 // CourierAssignment has order assign courier
@@ -59,8 +59,8 @@ type CourierAssignment struct {
 // CourierService gets information about courier and latest position courier from storage
 type CourierService interface {
 	GetCourierWithLatestPosition(ctx context.Context, courierID string) (*CourierWithLatestPosition, error)
-	AssignOrderToCourier(ctx context.Context, orderID string) (err error)
-	UnassignOrder(ctx context.Context, orderID string) (err error)
+	AssignOrderToCourier(ctx context.Context, orderID string) error
+	UnassignOrder(ctx context.Context, orderID string) error
 	SaveCourier(ctx context.Context, courier *Courier) (*Courier, error)
 }
 
