@@ -64,10 +64,7 @@ func runHttpServer(ctx context.Context, config env.Config, wg *sync.WaitGroup, o
 	defer wg.Done()
 
 	orderHandler := handler.NewOrderHandler(orderService, pkghttp.NewHandler())
-	orderURL := fmt.Sprintf(
-		"/orders/{order_id:%s}",
-		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
-	)
+	orderURL := "/orders/{order_id}"
 	orderCancelUrl := "/orders/cancel/{order_id}"
 
 	routes := map[string]pkghttp.Route{

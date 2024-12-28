@@ -139,18 +139,17 @@ func (repo *CourierRepository) rollBack(tx *sql.Tx) {
 }
 
 // UnassignOrder remove assigned and do courier available
-func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string) (err error) {
+func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string) error {
 	tx, err := repo.client.BeginTx(ctx, nil)
 	if err != nil {
-		return
+		return fmt.Errorf("failed begin transaction: %w", err)
 	}
 
 	defer repo.rollBack(tx)
 
 	_, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", repo.hashOrderID(orderID))
 	if err != nil {
-		err = fmt.Errorf("error lock: %w", err)
-		return
+		return fmt.Errorf("error lock: %w", err)
 	}
 	query := "DELETE FROM order_assignments WHERE order_id=$1 RETURNING courier_id"
 	row := tx.QueryRowContext(
@@ -166,7 +165,7 @@ func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string
 		return nil
 	}
 	if err != nil {
-		return
+		return fmt.Errorf("failed to select courier: %w", err)
 	}
 
 	query = "UPDATE couriers SET is_available = TRUE WHERE id = $1"
@@ -177,14 +176,14 @@ func (repo *CourierRepository) UnassignOrder(ctx context.Context, orderID string
 	)
 
 	if err != nil {
-		return
+		return fmt.Errorf("failed update courier: %w", err)
 	}
 
 	if err = tx.Commit(); err != nil {
-		return
+		return fmt.Errorf("failed commit transaction: %w", err)
 	}
 
-	return
+	return nil
 }
 
 func (repo *CourierRepository) hashOrderID(orderID string) int64 {
